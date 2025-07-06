@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36221.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmit", "PocoEmit\PocoEmit.csproj", "{F47B382A-DBD6-42BD-A6E6-ADAA19B42492}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{9FA3D6BD-1EC1-3BA5-80CB-CE02773A58D5}"
+	ProjectSection(SolutionItems) = preProject
+		readme.md = readme.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", "{C5F5D5EF-56EC-4284-A472-C83DF49B2106}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmitBench", "Benchmarks\PocoEmitBench\PocoEmitBench.csproj", "{E49A6C92-0F4F-4D43-97DE-7B41D235890A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmitUnitTests", "UnitTests\PocoEmitUnitTests\PocoEmitUnitTests.csproj", "{3D754630-93BC-A6CD-0D40-45E1CC4B5610}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F47B382A-DBD6-42BD-A6E6-ADAA19B42492}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F47B382A-DBD6-42BD-A6E6-ADAA19B42492}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F47B382A-DBD6-42BD-A6E6-ADAA19B42492}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F47B382A-DBD6-42BD-A6E6-ADAA19B42492}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E49A6C92-0F4F-4D43-97DE-7B41D235890A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E49A6C92-0F4F-4D43-97DE-7B41D235890A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E49A6C92-0F4F-4D43-97DE-7B41D235890A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E49A6C92-0F4F-4D43-97DE-7B41D235890A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D754630-93BC-A6CD-0D40-45E1CC4B5610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D754630-93BC-A6CD-0D40-45E1CC4B5610}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D754630-93BC-A6CD-0D40-45E1CC4B5610}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D754630-93BC-A6CD-0D40-45E1CC4B5610}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E49A6C92-0F4F-4D43-97DE-7B41D235890A} = {C5F5D5EF-56EC-4284-A472-C83DF49B2106}
+		{3D754630-93BC-A6CD-0D40-45E1CC4B5610} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AD9CBBF6-66AD-48B2-A888-432E0BA9CDB8}
+	EndGlobalSection
+EndGlobal

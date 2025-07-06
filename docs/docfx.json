@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../",
+          "files": [
+            "MyDeltas/MyDeltas.csproj"
+          ],
+          "exclude": [ "Tests/*" ]
+        }
+
+      ],
+      "dest": "api",
+      "filter": "../filterconfig.yml"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [ "_site/**", "obj/**" ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [ "images/**" ],
+        "exclude": [ "_site/**", "obj/**" ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "default(zh-cn)",
+      "templates/chinese",
+      "modern",
+      "template"
+    ],
+    "globalMetadata": {
+      "_appName": "Shadow",
+      "_appTitle": ".net拼写sql",
+      "_appFooter": "<span>Copyright (c) ShadowSql All Rights Reserved</span>",
+      "_enableSearch": false,
+      "pdf": false
+    }
+  }
+}

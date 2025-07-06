@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net4.5;net7.0;net8.0;net9.0;netstandard1.1;netstandard1.3;netstandard1.6;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>Latest</LangVersion>
+    <PackageId>PocoEmit</PackageId>
+    <Description>Emit加速操作属性和字段</Description>
+    <PackageTags>Emit;Poco;Reflection;Property;Field</PackageTags>
+    <Version>0.1.0-alpha</Version>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Authors>jiangxiangji</Authors>
+    <Company>MyEmit</Company>
+    <Copyright>Copyright (c) MyEmit All Rights Reserved</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/donetsoftwork/MyEmit</RepositoryUrl>
+    <PackageProjectUrl>https://donetsoftwork.github.io/MyEmit</PackageProjectUrl>
+    <!-- SourceLink settings -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.1'
+             or '$(TargetFramework)' == 'netstandard1.3'
+             or '$(TargetFramework)' == 'netstandard1.6'">
+    <PackageReference Include="System.Reflection" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.1'
+             or '$(TargetFramework)' == 'netstandard1.3'
+             or '$(TargetFramework)' == 'netstandard1.6'">
+    <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="readme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>
