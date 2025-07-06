@@ -1,28 +1,16 @@
-- name: 上手
-  href: ./quick.md
-- name: 简介
-  href: ./introduction.md
-- name: 选型
-  href: ./how.md
-- name: 精简版
-  href: ./shadowcore/
-- name: 易用版
-  href: ./shadow/
-- name: 表达式版
-  href: ./expression/
-- name: DDL
-  href: ./ddl/
-- name: Dapper扩展
-  items:
-  - name: 精简版
-    href: ./dappercore/
-  - name: 易用版
-    href: ./dapper/
+- name: 操作
+  href: ./member.md
+- name: 属性操作
+  href: ./property.md
+- name: 字段操作
+  href: ./field.md
+- name: 缓存
+  href: ./cache.md
 - name: API
   href: ./api/
 - name: 源码
   items:
   - name: Github
-    href: https://github.com/donetsoftwork/Shadow
+    href: https://github.com/donetsoftwork/MyEmit
   - name: Gitee
-    href: https://gitee.com/donetsoftwork/Shadow
+    href: https://gitee.com/donetsoftwork/MyEmit

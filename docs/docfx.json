@@ -6,7 +6,7 @@
         {
           "src": "../",
           "files": [
-            "MyDeltas/MyDeltas.csproj"
+            "PocoEmit/PocoEmit.csproj"
           ],
           "exclude": [ "Tests/*" ]
         }
@@ -40,9 +40,9 @@
       "template"
     ],
     "globalMetadata": {
-      "_appName": "Shadow",
-      "_appTitle": ".net拼写sql",
-      "_appFooter": "<span>Copyright (c) ShadowSql All Rights Reserved</span>",
+      "_appName": "MyEmit",
+      "_appTitle": "简单对象Emit工具",
+      "_appFooter": "<span>Copyright (c) MyEmit All Rights Reserved</span>",
       "_enableSearch": false,
       "pdf": false
     }
