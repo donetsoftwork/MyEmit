@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决�
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		..\MyDelta.net\LICENSE.txt = ..\MyDelta.net\LICENSE.txt
+		package.props = package.props
 		readme.md = readme.md
 	EndProjectSection
 EndProject
@@ -19,6 +21,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmitBench", "Benchmarks\PocoEmitBench\PocoEmitBench.csproj", "{E49A6C92-0F4F-4D43-97DE-7B41D235890A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmitUnitTests", "UnitTests\PocoEmitUnitTests\PocoEmitUnitTests.csproj", "{3D754630-93BC-A6CD-0D40-45E1CC4B5610}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmit.Mapper", "PocoEmit.Mapper\PocoEmit.Mapper.csproj", "{D61099E2-0F02-A22F-5CC9-AAA1925C525A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmit.MapperUnitTests", "UnitTests\PocoEmit.MapperUnitTests\PocoEmit.MapperUnitTests.csproj", "{81C13555-6F09-4DD9-A7A9-96CCEC17FBB3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{EF90F585-E57E-4A79-B915-ADB67D2662A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApi", "IntegrationTests\TestApi\TestApi.csproj", "{0BE79962-4015-4814-BA29-041370BDDDF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +48,18 @@ Global
 		{3D754630-93BC-A6CD-0D40-45E1CC4B5610}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D754630-93BC-A6CD-0D40-45E1CC4B5610}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D754630-93BC-A6CD-0D40-45E1CC4B5610}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D61099E2-0F02-A22F-5CC9-AAA1925C525A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D61099E2-0F02-A22F-5CC9-AAA1925C525A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D61099E2-0F02-A22F-5CC9-AAA1925C525A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D61099E2-0F02-A22F-5CC9-AAA1925C525A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81C13555-6F09-4DD9-A7A9-96CCEC17FBB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81C13555-6F09-4DD9-A7A9-96CCEC17FBB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81C13555-6F09-4DD9-A7A9-96CCEC17FBB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81C13555-6F09-4DD9-A7A9-96CCEC17FBB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BE79962-4015-4814-BA29-041370BDDDF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BE79962-4015-4814-BA29-041370BDDDF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BE79962-4015-4814-BA29-041370BDDDF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BE79962-4015-4814-BA29-041370BDDDF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +67,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{E49A6C92-0F4F-4D43-97DE-7B41D235890A} = {C5F5D5EF-56EC-4284-A472-C83DF49B2106}
 		{3D754630-93BC-A6CD-0D40-45E1CC4B5610} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{81C13555-6F09-4DD9-A7A9-96CCEC17FBB3} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{0BE79962-4015-4814-BA29-041370BDDDF9} = {EF90F585-E57E-4A79-B915-ADB67D2662A5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AD9CBBF6-66AD-48B2-A888-432E0BA9CDB8}

@@ -1,5 +1,8 @@
+using PocoEmit.Collections;
+using PocoEmit.Configuration;
 using System;
-using System.Linq.Expressions;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace PocoEmit;
@@ -9,66 +12,187 @@ namespace PocoEmit;
 /// </summary>
 public static class ReflectionHelper
 {
+    #region GetTypeMembers
+    /// <summary>
+    /// 获取类型所有成员
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public static MemberBundle GetTypeMembers<TInstance>(this IPocoOptions options)
+        => options.MemberCacher.Get(typeof(TInstance));
+    /// <summary>
+    /// 获取类型所有成员
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="instanceType"></param>
+    /// <returns></returns>
+    public static MemberBundle GetTypeMembers(this IPocoOptions options, Type instanceType)
+        => options.MemberCacher.Get(instanceType);
+    #endregion
+    #region GetReadMember
+    /// <summary>
+    /// 获取可读成员
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="instanceType"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static MemberInfo GetReadMember(this IPocoOptions options, Type instanceType, string memberName)
+    {
+        return options.MemberCacher
+            .Get(instanceType)
+            ?.GetReadMember(memberName);
+    }
+    /// <summary>
+    /// 获取可读成员
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static MemberInfo GetReadMember<TInstance>(this IPocoOptions options, string memberName)
+    {
+        return options.MemberCacher
+            .Get(typeof(TInstance))
+            ?.GetReadMember(memberName);
+    }
+    /// <summary>
+    /// 获取可读成员
+    /// </summary>
+    /// <param name="bundle"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static MemberInfo GetReadMember(this MemberBundle bundle, string memberName)
+    {
+        if (bundle.ReadMembers.TryGetValue(memberName, out var member))
+            return member;
+        return null;
+    }
+    #endregion
+    #region GetWriteMember
+    /// <summary>
+    /// 获取可写成员
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="instanceType"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static MemberInfo GetWriteMember(this IPocoOptions options, Type instanceType, string memberName)
+    {
+        return options.MemberCacher
+            .Get(instanceType)
+            ?.GetWriteMember(memberName);
+    }
+    /// <summary>
+    /// 获取可写成员
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static MemberInfo GetWriteMember<TInstance>(this IPocoOptions options, string memberName)
+    {
+        return options.MemberCacher
+            .Get(typeof(TInstance))
+            ?.GetWriteMember(memberName);
+    }
+    /// <summary>
+    /// 获取可读成员
+    /// </summary>
+    /// <param name="bundle"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static MemberInfo GetWriteMember(this MemberBundle bundle, string memberName)
+    {
+        if (bundle.WriteMembers.TryGetValue(memberName, out var member))
+            return member;
+        return null;
+    }
+    #endregion
+    #region Properties
+    /// <summary>
+    /// 获取所有属性
+    /// </summary>
+    /// <returns></returns>
+    public static IEnumerable<PropertyInfo> GetProperties(Type type)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        => GetProperties(type.GetTypeInfo());
     /// <summary>
     /// 获取属性信息
     /// </summary>
-    /// <param name="type"></param>
-    /// <param name="propertyName"></param>
+    /// <param name="typeInfo"></param>
     /// <returns></returns>
-    public static PropertyInfo GetProperty(Type type, string propertyName)
+    public static IEnumerable<PropertyInfo> GetProperties(TypeInfo typeInfo)
+        => typeInfo.DeclaredProperties;
+#else
+        => type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+#endif
+    /// <summary>
+    /// 获取所有可读属性
+    /// </summary>
+    /// <returns></returns>
+    public static IEnumerable<PropertyInfo> GetReadProperties(Type type)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => type.GetTypeInfo().GetDeclaredProperty(propertyName);
+        => GetReadProperties(type.GetTypeInfo());
     /// <summary>
     /// 获取属性信息
     /// </summary>
-    /// <param name="type"></param>
-    /// <param name="propertyName"></param>
+    /// <param name="typeInfo"></param>
     /// <returns></returns>
-    public static PropertyInfo GetProperty(TypeInfo type, string propertyName)
-        => type.GetDeclaredProperty(propertyName);
+    public static IEnumerable<PropertyInfo> GetReadProperties(TypeInfo typeInfo)
+        => typeInfo.DeclaredProperties.Where(property => property.CanRead);
 #else
-        => type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+        => type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
 #endif
     /// <summary>
-    /// 获取字段信息
+    /// 获取所有可读属性
     /// </summary>
-    /// <param name="type"></param>
-    /// <param name="fieldName"></param>
-    /// <returns></returns>
-    public static FieldInfo GetField(Type type, string fieldName)
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => type.GetTypeInfo().GetDeclaredField(fieldName);
-    /// <summary>
-    /// 获取字段信息
-    /// </summary>
-    /// <param name="type"></param>
-    /// <param name="fieldName"></param>
-    /// <returns></returns>
-    public static FieldInfo GetField(TypeInfo type, string fieldName)
-        => type.GetDeclaredField(fieldName);
-#else
-        => type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public);
-#endif
-    /// <summary>
-    /// 判断是否兼容声明类型
-    /// </summary>
-    /// <param name="instanceType"></param>
     /// <param name="declaringType"></param>
     /// <returns></returns>
-    public static bool CheckDeclaringType(Type instanceType, Type declaringType)
+    public static IEnumerable<PropertyInfo> GetWriteProperties(Type declaringType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => CheckDeclaringType(instanceType.GetTypeInfo(), declaringType.GetTypeInfo());
+        => GetWriteProperties(declaringType.GetTypeInfo());
     /// <summary>
-    /// 判断是否兼容声明类型
+    /// 获取所有属性
     /// </summary>
-    /// <param name="instanceType"></param>
-    /// <param name="declaringType"></param>
+    /// <param name="typeInfo"></param>
     /// <returns></returns>
-    public static bool CheckDeclaringType(TypeInfo instanceType, TypeInfo declaringType)
+    public static IEnumerable<PropertyInfo> GetWriteProperties(TypeInfo typeInfo)
+        => typeInfo.DeclaredProperties.Where(property => property.CanWrite);
+#else
+        => declaringType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty);
 #endif
-        => instanceType == declaringType || declaringType.IsAssignableFrom(instanceType);
+    #endregion
+    #region GetFields
     /// <summary>
-    /// 判断是否兼容类型
+    /// 获取所有字段
+    /// </summary>
+    /// <typeparam name="TStructuralType"></typeparam>
+    /// <returns></returns>
+    public static IEnumerable<FieldInfo> GetFields<TStructuralType>()
+        => GetFields(typeof(TStructuralType));
+    /// <summary>
+    /// 获取所有字段
+    /// </summary>
+    /// <returns></returns>
+    public static IEnumerable<FieldInfo> GetFields(Type declaringType)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        => GetFields(declaringType.GetTypeInfo());
+    /// <summary>
+    /// 获取属性信息
+    /// </summary>
+    /// <param name="declaringTypeInfo"></param>
+    /// <returns></returns>
+    public static IEnumerable<FieldInfo> GetFields(TypeInfo declaringTypeInfo)
+        => declaringTypeInfo.DeclaredFields.Where(field => field.IsPublic && !field.IsStatic);
+#else
+        => declaringType.GetFields(BindingFlags.Instance | BindingFlags.Public);
+#endif
+    #endregion
+    #region CheckType
+    /// <summary>
+    /// 判断是否兼容值类型
     /// </summary>
     /// <param name="fromType"></param>
     /// <param name="toType"></param>
@@ -77,7 +201,7 @@ public static class ReflectionHelper
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
         => CheckValueType(fromType.GetTypeInfo(), toType.GetTypeInfo());
     /// <summary>
-    /// 判断是否兼容声明类型
+    /// 判断是否兼容值类型
     /// </summary>
     /// <param name="fromType"></param>
     /// <param name="toType"></param>
@@ -89,7 +213,7 @@ public static class ReflectionHelper
             return true;
         if (toType.IsValueType)
         {
-            if (fromType.IsValueType)
+            if (fromType.IsValueType && !toType.IsGenericType)
                 return toType.IsAssignableFrom(fromType);
             return false;
         }
@@ -97,22 +221,111 @@ public static class ReflectionHelper
             return false;
         return toType.IsAssignableFrom(fromType);
     }
+    #endregion
     /// <summary>
-    /// 处理实例类型
+    /// 是否可空类型
     /// </summary>
-    /// <param name="instance"></param>
-    /// <param name="instanceType"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static bool IsNullable(Type type)
+        => IsGenericTypeDefinition(type, typeof(Nullable<>));
+    /// <summary>
+    /// 是否泛型定义
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="genericType">泛型</param>
+    /// <returns></returns>
+    public static bool IsGenericTypeDefinition(Type type, Type genericType)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        => IsGenericTypeDefinition(type.GetTypeInfo(), genericType);
+    /// <summary>
+    /// 是否泛型定义
+    /// </summary>
+    /// <param name="typeInfo"></param>
+    /// <param name="genericType"></param>
+    /// <returns></returns>
+    public static bool IsGenericTypeDefinition(TypeInfo typeInfo, Type genericType)
+        => typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == genericType;
+#else
+        => type.IsGenericType && type.GetGenericTypeDefinition() == genericType;
+#endif
+    #region ConstructorInfo
+    /// <summary>
+    /// 获取构造函数
+    /// </summary>
+    /// <param name="declaringType"></param>
+    /// <param name="parameterType"></param>
+    /// <returns></returns>
+    public static ConstructorInfo GetConstructorByParameterType(Type declaringType, Type parameterType)
+        => GetConstructor(
+            declaringType,
+            parameters => parameters.Length == 1
+                && parameters[0].ParameterType == parameterType);
+    /// <summary>
+    /// 获取构造函数
+    /// </summary>
+    /// <param name="declaringType"></param>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    public static ConstructorInfo GetConstructor(Type declaringType, Func<ParameterInfo[], bool> filter)
+    {
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        var constructors = declaringType.GetTypeInfo().DeclaredConstructors;
+#else
+        var constructors = declaringType.GetConstructors();
+#endif
+        foreach (var constructor in constructors)
+        {
+            if (filter(constructor.GetParameters()))
+                return constructor;
+        }
+        return null;
+    }
+    /// <summary>
+    /// 获取所有构造函数
+    /// </summary>
     /// <param name="declaringType"></param>
     /// <returns></returns>
-    public static Expression CheckInstanceType(Expression instance, Type instanceType, Type declaringType)
-    => CheckDeclaringType(instanceType, declaringType) ? instance : Expression.Convert(instance, declaringType);
+    public static IEnumerable<ConstructorInfo> GetConstructors(Type declaringType)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+            => GetConstructors(declaringType.GetTypeInfo());
+        /// <summary>
+        /// 获取所有构造函数
+        /// </summary>
+        /// <param name="declaringTypeInfo"></param>
+        /// <returns></returns>
+        public static IEnumerable<ConstructorInfo> GetConstructors(TypeInfo declaringTypeInfo)
+            => declaringTypeInfo.DeclaredConstructors;
+#else
+        => declaringType.GetConstructors();
+#endif
+    #endregion
+    #region MethodInfo
     /// <summary>
-    /// 处理值类型转换
+    /// 获取函数
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="from"></param>
-    /// <param name="to"></param>
+    /// <param name="type"></param>
+    /// <param name="filter"></param>
     /// <returns></returns>
-    public static Expression CheckValueType(Expression value, Type from, Type to)
-        => CheckValueType(from, to) ? value : Expression.Convert(value, to);
+    public static MethodInfo GetMethod(Type type, Func<MethodInfo, bool> filter)
+     => GetMethods(type).FirstOrDefault(filter);
+    /// <summary>
+    /// 获取所有函数
+    /// </summary>
+    /// <param name="declaringType"></param>
+    /// <returns></returns>
+    public static IEnumerable<MethodInfo> GetMethods(Type declaringType)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        => GetMethods(declaringType.GetTypeInfo());
+    /// <summary>
+    /// 获取所有函数
+    /// </summary>
+    /// <param name="declaringTypeInfo"></param>
+    /// <returns></returns>
+    public static IEnumerable<MethodInfo> GetMethods(TypeInfo declaringTypeInfo)
+        => declaringTypeInfo.DeclaredMethods;
+#else
+        => declaringType.GetMethods();
+#endif
+    #endregion
 }

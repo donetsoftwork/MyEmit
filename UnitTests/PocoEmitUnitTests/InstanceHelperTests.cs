@@ -5,24 +5,24 @@ namespace PocoEmitUnitTests;
 
 public class InstanceHelperTests
 {
-    #region EmitGetter
+    #region GetReadFunc
     #region 读取结构体属性Id的测试
     [Fact]
-    public void EmitGetterId1()
+    public void GetReadFuncId1()
     {
         int id = 41;
         var instance = new InstanceHelperTests { Id = id };
-        var getter = InstanceHelper.EmitGetter<InstanceHelperTests, int>(nameof(Id));
+        var getter = InstanceHelper.GetReadFunc<InstanceHelperTests, int>(nameof(Id));
         var value = getter(instance);
         Assert.Equal(id, value);
     }
 
     [Fact]
-    public void EmitGetterId2()
+    public void GetReadFuncId2()
     {
         int id = 42;
         var instance = new InstanceHelperTests { Id = id };
-        var getter = InstanceHelper.EmitGetter<InstanceHelperTests, object>(nameof(Id));
+        var getter = InstanceHelper.GetReadFunc<InstanceHelperTests, object>(nameof(Id));
         var value = getter(instance);
         Assert.Equal(id, value);
     }
@@ -31,21 +31,21 @@ public class InstanceHelperTests
     #region 读取可空属性Name的测试
 
     [Fact]
-    public void EmitGetterName01()
+    public void GetReadFuncName01()
     {
         string? name = "Test1";
         var instance = new InstanceHelperTests { Name = name };
-        var getter = InstanceHelper.EmitGetter<InstanceHelperTests, string?>(nameof(Name));
+        var getter = InstanceHelper.GetReadFunc<InstanceHelperTests, string?>(nameof(Name));
         var value = getter(instance);
         Assert.Equal(name, value);
     }
 
     [Fact]
-    public void EmitGetterName02()
+    public void GetReadFuncName02()
     {
         string? name = "Test2";
         var instance = new InstanceHelperTests { Name = name };
-        var getter = InstanceHelper.EmitGetter<InstanceHelperTests, object>(nameof(Name));
+        var getter = InstanceHelper.GetReadFunc<InstanceHelperTests, object>(nameof(Name));
         var value = getter(instance);
         Assert.Equal(name, value);
     }
@@ -53,21 +53,21 @@ public class InstanceHelperTests
     #region 读取字符串属性Name的测试
 
     [Fact]
-    public void EmitGetterName1()
+    public void GetReadFuncName1()
     {
         string name = "Test1";
         var instance = new InstanceHelperTests { Name = name };
-        var getter = InstanceHelper.EmitGetter<InstanceHelperTests, string>(nameof(Name));
+        var getter = InstanceHelper.GetReadFunc<InstanceHelperTests, string>(nameof(Name));
         var value = getter(instance);
         Assert.Equal(name, value);
     }
 
     [Fact]
-    public void EmitGetterName2()
+    public void GetReadFuncName2()
     {
         string name = "Test2";
         var instance = new InstanceHelperTests { Name = name };
-        var getter = InstanceHelper.EmitGetter<InstanceHelperTests, object>(nameof(Name));
+        var getter = InstanceHelper.GetReadFunc<InstanceHelperTests, object>(nameof(Name));
         var value = getter(instance);
         Assert.Equal(name, value);
     }
@@ -76,107 +76,107 @@ public class InstanceHelperTests
     #region 读取可空属性PublishedAt的测试
 
     [Fact]
-    public void EmitGetterPublishedAt1()
+    public void GetReadFuncPublishedAt1()
     {
         DateTime? publishedAt = DateTime.Now;
         var instance = new InstanceHelperTests { PublishedAt = publishedAt };
-        var getter = InstanceHelper.EmitGetter<InstanceHelperTests, DateTime?>(nameof(PublishedAt));
+        var getter = InstanceHelper.GetReadFunc<InstanceHelperTests, DateTime?>(nameof(PublishedAt));
         var value = getter(instance);
         Assert.Equal(publishedAt, value);
     }
 
     [Fact]
-    public void EmitGetterPublishedAt2()
+    public void GetReadFuncPublishedAt2()
     {
         DateTime? publishedAt = DateTime.Now;
         var instance = new InstanceHelperTests { PublishedAt = publishedAt };
-        var getter = InstanceHelper.EmitGetter<InstanceHelperTests, object>(nameof(PublishedAt));
+        var getter = InstanceHelper.GetReadFunc<InstanceHelperTests, object>(nameof(PublishedAt));
         var value = getter(instance);
         Assert.Equal(publishedAt, value);
     }
     #endregion
     #endregion
-    #region EmitSetter
+    #region GetWriteAction
     #region 写入结构体属性Id的测试
     [Fact]
-    public void EmitSetterId1()
+    public void GetWriteActionId1()
     {
         int id = 41;
         var instance = new InstanceHelperTests { Id = id };
-        var setter = InstanceHelper.EmitSetter<InstanceHelperTests, int>(nameof(Id));
+        var setter = InstanceHelper.GetWriteAction<InstanceHelperTests, int>(nameof(Id));
         setter(instance, id);
         Assert.Equal(id, instance.Id);
     }
 
     [Fact]
-    public void EmitSetterId2()
+    public void GetWriteActionId2()
     {
         int id = 42;
         var instance = new InstanceHelperTests { Id = id };
-        var setter = InstanceHelper.EmitSetter<InstanceHelperTests, object>(nameof(Id));
+        var setter = InstanceHelper.GetWriteAction<InstanceHelperTests, object>(nameof(Id));
         setter(instance, id);
         Assert.Equal(id, instance.Id);
     }
     #endregion
     #region 写入可空属性Name的测试
     [Fact]
-    public void EmitSetterName01()
+    public void GetWriteActionName01()
     {
         string? name = "Test1";
         var instance = new InstanceHelperTests { Name = name };
-        var setter = InstanceHelper.EmitSetter<InstanceHelperTests, string?>(nameof(Name));
+        var setter = InstanceHelper.GetWriteAction<InstanceHelperTests, string?>(nameof(Name));
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName02()
+    public void GetWriteActionName02()
     {
         string? name = "Test2";
         var instance = new InstanceHelperTests { Name = name };
-        var setter = InstanceHelper.EmitSetter<InstanceHelperTests, object>(nameof(Name));
+        var setter = InstanceHelper.GetWriteAction<InstanceHelperTests, object>(nameof(Name));
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
     #endregion
     #region 写入字符串属性Name的测试
     [Fact]
-    public void EmitSetterName1()
+    public void GetWriteActionName1()
     {
         string name = "Test1";
         var instance = new InstanceHelperTests { Name = name };
-        var setter = InstanceHelper.EmitSetter<InstanceHelperTests, string>(nameof(Name));
+        var setter = InstanceHelper.GetWriteAction<InstanceHelperTests, string>(nameof(Name));
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName2()
+    public void GetWriteActionName2()
     {
         string name = "Test2";
         var instance = new InstanceHelperTests { Name = name };
-        var setter = InstanceHelper.EmitSetter<InstanceHelperTests, object>(nameof(Name));
+        var setter = InstanceHelper.GetWriteAction<InstanceHelperTests, object>(nameof(Name));
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
     #endregion
     #region 写入可空属性PublishedAt的测试
     [Fact]
-    public void EmitSetterPublishedAt1()
+    public void GetWriteActionPublishedAt1()
     {
         DateTime? publishedAt = DateTime.Now;
         var instance = new InstanceHelperTests { PublishedAt = publishedAt };
-        var setter = InstanceHelper.EmitSetter<InstanceHelperTests, DateTime?>(nameof(PublishedAt));
+        var setter = InstanceHelper.GetWriteAction<InstanceHelperTests, DateTime?>(nameof(PublishedAt));
         setter(instance, publishedAt);
         Assert.Equal(publishedAt, instance.PublishedAt);
     }
 
     [Fact]
-    public void EmitSetterPublishedAt2()
+    public void GetWriteActionPublishedAt2()
     {
         DateTime? publishedAt = DateTime.Now;
         var instance = new InstanceHelperTests { PublishedAt = publishedAt };
-        var setter = InstanceHelper.EmitSetter<InstanceHelperTests, object>(nameof(PublishedAt));
+        var setter = InstanceHelper.GetWriteAction<InstanceHelperTests, object>(nameof(PublishedAt));
         setter(instance, publishedAt);
         Assert.Equal(publishedAt, instance.PublishedAt);
     }

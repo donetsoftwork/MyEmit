@@ -5,111 +5,160 @@ namespace PocoEmitUnitTests;
 
 public class InstancePropertyHelperTests
 {
-    #region EmitGetter
+    #region GetReadFunc
     #region 读取结构体属性Id的测试
     [Fact]
-    public void EmitGetterId0()
+    public void GetReadFuncId0()
     {
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
         int id = 40;
         var instance = new InstancePropertyHelperTests { Id = id };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, int>(property);
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, int>(property);
         var value = getter(instance);
         Assert.Equal(id, value);
     }
 
     [Fact]
-    public void EmitGetterId1()
+    public void GetReadFuncId1()
     {
         int id = 41;
         var instance = new InstancePropertyHelperTests { Id = id };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, int>(nameof(Id));
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, int>(nameof(Id));
         var value = getter(instance);
         Assert.Equal(id, value);
     }
 
     [Fact]
-    public void EmitGetterId2()
+    public void GetReadFuncId2()
     {
         int id = 42;
         var instance = new InstancePropertyHelperTests { Id = id };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, object>(nameof(Id));
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, object>(nameof(Id));
         var value = getter(instance);
         Assert.Equal(id, value);
     }
 
     [Fact]
-    public void EmitGetterId3()
+    public void GetReadFuncId3()
     {
         int id = 43;
         var instance = new InstancePropertyHelperTests { Id = id };
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
-        var getter = InstancePropertyHelper.EmitGetter<object, int>(property);
+        var getter = InstanceHelper.GetReadFunc<object, int>(property);
         var value = getter(instance);
         Assert.Equal(id, value);
     }
 
     [Fact]
-    public void EmitGetterId4()
+    public void GetReadFuncId4()
     {
         int id = 44;
         var instance = new InstancePropertyHelperTests { Id = id };
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
-        var getter = InstancePropertyHelper.EmitGetter<object, object>(property);
+        var getter = InstanceHelper.GetReadFunc<object, object>(property);
         var value = getter(instance);
         Assert.Equal(id, value);
     }
+    [Fact]
+    public void GetReadFuncId5()
+    {
+        int? id = 55;
+        var instance = new InstancePropertyHelperTests { Id = id.Value };
+        var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
+        var getter = InstanceHelper.GetReadFunc<object, int?>(property);
+        var value = getter(instance);
+        Assert.Equal(id, value);
+    }
+    [Fact]
+    public void GetReadFuncId6()
+    {
+        short id = 66;
+        var instance = new InstancePropertyHelperTests { Id = id };
+        var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
+        var getter = InstanceHelper.GetReadFunc<object, short>(property);
+        var value = getter(instance);
+        Assert.Equal(id, value);
+    }
+    [Fact]
+    public void GetReadFuncId7()
+    {
+        ulong id = 77;
+        var instance = new InstancePropertyHelperTests { Id = (int)id };
+        var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
+        var getter = InstanceHelper.GetReadFunc<object, ulong>(property);
+        var value = getter(instance);
+        Assert.Equal(id, value);
+    }
+    [Fact]
+    public void GetReadFuncId8()
+    {
+        decimal id = 88.0M;
+        var instance = new InstancePropertyHelperTests { Id = (int)id };
+        var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
+        var getter = InstanceHelper.GetReadFunc<object, decimal>(property);
+        var value = getter(instance);
+        Assert.Equal(id, value);
+    }
+    //[Fact]
+    //public void GetReadFuncId8()
+    //{
+    //    string id = "88";
+    //    var instance = new InstancePropertyHelperTests { Id = int.Parse(id) };
+    //    var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
+    //    var getter = InstanceHelper.GetReadFunc<object, string>(property);
+    //    var value = getter(instance);
+    //    Assert.Equal(id, value);
+    //}
     #endregion
     #region 读取可空属性Name的测试
     [Fact]
-    public void EmitGetterName00()
+    public void GetReadFuncName00()
     {
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
         string? name = "Test0";
         var instance = new InstancePropertyHelperTests { Name = name };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, string?>(property);
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, string?>(property);
         var value = getter(instance);
         Assert.Equal(name, value);
     }
-
     [Fact]
-    public void EmitGetterName01()
+    public void GetReadFuncName01()
     {
         string? name = "Test1";
         var instance = new InstancePropertyHelperTests { Name = name };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, string?>(nameof(Name));
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, string?>(nameof(Name));
         var value = getter(instance);
         Assert.Equal(name, value);
     }
 
     [Fact]
-    public void EmitGetterName02()
+    public void GetReadFuncName02()
     {
         string? name = "Test2";
         var instance = new InstancePropertyHelperTests { Name = name };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, object>(nameof(Name));
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, object>(nameof(Name));
         var value = getter(instance);
         Assert.Equal(name, value);
     }
 
     [Fact]
-    public void EmitGetterName03()
+    public void GetReadFuncName03()
     {
         string? name = "Test3";
         var instance = new InstancePropertyHelperTests { Name = name };
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
-        var getter = InstancePropertyHelper.EmitGetter<object, string?>(property);
+        var getter = InstanceHelper.GetReadFunc<object, string?>(property);
         var value = getter(instance);
         Assert.Equal(name, value);
     }
 
     [Fact]
-    public void EmitGetterName04()
+    public void GetReadFuncName04()
     {
         string? name = "Test4";
         var instance = new InstancePropertyHelperTests { Name = name };
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
-        var getter = InstancePropertyHelper.EmitGetter<object, object>(property);
+        var getter = InstanceHelper.GetReadFunc<object, object>(property);
         var value = getter(instance);
         object expected = name;
         Assert.Equal(expected, value);
@@ -117,54 +166,54 @@ public class InstancePropertyHelperTests
     #endregion
     #region 读取字符串属性Name的测试
     [Fact]
-    public void EmitGetterName0()
+    public void GetReadFuncName0()
     {
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
         string name = "Test0";
         var instance = new InstancePropertyHelperTests { Name = name };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, string>(property);
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, string>(property);
         var value = getter(instance);
         Assert.Equal(name, value);
     }
 
     [Fact]
-    public void EmitGetterName1()
+    public void GetReadFuncName1()
     {
         string name = "Test1";
         var instance = new InstancePropertyHelperTests { Name = name };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, string>(nameof(Name));
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, string>(nameof(Name));
         var value = getter(instance);
         Assert.Equal(name, value);
     }
 
     [Fact]
-    public void EmitGetterName2()
+    public void GetReadFuncName2()
     {
         string name = "Test2";
         var instance = new InstancePropertyHelperTests { Name = name };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, object>(nameof(Name));
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, object>(nameof(Name));
         var value = getter(instance);
         Assert.Equal(name, value);
     }
 
     [Fact]
-    public void EmitGetterName3()
+    public void GetReadFuncName3()
     {
         string name = "Test3";
         var instance = new InstancePropertyHelperTests { Name = name };
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
-        var getter = InstancePropertyHelper.EmitGetter<object, string>(property);
+        var getter = InstanceHelper.GetReadFunc<object, string>(property);
         var value = getter(instance);
         Assert.Equal(name, value);
     }
 
     [Fact]
-    public void EmitGetterName4()
+    public void GetReadFuncName4()
     {
         string name = "Test4";
         var instance = new InstancePropertyHelperTests { Name = name };
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
-        var getter = InstancePropertyHelper.EmitGetter<object, object>(property);
+        var getter = InstanceHelper.GetReadFunc<object, object>(property);
         var value = getter(instance);
         object expected = name;
         Assert.Equal(expected, value);
@@ -172,273 +221,304 @@ public class InstancePropertyHelperTests
     #endregion
     #region 读取可空属性PublishedAt的测试
     [Fact]
-    public void EmitGetterPublishedAt0()
+    public void GetReadFuncPublishedAt0()
     {
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(PublishedAt), BindingFlags.Instance | BindingFlags.Public);
         DateTime? publishedAt = DateTime.Now;
         var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, DateTime?>(property);
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, DateTime?>(property);
         var value = getter(instance);
         Assert.Equal(publishedAt, value);
     }
 
     [Fact]
-    public void EmitGetterPublishedAt1()
+    public void GetReadFuncPublishedAt1()
     {
         DateTime? publishedAt = DateTime.Now;
         var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, DateTime?>(nameof(PublishedAt));
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, DateTime?>(nameof(PublishedAt));
         var value = getter(instance);
         Assert.Equal(publishedAt, value);
     }
 
     [Fact]
-    public void EmitGetterPublishedAt2()
+    public void GetReadFuncPublishedAt2()
     {
         DateTime? publishedAt = DateTime.Now;
         var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
-        var getter = InstancePropertyHelper.EmitGetter<InstancePropertyHelperTests, object>(nameof(PublishedAt));
+        var getter = InstanceHelper.GetReadFunc<InstancePropertyHelperTests, object>(nameof(PublishedAt));
         var value = getter(instance);
         Assert.Equal(publishedAt, value);
     }
 
     [Fact]
-    public void EmitGetterPublishedAt3()
-    {
-        DateTime? publishedAt = DateTime.Now;
-        var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
-        var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(PublishedAt), BindingFlags.Instance | BindingFlags.Public);
-        var getter = InstancePropertyHelper.EmitGetter<object, DateTime?>(property);
-        var value = getter(instance);
-        Assert.Equal(publishedAt, value);
-    }
-
-    [Fact]
-    public void EmitGetterPublishedAt4()
+    public void GetReadFuncPublishedAt3()
     {
         DateTime? publishedAt = DateTime.Now;
         var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(PublishedAt), BindingFlags.Instance | BindingFlags.Public);
-        var getter = InstancePropertyHelper.EmitGetter<object, object>(property);
+        var getter = InstanceHelper.GetReadFunc<object, DateTime?>(property);
+        var value = getter(instance);
+        Assert.Equal(publishedAt, value);
+    }
+
+    [Fact]
+    public void GetReadFuncPublishedAt4()
+    {
+        DateTime? publishedAt = DateTime.Now;
+        var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
+        var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(PublishedAt), BindingFlags.Instance | BindingFlags.Public);
+        var getter = InstanceHelper.GetReadFunc<object, object>(property);
         var value = getter(instance);
         object expected = publishedAt;
         Assert.Equal(expected, value);
     }
+    [Fact]
+    public void GetReadFuncPublishedAt5()
+    {
+        DateTime publishedAt = DateTime.Now;
+        var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
+        var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(PublishedAt), BindingFlags.Instance | BindingFlags.Public);
+        var getter = InstanceHelper.GetReadFunc<object, DateTime>(property);
+        var value = getter(instance);
+        Assert.Equal(publishedAt, value);
+    }
     #endregion
     #endregion
-    #region EmitSetter
+    #region GetWriteAction
     #region 写入结构体属性Id的测试
     [Fact]
-    public void EmitSetterId0()
+    public void GetWriteActionId0()
     {
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
         int id = 40;
-        var instance = new InstancePropertyHelperTests { Id = id };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, int>(property);
+        var instance = new InstancePropertyHelperTests();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, int>(property);
         setter(instance, id);
         Assert.Equal(id, instance.Id);
     }
 
     [Fact]
-    public void EmitSetterId1()
+    public void GetWriteActionId1()
     {
         int id = 41;
-        var instance = new InstancePropertyHelperTests { Id = id };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, int>(nameof(Id));
+        var instance = new InstancePropertyHelperTests();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, int>(nameof(Id));
         setter(instance, id);
         Assert.Equal(id, instance.Id);
     }
 
     [Fact]
-    public void EmitSetterId2()
+    public void GetWriteActionId2()
     {
         int id = 42;
-        var instance = new InstancePropertyHelperTests { Id = id };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, object>(nameof(Id));
+        var instance = new InstancePropertyHelperTests();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, object>(nameof(Id));
         setter(instance, id);
         Assert.Equal(id, instance.Id);
     }
 
     [Fact]
-    public void EmitSetterId3()
+    public void GetWriteActionId3()
     {
         int id = 43;
-        var instance = new InstancePropertyHelperTests { Id = id };
+        var instance = new InstancePropertyHelperTests();
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
-        var setter = InstancePropertyHelper.EmitSetter<object, int>(property);
+        var setter = InstanceHelper.GetWriteAction<object, int>(property);
         setter(instance, id);
         Assert.Equal(id, instance.Id);
     }
 
     [Fact]
-    public void EmitSetterId4()
+    public void GetWriteActionId4()
     {
         int id = 44;
-        var instance = new InstancePropertyHelperTests { Id = id };
+        var instance = new InstancePropertyHelperTests();
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
-        var setter = InstancePropertyHelper.EmitSetter<object, object>(property);
+        var setter = InstanceHelper.GetWriteAction<object, object>(property);
+        setter(instance, id);
+        Assert.Equal(id, instance.Id);
+    }
+    [Fact]
+    public void GetWriteActionId5()
+    {
+        int? id = 55;
+        var instance = new InstancePropertyHelperTests();
+        var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Id), BindingFlags.Instance | BindingFlags.Public);
+        var setter = InstanceHelper.GetWriteAction<object, int?>(property);
         setter(instance, id);
         Assert.Equal(id, instance.Id);
     }
     #endregion
     #region 写入可空属性Name的测试
     [Fact]
-    public void EmitSetterName00()
+    public void GetWriteActionName00()
     {
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
         string? name = "Test0";
-        var instance = new InstancePropertyHelperTests { Name = name };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, string?>(property);
+        var instance = new InstancePropertyHelperTests();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, string?>(property);
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName01()
+    public void GetWriteActionName01()
     {
         string? name = "Test1";
-        var instance = new InstancePropertyHelperTests { Name = name };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, string?>(nameof(Name));
+        var instance = new InstancePropertyHelperTests ();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, string?>(nameof(Name));
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName02()
+    public void GetWriteActionName02()
     {
         string? name = "Test2";
-        var instance = new InstancePropertyHelperTests { Name = name };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, object>(nameof(Name));
+        var instance = new InstancePropertyHelperTests();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, object>(nameof(Name));
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName03()
+    public void GetWriteActionName03()
     {
         string? name = "Test3";
-        var instance = new InstancePropertyHelperTests { Name = name };
+        var instance = new InstancePropertyHelperTests ();
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
-        var setter = InstancePropertyHelper.EmitSetter<object, string?>(property);
+        var setter = InstanceHelper.GetWriteAction<object, string?>(property);
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName04()
+    public void GetWriteActionName04()
     {
         string? name = "Test4";
-        var instance = new InstancePropertyHelperTests { Name = name };
+        var instance = new InstancePropertyHelperTests ();
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
-        var setter = InstancePropertyHelper.EmitSetter<object, object>(property);
+        var setter = InstanceHelper.GetWriteAction<object, object>(property);
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
     #endregion
     #region 写入字符串属性Name的测试
     [Fact]
-    public void EmitSetterName0()
+    public void GetWriteActionName0()
     {
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
         string name = "Test0";
-        var instance = new InstancePropertyHelperTests { Name = name };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, string>(property);
+        var instance = new InstancePropertyHelperTests ();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, string>(property);
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName1()
+    public void GetWriteActionName1()
     {
         string name = "Test1";
-        var instance = new InstancePropertyHelperTests { Name = name };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, string>(nameof(Name));
+        var instance = new InstancePropertyHelperTests ();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, string>(nameof(Name));
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName2()
+    public void GetWriteActionName2()
     {
         string name = "Test2";
-        var instance = new InstancePropertyHelperTests { Name = name };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, object>(nameof(Name));
+        var instance = new InstancePropertyHelperTests ();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, object>(nameof(Name));
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName3()
+    public void GetWriteActionName3()
     {
         string name = "Test3";
-        var instance = new InstancePropertyHelperTests { Name = name };
+        var instance = new InstancePropertyHelperTests ();
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
-        var setter = InstancePropertyHelper.EmitSetter<object, string>(property);
+        var setter = InstanceHelper.GetWriteAction<object, string>(property);
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
 
     [Fact]
-    public void EmitSetterName4()
+    public void GetWriteActionName4()
     {
         string name = "Test4";
-        var instance = new InstancePropertyHelperTests { Name = name };
+        var instance = new InstancePropertyHelperTests ();
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(Name), BindingFlags.Instance | BindingFlags.Public);
-        var setter = InstancePropertyHelper.EmitSetter<object, object>(property);
+        var setter = InstanceHelper.GetWriteAction<object, object>(property);
         setter(instance, name);
         Assert.Equal(name, instance.Name);
     }
     #endregion
     #region 写入可空属性PublishedAt的测试
     [Fact]
-    public void EmitSetterPublishedAt0()
+    public void GetWriteActionPublishedAt0()
     {
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(PublishedAt), BindingFlags.Instance | BindingFlags.Public);
         DateTime? publishedAt = DateTime.Now;
-        var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, DateTime?>(property);
+        var instance = new InstancePropertyHelperTests ();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, DateTime?>(property);
         setter(instance, publishedAt);
         Assert.Equal(publishedAt, instance.PublishedAt);
     }
 
     [Fact]
-    public void EmitSetterPublishedAt1()
+    public void GetWriteActionPublishedAt1()
     {
         DateTime? publishedAt = DateTime.Now;
-        var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, DateTime?>(nameof(PublishedAt));
+        var instance = new InstancePropertyHelperTests ();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, DateTime?>(nameof(PublishedAt));
         setter(instance, publishedAt);
         Assert.Equal(publishedAt, instance.PublishedAt);
     }
 
     [Fact]
-    public void EmitSetterPublishedAt2()
+    public void GetWriteActionPublishedAt2()
     {
         DateTime? publishedAt = DateTime.Now;
-        var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
-        var setter = InstancePropertyHelper.EmitSetter<InstancePropertyHelperTests, object>(nameof(PublishedAt));
+        var instance = new InstancePropertyHelperTests ();
+        var setter = InstanceHelper.GetWriteAction<InstancePropertyHelperTests, object>(nameof(PublishedAt));
         setter(instance, publishedAt);
         Assert.Equal(publishedAt, instance.PublishedAt);
     }
 
     [Fact]
-    public void EmitSetterPublishedAt3()
+    public void GetWriteActionPublishedAt3()
     {
         DateTime? publishedAt = DateTime.Now;
-        var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
+        var instance = new InstancePropertyHelperTests ();
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(PublishedAt), BindingFlags.Instance | BindingFlags.Public);
-        var setter = InstancePropertyHelper.EmitSetter<object, DateTime?>(property);
+        var setter = InstanceHelper.GetWriteAction<object, DateTime?>(property);
         setter(instance, publishedAt);
         Assert.Equal(publishedAt, instance.PublishedAt);
     }
 
     [Fact]
-    public void EmitSetterPublishedAt4()
+    public void GetWriteActionPublishedAt4()
     {
         DateTime? publishedAt = DateTime.Now;
-        var instance = new InstancePropertyHelperTests { PublishedAt = publishedAt };
+        var instance = new InstancePropertyHelperTests ();
         var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(PublishedAt), BindingFlags.Instance | BindingFlags.Public);
-        var setter = InstancePropertyHelper.EmitSetter<object, object>(property);
+        var setter = InstanceHelper.GetWriteAction<object, object>(property);
+        setter(instance, publishedAt);
+        Assert.Equal(publishedAt, instance.PublishedAt);
+    }
+
+    [Fact]
+    public void GetWriteActionPublishedAt5()
+    {
+        DateTime publishedAt = DateTime.Now;
+        var instance = new InstancePropertyHelperTests();
+        var property = typeof(InstancePropertyHelperTests).GetProperty(nameof(PublishedAt), BindingFlags.Instance | BindingFlags.Public);
+        var setter = InstanceHelper.GetWriteAction<object, DateTime>(property);
         setter(instance, publishedAt);
         Assert.Equal(publishedAt, instance.PublishedAt);
     }

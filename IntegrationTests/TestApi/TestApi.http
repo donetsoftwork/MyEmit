@@ -1,0 +1,28 @@
+@HostAddress = http://localhost:5167
+### 获取列表
+GET {{HostAddress}}/users?Page=1&Size=10
+
+### 添加
+
+PUT {{HostAddress}}/users
+Content-Type:application/json
+
+{
+  "Name" : "Jxj"
+}
+
+### 获取单个
+
+GET {{HostAddress}}/users/1
+
+### 修改
+
+PATCH {{HostAddress}}/users/1
+Content-Type:application/json
+
+{
+  "Name" : "Jxj2"
+}
+
+### 删除
+DELETE {{HostAddress}}/users/1

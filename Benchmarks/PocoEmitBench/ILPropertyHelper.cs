@@ -40,8 +40,8 @@ public class ILPropertyHelper
     /// <param name="propertyName"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static Func<TInstance, TValue> EmitGetter<TInstance, TValue>(string propertyName)
-        => EmitGetter<TInstance, TValue>(GetProperty(typeof(TInstance), propertyName)
+    public static Func<TInstance, TValue> GetReadFunc<TInstance, TValue>(string propertyName)
+        => GetReadFunc<TInstance, TValue>(GetProperty(typeof(TInstance), propertyName)
             ?? throw new ArgumentException($"Property '{propertyName}' not found on type '{typeof(TInstance)}'."));
     /// <summary>
     /// 写属性
@@ -51,8 +51,8 @@ public class ILPropertyHelper
     /// <param name="propertyName"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static Action<TInstance, TValue> EmitSetter<TInstance, TValue>(string propertyName)
-        => EmitSetter<TInstance, TValue>(GetProperty(typeof(TInstance), propertyName)
+    public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(string propertyName)
+        => GetWriteAction<TInstance, TValue>(GetProperty(typeof(TInstance), propertyName)
             ?? throw new ArgumentException($"Property '{propertyName}' not found on type '{typeof(TInstance)}'."));
     /// <summary>
     /// 读属性
@@ -61,7 +61,7 @@ public class ILPropertyHelper
     /// <typeparam name="TValue"></typeparam>
     /// <param name="property"></param>
     /// <returns></returns>
-    public static Func<TInstance, TValue> EmitGetter<TInstance, TValue>(PropertyInfo property)
+    public static Func<TInstance, TValue> GetReadFunc<TInstance, TValue>(PropertyInfo property)
     {
         var method = property.GetGetMethod()
             ?? throw new ArgumentException($"Property '{property.Name}' does not have a getter method.");       
@@ -73,13 +73,13 @@ public class ILPropertyHelper
         var dynamicMethod = new DynamicMethod("dynamicGet_" + uniqueIdentifier.ToString(CultureInfo.InvariantCulture), valueType, [instanceType]);
         var il = dynamicMethod.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
-        if (!ReflectionHelper.CheckDeclaringType(instanceType, declaringType))
+        if (!CheckDeclaringType(instanceType, declaringType))
             il.Emit(OpCodes.Castclass, declaringType);
         if (method.IsVirtual)
             il.Emit(OpCodes.Callvirt, method);
         else
             il.Emit(OpCodes.Call, method);
-        ConverType(il, property.PropertyType, valueType);        
+        ConvertType(il, property.PropertyType, valueType);        
         il.Emit(OpCodes.Ret);
         // 创建一个委托
         var getPropertyDelegate = (Func<TInstance, TValue>)dynamicMethod.CreateDelegate(typeof(Func<TInstance, TValue>));
@@ -92,7 +92,7 @@ public class ILPropertyHelper
     /// <typeparam name="TValue"></typeparam>
     /// <param name="property"></param>
     /// <returns></returns>
-    public static Action<TInstance, TValue> EmitSetter<TInstance, TValue>(PropertyInfo property)
+    public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(PropertyInfo property)
     {
         var method = property.GetSetMethod()
             ?? throw new ArgumentException($"Property '{property.Name}' does not have a setter method.");
@@ -104,10 +104,10 @@ public class ILPropertyHelper
         var dynamicMethod = new DynamicMethod("dynamicSet_" + uniqueIdentifier.ToString(CultureInfo.InvariantCulture), typeof(void), [instanceType, valueType]);
         var il = dynamicMethod.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
-        if (!ReflectionHelper.CheckDeclaringType(instanceType, declaringType))
+        if (!CheckDeclaringType(instanceType, declaringType))
             il.Emit(OpCodes.Castclass, declaringType);
         il.Emit(OpCodes.Ldarg_1);
-        ConverType(il, valueType, propertyType);
+        ConvertType(il, valueType, propertyType);
         if (method.IsVirtual)
             il.Emit(OpCodes.Callvirt, method);
         else
@@ -119,10 +119,11 @@ public class ILPropertyHelper
         return getPropertyDelegate;
     }
 
-    static void ConverType(ILGenerator il, Type fromType, Type toType)
+    static void ConvertType(ILGenerator il, Type fromType, Type toType)
     {
         if (fromType == toType) 
             return;
+        
         if (fromType.IsValueType)
         {
             if (toType.IsValueType)
@@ -147,4 +148,23 @@ public class ILPropertyHelper
             il.Emit(OpCodes.Castclass, toType);
         }
     }
+
+    /// <summary>
+    /// 判断是否兼容定义类型
+    /// </summary>
+    /// <param name="instanceType"></param>
+    /// <param name="declaringType"></param>
+    /// <returns></returns>
+    public static bool CheckDeclaringType(Type instanceType, Type declaringType)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        => CheckDeclaringType(instanceType.GetTypeInfo(), declaringType.GetTypeInfo());
+    /// <summary>
+    /// 判断是否兼容定义类型
+    /// </summary>
+    /// <param name="instanceType"></param>
+    /// <param name="declaringType"></param>
+    /// <returns></returns>
+    public static bool CheckDeclaringType(TypeInfo instanceType, TypeInfo declaringType)
+#endif
+        => instanceType == declaringType || declaringType.IsAssignableFrom(instanceType);
 }

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\package.props" />
+  <PropertyGroup>
+    <PackageId>PocoEmit.Mapper</PackageId>
+    <Description>Emit加速操作属性和字段</Description>
+    <PackageTags>Emit;Poco;Mapper;Map</PackageTags>
+    <Version>$(VersionBase).0-alpha</Version>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <RootNamespace>PocoEmit</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="readme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PocoEmit\PocoEmit.csproj" />
+  </ItemGroup>
+
+</Project>

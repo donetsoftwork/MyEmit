@@ -11,10 +11,10 @@ public class StringPropertySetBench : PropertyBenchBase
     static readonly PropertyInfo _property = typeof(TestClass).GetProperty("StringProperty")!;
     readonly IPropertyAccessor _fastReflect = FastReflectionCaches.PropertyAccessorCache.Get(_property);
     readonly Action<object, object> _hardCode = (obj, p) => ((TestClass)obj).StringProperty = (string)p;
-    readonly Action<object, object> _poco = InstancePropertyHelper.EmitSetter<object, object>(_property);
-    readonly Action<object, object> _il = ILPropertyHelper.EmitSetter<object, object>(_property);
+    readonly Action<object, object> _poco = PocoEmit.Poco.Global.GetWriteAction<object, object>(_property);
+    readonly Action<object, object> _il = ILPropertyHelper.GetWriteAction<object, object>(_property);
     readonly Action<TestClass, string> _hardCode0 = (obj, p) => obj.StringProperty = p;
-    readonly Action<TestClass, string> _poco0 = InstancePropertyHelper.EmitSetter<TestClass, string>(_property);
+    readonly Action<TestClass, string> _poco0 = PocoEmit.Poco.Global.GetWriteAction<TestClass, string>(_property);
     readonly string _value = "StringPropertySetBench";
     [Benchmark]
     public void Reflect()
