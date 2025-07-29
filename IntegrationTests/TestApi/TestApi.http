@@ -15,13 +15,22 @@ Content-Type:application/json
 
 GET {{HostAddress}}/users/1
 
-### 修改
+### 修改用户名
 
 PATCH {{HostAddress}}/users/1
 Content-Type:application/json
 
 {
   "Name" : "Jxj2"
+}
+
+### 修改年龄
+
+PATCH {{HostAddress}}/users/1
+Content-Type:application/json
+
+{
+  "Age" : 40
 }
 
 ### 删除

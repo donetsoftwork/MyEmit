@@ -1,5 +1,6 @@
 using CoreDX.Extensions.DependencyInjection;
 using FastEndpoints;
+using PocoEmit;
 using MyDeltas;
 using MyDeltas.Emit;
 using MyDeltas.Json;
@@ -9,6 +10,7 @@ using TestApi.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 var poco = PocoEmit.Mapper.Global;
+poco.SetSystemConvert();
 IMyDeltaFactory deltaFactory = new EmitDeltaFactory();
 builder.Host.UseServiceProviderFactory(new TypedImplementationFactoryServiceProviderFactory());
 builder.Services
