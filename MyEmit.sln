@@ -30,6 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "Integra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApi", "IntegrationTests\TestApi\TestApi.csproj", "{0BE79962-4015-4814-BA29-041370BDDDF9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmit.Mapper.DI", "PocoEmit.Mapper.DI\PocoEmit.Mapper.DI.csproj", "{03CBBEF1-90AC-4B82-98EF-C3F5365828F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +62,10 @@ Global
 		{0BE79962-4015-4814-BA29-041370BDDDF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BE79962-4015-4814-BA29-041370BDDDF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BE79962-4015-4814-BA29-041370BDDDF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03CBBEF1-90AC-4B82-98EF-C3F5365828F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03CBBEF1-90AC-4B82-98EF-C3F5365828F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03CBBEF1-90AC-4B82-98EF-C3F5365828F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03CBBEF1-90AC-4B82-98EF-C3F5365828F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

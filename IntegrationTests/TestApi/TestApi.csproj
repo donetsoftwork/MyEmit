@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\PocoEmit.Mapper.DI\PocoEmit.Mapper.DI.csproj" />
     <ProjectReference Include="..\..\PocoEmit.Mapper\PocoEmit.Mapper.csproj" />
   </ItemGroup>
 

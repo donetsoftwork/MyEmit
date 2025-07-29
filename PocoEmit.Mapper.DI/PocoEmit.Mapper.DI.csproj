@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>    
+    <TargetFrameworks>net7.0;net8.0;net9.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>Latest</LangVersion>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Authors>jiangxiangji</Authors>
+    <Company>MyEmit</Company>
+    <Copyright>Copyright (c) MyEmit All Rights Reserved</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/donetsoftwork/MyEmit</RepositoryUrl>
+    <PackageProjectUrl>https://donetsoftwork.github.io/MyEmit</PackageProjectUrl>
+    <!-- SourceLink settings -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>0.2.0-alpha</Version>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="readme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CoreDX.Extensions.DependencyInjection" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PocoEmit.Mapper\PocoEmit.Mapper.csproj" />
+  </ItemGroup>
+
+</Project>

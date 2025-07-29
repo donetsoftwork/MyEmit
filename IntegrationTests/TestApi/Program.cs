@@ -3,8 +3,6 @@ using FastEndpoints;
 using MyDeltas;
 using MyDeltas.Emit;
 using MyDeltas.Json;
-using PocoEmit;
-using PocoEmit.Configuration;
 using System.Text.Json;
 using TestApi.Modify;
 using TestApi.Repositories;
@@ -27,11 +25,10 @@ app.Run();
 
 static void RegistServices(IServiceCollection services)
 {
-    services.AddSingleton<UserRepository>()
-        .AddSingleton<UserModifyDTOValidator>();
-
-    services.AddSingletonTypedFactory(typeof(IPocoConverter<,>), (sp, converterType) => sp.GetRequiredService<IMapperOptions>().GetGenericConverter(converterType));
-    services.AddSingletonTypedFactory(typeof(IPocoCopier<,>), (sp, copierType) => sp.GetRequiredService<IMapperOptions>().GetGenericCopier(copierType));
-    services.AddFastEndpoints();
-
+    services.UseConverter(PocoEmit.Mapper.Global)
+        .AddSingleton<UserRepository>()
+        .AddSingleton<UserModifyDTOValidator>()
+        .AddFastEndpoints();
+    //services.AddSingletonTypedFactory(typeof(IPocoConverter<,>), (sp, converterType) => sp.GetRequiredService<IMapperOptions>().GetGenericConverter(converterType));
+    //services.AddSingletonTypedFactory(typeof(IPocoCopier<,>), (sp, copierType) => sp.GetRequiredService<IMapperOptions>().GetGenericCopier(copierType));
 }
