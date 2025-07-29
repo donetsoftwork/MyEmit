@@ -6,7 +6,10 @@ using TestApi.Repositories;
 namespace TestApi.Create;
 
 [RegisterService<Mapper>(LifeTime.Singleton)]
-public sealed class Mapper(UserRepository repository, IPocoConverter<Request, User> requestConverter, IPocoConverter<User, Response> responseConverter)
+public sealed class Mapper(
+    UserRepository repository, 
+    IPocoConverter<Request, User> requestConverter, 
+    IPocoConverter<User, Response> responseConverter)
     : Mapper<Request, Response, User>
 {
     #region 配置
@@ -14,13 +17,11 @@ public sealed class Mapper(UserRepository repository, IPocoConverter<Request, Us
     private readonly IPocoConverter<Request, User> _requestConverter = requestConverter;
     private readonly IPocoConverter<User, Response> _responseConverter = responseConverter;
     #endregion
-
     public override User ToEntity(Request r)
     {
         User entity = _requestConverter.Convert(r);
         return Save(entity);
     }
-
     public override Response FromEntity(User e)
         => _responseConverter.Convert(e);
     #region Data
@@ -28,4 +29,3 @@ public sealed class Mapper(UserRepository repository, IPocoConverter<Request, Us
         => _repository.Add(entity);
     #endregion
 }
-
