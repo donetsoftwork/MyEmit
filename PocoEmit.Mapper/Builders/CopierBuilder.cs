@@ -30,77 +30,7 @@ public class CopierBuilder(CopierFactory factory)
                 continue;
             converters.Add(converter);
         }
-    }
-    //#region ICopierBuilder
-    ///// <inheritdoc />
-    //public IEmitCopier Build(IMemberMatch match, Type sourceType, Type destType)
-    //    => BuildByCache(_options, match, sourceType, destType);
-    ///// <inheritdoc />
-    //public IEmitCopier BuildForNullable(IEmitCopier original, Type sourceType, Type destType)
-    //    => new CompatibleCopier(original, sourceType, destType);
-    ///// <inheritdoc />
-    //public IEmitCopier BuildForSelf(Type instanceType)
-    //    => BuildForSelfByCache(_options.MemberCacher, instanceType);
-    //#endregion
-    ///// <summary>
-    ///// 为自身类型构建复制器
-    ///// </summary>
-    ///// <param name="memberCacher"></param>
-    ///// <param name="instanceType"></param>
-    ///// <returns></returns>
-    //public static ComplexTypeCopier BuildForSelfByCache(TypeMemberCacher memberCacher, Type instanceType)
-    //{
-    //    MemberBundle bundle = memberCacher.Get(instanceType);
-    //    if (bundle is null || bundle.WriteMembers.Count == 0)
-    //        return null;
-    //    var list = new List<IMemberConverter>(bundle.WriteMembers.Count);
-    //    var container = MemberContainer.Instance;
-    //    foreach (var member in bundle.WriteMembers.Values)
-    //    {
-    //        var reader = container.MemberReaderCacher.Get(member);
-    //        if (reader is null)
-    //            continue;
-    //        var writer = container.MemberWriterCacher.Get(member);
-    //        if (writer is null)
-    //            continue;
-    //        list.Add(new MemberConverter(reader, writer));
-    //    }
-    //    if(list.Count == 0)
-    //        return null;
-    //    ComplexTypeCopier copier = new(list);
-    //    return copier;
-    //}
-    ///// <summary>
-    ///// 构建复制器
-    ///// </summary>
-    ///// <param name="options"></param>
-    ///// <param name="match"></param>
-    ///// <param name="sourceType"></param>
-    ///// <param name="destType"></param>
-    ///// <returns></returns>
-    //public static ComplexTypeCopier BuildByCache(IMapperOptions options, IMemberMatch match, Type sourceType, Type destType)
-    //{
-    //    TypeMemberCacher memberCacher = options.MemberCacher;
-    //    var sourceMembers = memberCacher.Get(sourceType)?.ReadMembers.Values;
-    //    if (sourceMembers is null || sourceMembers.Count == 0)
-    //        return null;
-    //    var destMembers = memberCacher.Get(destType)?.WriteMembers.Values;
-    //    if (destMembers is null || destMembers.Count == 0)
-    //        return null;
-
-    //    var list = new List<IMemberConverter>(destMembers.Count);
-    //    foreach (var destMember in destMembers)
-    //    {
-    //        IMemberConverter converter = CheckMember(options, match, sourceMembers, destMember);
-    //        if (converter is null)
-    //            continue;
-    //        list.Add(converter);
-    //    }
-    //    if (list.Count == 0)
-    //        return null;
-    //    ComplexTypeCopier copier = new(list);
-    //    return copier;
-    //}
+    }  
     /// <summary>
     /// 构造成员转换器
     /// </summary>

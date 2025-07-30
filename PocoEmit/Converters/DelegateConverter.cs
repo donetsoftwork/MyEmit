@@ -33,4 +33,7 @@ public sealed class DelegateConverter<TSource, TDest>(Func<TSource, TDest> conve
     /// <inheritdoc />
     TDest IPocoConverter<TSource, TDest>.Convert(TSource source)
         => _convertFunc(source);
+    /// <inheritdoc />
+    object IObjectConverter.ConvertObject(object source)
+        => _convertFunc((TSource)source);
 }

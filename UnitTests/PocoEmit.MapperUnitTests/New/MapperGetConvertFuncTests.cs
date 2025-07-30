@@ -8,79 +8,99 @@ public class MapperGetConvertFuncTests : MapperConvertTestBase
     public void GetConvertFunc_int2long()
     {
         // Act
-        var converter = _mapper.GetConvertFunc<int, long>();
+        var convertFunc = _mapper.GetConvertFunc<int, long>();
         // Assert
-        Assert.NotNull(converter);
-        Assert.Equal(123L, converter(123));
+        Assert.NotNull(convertFunc);
+        Assert.Equal(123L, convertFunc(123));
     }
   
     [Fact]
     public void GetConvertFunc_intNullable()
     {
         // Act
-        var converter = _mapper.GetConvertFunc<int?, int>();
+        var convertFunc = _mapper.GetConvertFunc<int?, int>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFunc);
         int? source = 123;
-        Assert.Equal(123, converter(source));
+        Assert.Equal(123, convertFunc(source));
     }
     [Fact]
     public void GetConvertFunc_stringNullable()
     {
         // Act
-        var converter = _mapper.GetConvertFunc<string, string?>();
+        var convertFunc = _mapper.GetConvertFunc<string, string?>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFunc);
         string source = "123";
         string? expected = "123";
-        Assert.Equal(expected, converter(source));
+        Assert.Equal(expected, convertFunc(source));
     }
     [Fact]
     public void GetConvertFunc_intSelf()
     {
         // Act
-        var converter = _mapper.GetConvertFunc<int, int>();
+        var convertFunc = _mapper.GetConvertFunc<int, int>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFunc);
         int source = 123;
-        Assert.Equal(123, converter(source));
+        Assert.Equal(123, convertFunc(source));
     }
     #region 多态
     [Fact]
     public void GetConvertFunc_string2DateTime()
     {
         // Act
-        var converter = _mapper.GetConvertFunc<string, DateTime>();
+        var convertFunc = _mapper.GetConvertFunc<string, DateTime>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFunc);
         var source = "2025/07/21";
         var expected = _timeConverter.Convert(source);
-        Assert.Equal(expected, converter(source));
+        Assert.Equal(expected, convertFunc(source));
     }
     [Fact]
     public void GetConvertFunc_DateTime2string()
     {
         // Act
-        var converter = _mapper.GetConvertFunc<DateTime, string>();
+        var convertFunc = _mapper.GetConvertFunc<DateTime, string>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFunc);
         var source = new DateTime(2025, 7, 21);
         var expected = _timeConverter.Convert(source);
-        var result = converter(source);
+        var result = convertFunc(source);
         Assert.Equal(expected, result);
         // 不是默认的ToString()格式,已经覆盖实现多态
         Assert.NotEqual(source.ToString(), result); 
     }
     #endregion
     [Fact]
+    public void GetConvertFunc_Id()
+    {
+        // Act
+        var convertFunc = _mapper.GetConvertFunc<int, MapperId>();
+        Assert.NotNull(convertFunc);
+        int source = 11;
+        var result = convertFunc(source);
+        Assert.Equal(source, result.Id);
+    }
+    [Fact]
+    public void GetConvertFunc_MapperId()
+    {
+        // Act
+        var convertFunc = _mapper.GetConvertFunc<MapperId, int>();
+        Assert.NotNull(convertFunc);
+        var source = new MapperId(22);
+        var result = convertFunc(source);
+        Assert.Equal(source.Id, result);
+    }
+    [Fact]
     public void GetConvertFunc_User2DTO()
     {
         // Act
-        var converter = _mapper.GetConvertFunc<User, UserDTO>();
+        var convertFunc = _mapper.GetConvertFunc<User, UserDTO>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFunc);
         var source = new User { Id = 1, Name = "Jxj" };
-        var result = converter(source);
+        var result = convertFunc(source);
         Assert.NotNull(result);
         Assert.Equal(source.Id, result.Id);
         Assert.Equal(source.Name, result.Name);
@@ -89,11 +109,11 @@ public class MapperGetConvertFuncTests : MapperConvertTestBase
     public void GetConvertFunc_DTO2User()
     {
         // Act
-        var converter = _mapper.GetConvertFunc<UserDTO, User>();
+        var convertFunc = _mapper.GetConvertFunc<UserDTO, User>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFunc);
         var source = new UserDTO { Id = 3, Name = "张三" };
-        var result = converter(source);
+        var result = convertFunc(source);
         Assert.NotNull(result);
         Assert.Equal(source.Id, result.Id);
         Assert.Equal(source.Name, result.Name);

@@ -1,5 +1,6 @@
 using PocoEmit.Converters;
 using System;
+using System.Reflection;
 
 namespace PocoEmit.Builders;
 
@@ -42,4 +43,11 @@ public interface IConvertBuilder
     /// <param name="destType"></param>
     /// <returns></returns>
     IEmitConverter BuildForNullable(IEmitConverter original, Type originalSourceType, Type destType);
+    /// <summary>
+    /// 构造函数转化器
+    /// </summary>
+    /// <param name="constructor"></param>
+    /// <param name="sourceType"></param>
+    /// <returns></returns>
+    IEmitConverter BuildByConstructor(ConstructorInfo constructor, Type sourceType);
 }

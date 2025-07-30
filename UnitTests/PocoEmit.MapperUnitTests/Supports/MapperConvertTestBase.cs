@@ -42,5 +42,11 @@ public abstract class MapperConvertTestBase
         public int Id { get; set; }
         public string Name { get; set; }
     }
+    internal class MapperId(int id)
+    {
+        private readonly int _id = id;
+        public int Id
+            => _id;
+    }
     #endregion
 }

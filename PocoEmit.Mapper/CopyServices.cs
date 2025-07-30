@@ -37,33 +37,25 @@ public static partial class MapperServices
         return compiledCopier;
     }
     #endregion
-    #region GetGenericCopier
+    #region GetObjectCopier
     /// <summary>
-    /// 获取复制器(用于IOC注)
+    /// 获取弱类型复制器(IObjectCopier)
     /// </summary>
     /// <param name="options"></param>
-    /// <param name="copierType"></param>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
     /// <returns></returns>
-    public static object GetGenericCopier(this IMapperOptions options, Type copierType)
+    public static object GetObjectCopier(this IMapperOptions options, Type sourceType, Type destType)
     {
-        if (!ReflectionHelper.IsGenericTypeDefinition(copierType, typeof(IPocoCopier<,>)))
-            return null;
-#if (NETSTANDARD1_1 || NETSTANDARD1_3)
-        var argumentsType = copierType.GetTypeInfo().GenericTypeParameters;
-#else
-        var argumentsType = copierType.GetGenericArguments();
-#endif
-        var sourceType = argumentsType[0];
-        var destType = argumentsType[1];
         var key = new MapTypeKey(sourceType, destType);
         var copier = options.CopierFactory.Get(key);
         if (copier is null)
             return null;
         if (copier.Compiled)
             return copier;
-        var compileConverter = Inner.CompileCopierMethod.MakeGenericMethod(argumentsType);
+        var compileConverter = Inner.CompileCopierMethod.MakeGenericMethod(sourceType, destType);
         var compiled = compileConverter.Invoke(null, [copier, Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest")]) as IEmitCopier;
-        if (compiled != null && compiled.Compiled)
+        if (compiled != null)
             options.CopierFactory.Set(key, compiled);
         return compiled;
     }
@@ -196,7 +188,6 @@ public static partial class MapperServices
         return copier;
     }
     #endregion
-
     /// <summary>
     /// 内部延迟初始化
     /// </summary>

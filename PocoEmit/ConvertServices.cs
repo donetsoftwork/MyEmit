@@ -165,32 +165,25 @@ public static partial class PocoEmitServices
         return compiledConverter;
     }
     #endregion
-    #region GetGenericConverter
+    #region GetObjectConverter
     /// <summary>
-    /// 获取类型转化(用于IOC注入)
+    /// 获取弱类型转化(IObjectConverter)
     /// </summary>
     /// <param name="options"></param>
-    /// <param name="converterType"></param>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
     /// <returns></returns>
-    public static object GetGenericConverter(this IPocoOptions options, Type converterType)
+    public static object GetObjectConverter(this IPocoOptions options, Type sourceType, Type destType)
     {
-        if (!ReflectionHelper.IsGenericTypeDefinition(converterType, typeof(IPocoConverter<,>)))
-            return null;
-#if (NETSTANDARD1_1 || NETSTANDARD1_3)
-        var argumentsType = converterType.GetTypeInfo().GenericTypeParameters;
-#else
-        var argumentsType = converterType.GetGenericArguments();
-#endif
-        var sourceType = argumentsType[0];
-        var key = new MapTypeKey(sourceType, argumentsType[1]);
+        var key = new MapTypeKey(sourceType, destType);
         var converter = options.ConverterFactory.Get(key);
         if (converter is null)
             return null;
         if (converter.Compiled)
             return converter;
-        var compileConverter = Inner.CompileConverterMethod.MakeGenericMethod(argumentsType);
+        var compileConverter = Inner.CompileConverterMethod.MakeGenericMethod(sourceType, destType);
         var compiled = compileConverter.Invoke(null, [converter, Expression.Parameter(sourceType, "source")]) as IEmitConverter;
-        if (compiled != null && compiled.Compiled)
+        if (compiled != null)
             options.ConverterFactory.Set(key, compiled);
         return compiled;
     }

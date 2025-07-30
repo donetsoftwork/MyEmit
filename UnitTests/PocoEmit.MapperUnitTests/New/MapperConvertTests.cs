@@ -49,6 +49,20 @@ public class MapperConvertTests : MapperConvertTestBase
     }
     #endregion
     [Fact]
+    public void Convert_Id()
+    {
+        int source = 11;
+        var result = _mapper.Convert<int, MapperId>(source);
+        Assert.Equal(source, result.Id);
+    }
+    [Fact]
+    public void Convert_MapperId()
+    {
+        var source = new MapperId(22);
+        var result = _mapper.Convert<MapperId, int>(source);
+        Assert.Equal(source.Id, result);
+    }
+    [Fact]
     public void Convert_User2DTO()
     {
         var source = new User { Id = 1, Name = "Jxj" };

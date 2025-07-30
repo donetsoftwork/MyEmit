@@ -59,7 +59,7 @@ services.UseCopier(poco, "special");
 ## 4. 通过IPocoCopier注入
 >通过构造函数参数、属性等方式注入
 ~~~csharp
-public sealed class Mapper(IPocoCopier<User, UserListDTO> Copier)
+public sealed class Mapper(IPocoCopier<User, UserListDTO> copier)
     : Mapper<Request, Response, IEnumerable<User>>
 {
     // ...

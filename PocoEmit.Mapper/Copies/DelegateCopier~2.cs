@@ -33,4 +33,7 @@ public class DelegateCopier<TSource, TDest>(Action<TSource, TDest> copyAction, M
     /// <inheritdoc />
     void IPocoCopier<TSource, TDest>.Copy(TSource from, TDest to)
         => _copyAction(from, to);
+    /// <inheritdoc />
+    void IObjectCopier.CopyObject(object from, object to)
+        => _copyAction((TSource)from, (TDest)to);
 }

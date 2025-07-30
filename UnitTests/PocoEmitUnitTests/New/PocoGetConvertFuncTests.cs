@@ -8,44 +8,54 @@ public class PocoGetConvertFuncTests : PocoConvertTestBase
     [Fact]
     public void GetConvertFunc_int2long()
     {
-
         // Act
-        var converter = _poco.GetConvertFunc<int, long>();
+        var convertFun = _poco.GetConvertFunc<int, long>();
         // Assert
-        Assert.NotNull(converter);
-        Assert.Equal(123L, converter(123));
+        Assert.NotNull(convertFun);
+        Assert.Equal(123L, convertFun(123));
     }
   
     [Fact]
     public void GetConvertFunc_intNullable()
     {
         // Act
-        var converter = _poco.GetConvertFunc<int?, int>();
+        var convertFun = _poco.GetConvertFunc<int?, int>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFun);
         int? source = 123;
-        Assert.Equal(123, converter(source));
+        Assert.Equal(123, convertFun(source));
     }
     [Fact]
     public void GetConvertFunc_stringNullable()
     {
         // Act
-        var converter = _poco.GetConvertFunc<string, string?>();
+        var convertFun = _poco.GetConvertFunc<string, string?>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFun);
         string source = "123";
         string? expected = "123";
-        Assert.Equal(expected, converter(source));
+        Assert.Equal(expected, convertFun(source));
     }
     [Fact]
     public void GetConvertFunc_intSelf()
     {
         // Act
-        var converter = _poco.GetConvertFunc<int, int>();
+        var convertFun = _poco.GetConvertFunc<int, int>();
         // Assert
-        Assert.NotNull(converter);
+        Assert.NotNull(convertFun);
         int source = 123;
-        Assert.Equal(123, converter(source));
+        Assert.Equal(123, convertFun(source));
+    }
+    [Fact]
+    public void GetConvertFunc_Id()
+    {
+        // Act
+        var convertFun = _poco.GetConvertFunc<int, PocoId>();
+        // Assert
+        Assert.NotNull(convertFun);
+        int source = 11;
+        var result = convertFun(source);
+        Assert.Equal(source, result.Id);
     }
     #region 多态
     [Fact]

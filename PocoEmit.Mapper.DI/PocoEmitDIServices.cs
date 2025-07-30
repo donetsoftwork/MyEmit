@@ -1,5 +1,6 @@
 using PocoEmit;
 using PocoEmit.Configuration;
+using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -72,6 +73,7 @@ public static class PocoEmitDIServices
         return services.AddKeyedTypedFactorySingleton(typeof(IPocoCopier<,>), serviceKey, (sp, key, CopierType) => mapper.GetGenericCopier(CopierType));
     }
     #endregion
+    #region GetGenericConverter
     /// <summary>
     /// 获取类型转化(用于IOC注入)
     /// </summary>
@@ -81,8 +83,23 @@ public static class PocoEmitDIServices
     public static object GetGenericConverter(IServiceProvider sp, Type converterType)
     {
         IMapperOptions mapper = sp.GetService<IMapperOptions>() ?? Mapper.Global;
-        return mapper.GetGenericConverter(converterType);
+        return GetGenericConverter(mapper, converterType);
     }
+    /// <summary>
+    /// 获取类型转化(用于IOC注入)
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="converterType"></param>
+    /// <returns></returns>
+    public static object GetGenericConverter(this IPocoOptions options, Type converterType)
+    {
+        if (!ReflectionHelper.IsGenericTypeDefinition(converterType, typeof(IPocoConverter<,>)))
+            return null;
+        var argumentsType = converterType.GetGenericArguments();
+        return options.GetObjectConverter(argumentsType[0], argumentsType[1]);
+    }
+    #endregion
+    #region GetGenericCopier
     /// <summary>
     /// 获取复制器(用于IOC注)
     /// </summary>
@@ -94,4 +111,19 @@ public static class PocoEmitDIServices
         IMapperOptions mapper = sp.GetService<IMapperOptions>() ?? Mapper.Global;
         return mapper.GetGenericCopier(converterType);
     }
+    /// <summary>
+    /// 获取复制器(用于IOC注)
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="copierType"></param>
+    /// <returns></returns>
+    public static object GetGenericCopier(this IMapperOptions options, Type copierType)
+    {
+        if (!ReflectionHelper.IsGenericTypeDefinition(copierType, typeof(IPocoCopier<,>)))
+            return null;
+        
+        var argumentsType = copierType.GetGenericArguments();
+        return options.GetObjectCopier(argumentsType[0], argumentsType[1]);
+    }
+    #endregion
 }

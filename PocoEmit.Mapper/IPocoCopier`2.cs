@@ -1,11 +1,14 @@
+using PocoEmit.Copies;
+
 namespace PocoEmit;
 
 /// <summary>
-/// 复制器
+/// 类型复制器
 /// </summary>
 /// <typeparam name="TSource"></typeparam>
 /// <typeparam name="TDest"></typeparam>
 public interface IPocoCopier<TSource, TDest>
+    : IObjectCopier
 {
     /// <summary>
     /// 复制

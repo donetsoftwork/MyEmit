@@ -37,4 +37,7 @@ public sealed class CompiledConverter<TSource, TDest>(IEmitConverter inner, Func
     /// <inheritdoc />
     TDest IPocoConverter<TSource, TDest>.Convert(TSource source)
         => _convertFunc(source);
+    /// <inheritdoc />
+    object IObjectConverter.ConvertObject(object source)
+        => _convertFunc((TSource)source);
 }

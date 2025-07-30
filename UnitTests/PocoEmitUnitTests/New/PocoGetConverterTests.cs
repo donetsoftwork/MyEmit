@@ -1,10 +1,5 @@
 using PocoEmit;
 using PocoEmitUnitTests.Supports;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PocoEmitUnitTests.New;
 
@@ -50,6 +45,17 @@ public class PocoGetConverterTests : PocoConvertTestBase
         Assert.NotNull(converter);
         int source = 123;
         Assert.Equal(123, converter.Convert(source));
+    }
+    [Fact]
+    public void GetConverter_Id()
+    {
+        // Act
+        var converter = _poco.GetConverter<int, PocoId>();
+        // Assert
+        Assert.NotNull(converter);
+        int source = 11;
+        var result = converter.Convert(source);
+        Assert.Equal(source, result.Id);
     }
     #region 多态
     [Fact]

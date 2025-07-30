@@ -1,3 +1,4 @@
+using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
 
@@ -7,7 +8,7 @@ namespace PocoEmit.Converters;
 /// Emit类型转化
 /// </summary>
 /// <param name="destType"></param>
-public class EmitConverter(Type destType)
+public sealed class EmitConverter(Type destType)
     : IEmitConverter
 {
     #region 配置
@@ -18,10 +19,10 @@ public class EmitConverter(Type destType)
     public Type DestType
         => _destType;
     /// <inheritdoc />
-    public virtual bool Compiled
+    bool IEmitInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />
-    public virtual Expression Convert(Expression value)
+    public Expression Convert(Expression value)
         => Expression.Convert(value, _destType);
 }

@@ -13,4 +13,11 @@ public abstract class PocoConvertTestBase
         // 多态,覆盖Global配置
         _poco.AddConverter(_timeConverter);
     }
+
+    internal class PocoId(int id)
+    {
+        private readonly int _id = id;
+        public int Id 
+            => _id;
+    }
 }

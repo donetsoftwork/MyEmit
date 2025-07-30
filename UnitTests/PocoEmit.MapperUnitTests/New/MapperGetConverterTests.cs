@@ -73,6 +73,28 @@ public class MapperGetConverterTests : MapperConvertTestBase
     }
     #endregion
     [Fact]
+    public void GetConverter_Id()
+    {
+        // Act
+        var converter = _mapper.GetConverter<int, MapperId>();
+        // Assert
+        Assert.NotNull(converter);
+        int source = 11;
+        var result = converter.Convert(source);
+        Assert.Equal(source, result.Id);
+    }
+    [Fact]
+    public void GetConverter_MapperId()
+    {
+        // Act
+        var converter = _mapper.GetConverter<MapperId, int>();
+        // Assert
+        Assert.NotNull(converter);
+        var source = new MapperId(22);
+        var result = converter.Convert(source);
+        Assert.Equal(source.Id, result);
+    }
+    [Fact]
     public void GetConverter_User2DTO()
     {
         // Act

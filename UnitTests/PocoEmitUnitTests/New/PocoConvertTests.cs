@@ -30,6 +30,13 @@ public class PocoConvertTests : PocoConvertTestBase
         int source = 123;
         Assert.Equal(123, _poco.Convert<int, int>(source));
     }
+    [Fact]
+    public void Convert_Id()
+    {
+        int source = 11;
+        var result = _poco.Convert<int, PocoId>(source);
+        Assert.Equal(source, result.Id);
+    }
     #region 多态
     [Fact]
     public void GetConvert_string2DateTime()

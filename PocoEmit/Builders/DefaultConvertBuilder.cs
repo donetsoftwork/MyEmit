@@ -1,5 +1,6 @@
 using PocoEmit.Converters;
 using System;
+using System.Reflection;
 
 namespace PocoEmit.Builders;
 
@@ -29,10 +30,12 @@ public class DefaultConvertBuilder : IConvertBuilder
     /// <inheritdoc />
     public virtual IEmitConverter BuildForNullable(IEmitConverter original, Type originalSourceType, Type destType)
         => new CompatibleConverter(original, originalSourceType, destType);
+    /// <inheritdoc />
+    public virtual IEmitConverter BuildByConstructor(ConstructorInfo constructor, Type sourceType)
+        => new ConstructorConverter(constructor);
     /// <summary>
     /// 默认转换构建器实例
     /// </summary>
-
     public static DefaultConvertBuilder Default
         => Inner.Instance;
     /// <summary>

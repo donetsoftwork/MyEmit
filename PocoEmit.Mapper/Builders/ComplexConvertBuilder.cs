@@ -1,6 +1,8 @@
+using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
+using System.Linq;
 
 namespace PocoEmit.Builders;
 
@@ -22,9 +24,13 @@ public class ComplexConvertBuilder(IMapperOptions options)
     /// <inheritdoc />
     public override IEmitConverter Build(Type sourceType, Type destType)
     {
-        if (_options.Primitives.Get(destType))
+        var primitives = _options.Primitives;
+        if (primitives.Get(sourceType))
             return base.Build(sourceType, destType);
-        if (_options.Primitives.Get(destType))
+        var converter = TryBuildByMember(sourceType, destType);
+        if(converter is not null)
+            return converter;
+        if (primitives.Get(destType))
             return null;
         var key = new MapTypeKey(sourceType, destType);
         var copier = _options.CopierFactory.Get(key);
@@ -34,5 +40,26 @@ public class ComplexConvertBuilder(IMapperOptions options)
         if (activator is null)
             return null;
         return new ComplexTypeConverter(activator, copier);
+    }
+    /// <summary>
+    /// 尝试按成员读取来转化
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    private MemberReadConverter TryBuildByMember(Type sourceType, Type destType)
+    {
+        var bundle = _options.MemberCacher.Get(sourceType);
+        if (bundle is null)
+            return null;
+        foreach (var member in bundle.ReadMembers.Values)
+        {
+            var memberReader = MemberContainer.Instance.MemberReaderCacher.Get(member);
+            if (memberReader is null)
+                continue;
+            if (memberReader.ValueType == destType)
+                return new MemberReadConverter(memberReader);
+        }
+        return null;
     }
 }

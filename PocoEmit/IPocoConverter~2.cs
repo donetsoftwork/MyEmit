@@ -1,3 +1,5 @@
+using PocoEmit.Converters;
+
 namespace PocoEmit;
 
 /// <summary>
@@ -6,6 +8,7 @@ namespace PocoEmit;
 /// <typeparam name="TSource"></typeparam>
 /// <typeparam name="TDest"></typeparam>
 public interface IPocoConverter<TSource, TDest>
+    : IObjectConverter
 {
     /// <summary>
     /// 转化

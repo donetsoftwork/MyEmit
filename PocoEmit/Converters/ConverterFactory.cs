@@ -65,40 +65,12 @@ public sealed class ConverterFactory(IPocoOptions options)
             // 可空类型
             return builder.BuildForNullable(original, sourceType, key.DestType);
         }
-        // 普通类型
-        return builder.Build(sourceType, destType);
+        var constructor = ReflectionHelper.GetConstructorByParameterType(destType, sourceType);
+        // 其他类型
+        if (constructor is null)
+            return builder.Build(sourceType, destType);
+        // 构造函数
+        return builder.BuildByConstructor(constructor, sourceType);
     }
-    ///// <summary>
-    ///// 构造Emit类型转化原始方法
-    ///// </summary>
-    ///// <param name="key"></param>
-    ///// <returns></returns>
-    //private IEmitConverter CreateCore(MapTypeKey key)
-    //{
-    //    var destType = key.DestType;
-    //    if (_options.Primitive.Get(destType))
-    //        return null;
-    //    var copier = _options.Copper.Get(key);
-    //    if (copier is null)
-    //        return null;
-    //    var activator = _options.Activator.Get(destType);
-    //    if (activator is null)
-    //        return null;
-    //    return new ComplexTypeConverter(activator, copier);
-    //}
     #endregion
-    ///// <summary>
-    ///// 设置方法来转化
-    ///// </summary>
-    ///// <param name="method"></param>
-    ///// <param name="sourceType"></param>
-    ///// <param name="destType"></param>
-    ///// <returns></returns>
-    //public StaticMethodConverter Set(MethodInfo method, Type sourceType, Type destType)
-    //{
-    //    var key = new MapTypeKey(sourceType, destType);
-    //    var converter = new StaticMethodConverter(method);
-    //    Set(key, converter);
-    //    return converter;
-    //}
 }
