@@ -57,6 +57,47 @@ public class PocoGetConvertFuncTests : PocoConvertTestBase
         var result = convertFun(source);
         Assert.Equal(source, result.Id);
     }
+    #region 继承
+    [Fact]
+    public void GetConvert_int2true()
+    {
+        // Act
+        var converter = _poco.GetConvertFunc<int, bool>();
+        // Assert
+        Assert.NotNull(converter);
+        int source = 123;
+        var result = converter(source);
+        Assert.True(result);
+        bool expected = Convert.ToBoolean(source);
+        Assert.Equal(expected, result);
+    }
+    [Fact]
+    public void GetConvert_int2true2()
+    {
+        // Act
+        var converter = _poco.GetConvertFunc<int, bool>();
+        // Assert
+        Assert.NotNull(converter);
+        int source = 0;
+        var result = converter(source);
+        Assert.False(result);
+        bool expected = Convert.ToBoolean(source);
+        Assert.Equal(expected, result);
+    }
+    [Fact]
+    public void GetConvert_int2false()
+    {
+        // Act
+        var converter = _poco.GetConvertFunc<int, bool>();
+        // Assert
+        Assert.NotNull(converter);
+        int source = -123;
+        var result = converter(source);
+        Assert.True(result);
+        bool expected = Convert.ToBoolean(source);
+        Assert.Equal(expected, result);
+    }
+    #endregion
     #region 多态
     [Fact]
     public void GetConvertFunc_string2DateTime()

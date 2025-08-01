@@ -1,5 +1,7 @@
 using PocoEmit.Activators;
 using PocoEmit.Collections;
+using PocoEmit.Configuration;
+using PocoEmit.Maping;
 using System;
 
 namespace PocoEmit;
@@ -59,4 +61,13 @@ public static partial class MapperServices
         where TInstance : new()
         => settings.TrySetNew(() => new TInstance());
     #endregion
+    /// <summary>
+    /// 获取成员匹配
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    public static IMemberMatch GetMemberMatch(this IMapperOptions options, Type sourceType, Type destType)
+        => options.GetMemberMatch(new MapTypeKey(sourceType, destType));
 }

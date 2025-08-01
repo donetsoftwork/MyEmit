@@ -26,6 +26,6 @@ public class StaticMethodActivator(MethodInfo method)
         => false;
     #endregion
     /// <inheritdoc />
-    public Expression New()
+    public Expression New(Expression argument)
         => Expression.Call(_method);
 }

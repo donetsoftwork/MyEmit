@@ -23,6 +23,5 @@ public class TypeMemberCacher(ISettings<Type, MemberBundle> cacher, IReflectionM
     /// <inheritdoc />
     protected override MemberBundle CreateNew(Type key)
         => _reflection.GetMembers(key);
-    #endregion
-    
+    #endregion    
 }

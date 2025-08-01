@@ -1,7 +1,6 @@
 using PocoEmit.Activators;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -39,7 +38,7 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
         LabelTarget returnTarget = Expression.Label(destype);
 
         var dest = Expression.Variable(destype, "dest");
-        var assign = Expression.Assign(dest, _destActivator.New());
+        var assign = Expression.Assign(dest, _destActivator.New(source));
         var list = _copier.Copy(source, dest)
             .ToList();
         list.Insert(0, assign);

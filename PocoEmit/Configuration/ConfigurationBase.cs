@@ -17,13 +17,13 @@ public abstract partial class ConfigurationBase
     /// <summary>
     /// Emit配置
     /// </summary>
-    public ConfigurationBase(IReflectionMember reflection)
+    public ConfigurationBase(IReflectionMember reflectionMember)
     {
         // 初始化配置
-        _reflection = reflection;
+        _reflectionMember = reflectionMember;
         _convertBuilder = DefaultConvertBuilder.Default;
         _converterFactory = new(this);
-        _memberCacher = new TypeMemberCacher(this, reflection);
+        _memberCacher = new TypeMemberCacher(this, reflectionMember);
         _readerFuncCacher = new ReadFuncCacher(this);
         _writerActionCacher = new WriteActionCacher(this);
     }
@@ -36,7 +36,7 @@ public abstract partial class ConfigurationBase
     /// 构建转换器
     /// </summary>
     private IConvertBuilder _convertBuilder;
-    private IReflectionMember _reflection;
+    private IReflectionMember _reflectionMember;
     /// <summary>
     /// 成员缓存器
     /// </summary>
@@ -52,23 +52,19 @@ public abstract partial class ConfigurationBase
     /// <inheritdoc />
     public IEnumerable<IEmitConverter> Converters
         => _converters.Values;
+    /// <summary>
+    /// 反射获取成员
+    /// </summary>
+    public IReflectionMember ReflectionMember
+    {
+        get => _reflectionMember;
+        internal set => _reflectionMember = value;
+    }
     /// <inheritdoc />
     public IConvertBuilder ConvertBuilder
     {
         get => _convertBuilder;
         protected set => _convertBuilder = value;
-    }
-
-    /// <inheritdoc />
-    public ConverterFactory ConverterFactory
-        => _converterFactory;
-    /// <summary>
-    /// 反射获取成员
-    /// </summary>
-    public IReflectionMember Reflection
-    {
-        get => _reflection;
-        internal set  => _reflection = value;
     }
     /// <summary>
     /// 成员缓存器
@@ -87,19 +83,17 @@ public abstract partial class ConfigurationBase
         => _writeActions;
     #endregion
     #region 功能
-    /// <summary>
-    /// 读成员
-    /// </summary>
-    /// <param name="member"></param>
-    /// <returns></returns>
-    public Func<object, object> GetReadFunc(MemberInfo member)
+    /// <inheritdoc />
+    public virtual Func<object, object> GetReadFunc(MemberInfo member)
         => _readerFuncCacher.Get(member);
-    /// <summary>
-    /// 写成员
-    /// </summary>
-    /// <param name="member"></param>
-    /// <returns></returns>
-    public Action<object, object> GetWriteAction(MemberInfo member)
+    /// <inheritdoc />
+    public virtual Action<object, object> GetWriteAction(MemberInfo member)
         => _writerActionCacher.Get(member);
+    /// <inheritdoc />
+    public virtual IEmitConverter GetEmitConverter(MapTypeKey key)
+        => _converterFactory.Get(key);
+    /// <inheritdoc />
+    public void SetConvertSetting(MapTypeKey key, IEmitConverter converter)
+        => _convertSetting[key] = converter;
     #endregion
 }

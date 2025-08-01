@@ -18,6 +18,9 @@ public class PropertyReader(PropertyInfo property)
     , IEmitMemberReader
 {
     /// <inheritdoc />
+    MemberInfo IEmitMemberReader.Info
+        => Member;
+    /// <inheritdoc />
     bool IEmitInfo.Compiled
         => false;
     /// <inheritdoc />

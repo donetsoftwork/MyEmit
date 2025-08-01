@@ -1,5 +1,4 @@
 using PocoEmit.Members;
-using System.Reflection;
 
 namespace PocoEmit.Maping;
 
@@ -14,5 +13,5 @@ public interface IMemberMatch
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    bool Match(MemberInfo source, MemberInfo dest);
+    bool Match(IMember source, IMember dest);
 }

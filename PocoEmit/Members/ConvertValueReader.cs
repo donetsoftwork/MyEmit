@@ -2,6 +2,7 @@ using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace PocoEmit.Members;
 
@@ -35,6 +36,9 @@ public class ConvertValueReader(IEmitMemberReader inner, IEmitConverter converte
     /// <inheritdoc />
     public Type ValueType
         => _inner.ValueType;
+    /// <inheritdoc />
+    MemberInfo IEmitMemberReader.Info
+        => _inner.Info;
     /// <inheritdoc />
     bool IEmitInfo.Compiled
         => false;

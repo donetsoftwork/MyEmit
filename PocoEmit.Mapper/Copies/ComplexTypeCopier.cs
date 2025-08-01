@@ -23,8 +23,6 @@ public class ComplexTypeCopier(IEnumerable<IMemberConverter> members)
     /// <inheritdoc />
     public IEnumerable<Expression> Copy(Expression source, Expression dest)
     {
-        //var test = Expression.NotEqual(source, Expression.Constant(null));
-        //var expression = Expression.IfThen(test, );
         foreach (var member in _members) 
             yield return member.Convert(source, dest);
     }

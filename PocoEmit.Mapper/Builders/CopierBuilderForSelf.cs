@@ -1,9 +1,8 @@
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
-using PocoEmit.Copies;
+using PocoEmit.Members;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace PocoEmit.Builders;
 
@@ -15,16 +14,13 @@ public class CopierBuilderForSelf(CopierFactory factory)
     : CopierBuilderBase(factory)
 {
     /// <inheritdoc />
-    protected override void CheckMembers(MapTypeKey key, IEnumerable<MemberInfo> destMembers, ICollection<IMemberConverter> converters)
+    public override void CheckMembers(MapTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
     {
-        var container = MemberContainer.Instance;
-        foreach (var member in destMembers)
+        var readerCacher = MemberContainer.Instance.MemberReaderCacher;
+        foreach (var writer in destMembers)
         {
-            var reader = container.MemberReaderCacher.Get(member);
+            var reader = readerCacher.Get(writer.Info);
             if (reader is null)
-                continue;
-            var writer = container.MemberWriterCacher.Get(member);
-            if (writer is null)
                 continue;
             converters.Add(new MemberConverter(reader, writer));
         }

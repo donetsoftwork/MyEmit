@@ -18,10 +18,6 @@ public interface IPocoOptions
     , ISettings<MemberInfo, Action<object, object>>
 {
     /// <summary>
-    /// 转换器工厂
-    /// </summary>
-    ConverterFactory ConverterFactory { get; }
-    /// <summary>
     /// 转换器构造器
     /// </summary>
     IConvertBuilder ConvertBuilder { get; }
@@ -32,7 +28,7 @@ public interface IPocoOptions
     /// <summary>
     /// 反射获取成员
     /// </summary>
-    IReflectionMember Reflection { get; }
+    IReflectionMember ReflectionMember { get; }
     /// <summary>
     /// 成员缓存器
     /// </summary>
@@ -48,5 +44,24 @@ public interface IPocoOptions
     /// </summary>
     /// <param name="member"></param>
     /// <returns></returns>
-    public Action<object, object> GetWriteAction(MemberInfo member);
+    Action<object, object> GetWriteAction(MemberInfo member);
+    /// <summary>
+    /// 获取Emit类型转化
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    IEmitConverter GetEmitConverter(MapTypeKey key);
+    /// <summary>
+    /// 配置Emit类型转化
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="converter"></param>
+    void SetConvertSetting(MapTypeKey key, IEmitConverter converter);
+    /// <summary>
+    /// 获取转化配置
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    bool TryGetConvertSetting(MapTypeKey key, out IEmitConverter converter);
 }

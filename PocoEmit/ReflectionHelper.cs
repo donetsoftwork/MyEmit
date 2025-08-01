@@ -1,5 +1,6 @@
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
+using PocoEmit.Members;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,6 +71,46 @@ public static class ReflectionHelper
         return null;
     }
     #endregion
+    #region GetReader
+    /// <summary>
+    /// 获取可读成员
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="instanceType"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static IEmitMemberReader GetEmitReader(this IPocoOptions options, Type instanceType, string memberName)
+    {
+        return options.MemberCacher
+            .Get(instanceType)
+            ?.GetEmitReader(memberName);
+    }
+    /// <summary>
+    /// 获取可读成员
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static IEmitMemberReader GetEmitReader<TInstance>(this IPocoOptions options, string memberName)
+    {
+        return options.MemberCacher
+            .Get(typeof(TInstance))
+            ?.GetEmitReader(memberName);
+    }
+    /// <summary>
+    /// 获取可读成员
+    /// </summary>
+    /// <param name="bundle"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static IEmitMemberReader GetEmitReader(this MemberBundle bundle, string memberName)
+    {
+        if (bundle.EmitReaders.TryGetValue(memberName, out var reader))
+            return reader;
+        return null;
+    }
+    #endregion
     #region GetWriteMember
     /// <summary>
     /// 获取可写成员
@@ -107,6 +148,46 @@ public static class ReflectionHelper
     {
         if (bundle.WriteMembers.TryGetValue(memberName, out var member))
             return member;
+        return null;
+    }
+    #endregion
+    #region GetWriter
+    /// <summary>
+    /// 获取可写成员
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="instanceType"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static IEmitMemberWriter GetEmitWriter(this IPocoOptions options, Type instanceType, string memberName)
+    {
+        return options.MemberCacher
+            .Get(instanceType)
+            ?.GetEmitWriter(memberName);
+    }
+    /// <summary>
+    /// 获取可写成员
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static IEmitMemberWriter GetEmitWriter<TInstance>(this IPocoOptions options, string memberName)
+    {
+        return options.MemberCacher
+            .Get(typeof(TInstance))
+            ?.GetEmitWriter(memberName);
+    }
+    /// <summary>
+    /// 获取可读成员
+    /// </summary>
+    /// <param name="bundle"></param>
+    /// <param name="memberName"></param>
+    /// <returns></returns>
+    public static IEmitMemberWriter GetEmitWriter(this MemberBundle bundle, string memberName)
+    {
+        if (bundle.EmitWriters.TryGetValue(memberName, out var writer))
+            return writer;
         return null;
     }
     #endregion
@@ -260,7 +341,7 @@ public static class ReflectionHelper
         => GetConstructor(
             declaringType,
             parameters => parameters.Length == 1
-                && parameters[0].ParameterType == parameterType);
+                && CheckValueType(parameterType, parameters[0].ParameterType));
     /// <summary>
     /// 获取构造函数
     /// </summary>

@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 
 namespace PocoEmit.Members;
 
@@ -23,8 +24,20 @@ public interface IMember
 /// <summary>
 /// 成员写入器
 /// </summary>
-public interface IEmitMemberWriter : IMember, IEmitWriter;
+public interface IEmitMemberWriter : IMember, IEmitWriter
+{
+    /// <summary>
+    /// 写入目标信息
+    /// </summary>
+    MemberInfo Info { get; }
+}
 /// <summary>
 /// 成员读取器
 /// </summary>
-public interface IEmitMemberReader : IMember, IEmitReader;
+public interface IEmitMemberReader : IMember, IEmitReader
+{
+    /// <summary>
+    /// 读取目标信息
+    /// </summary>
+    MemberInfo Info { get; }
+}

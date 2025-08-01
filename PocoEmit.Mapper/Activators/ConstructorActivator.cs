@@ -8,14 +8,20 @@ namespace PocoEmit.Activators;
 /// <summary>
 /// 构造函数激活
 /// </summary>
-/// <param name="returnType"></param>
-/// <param name="constructor"></param>
+/// <param name="returnType">返回类型</param>
+/// <param name="constructor">构造函数</param>
 public class ConstructorActivator(Type returnType, ConstructorInfo constructor)
     : IEmitActivator
 {
     #region 配置
-    private readonly Type _returnType = returnType;
-    private readonly ConstructorInfo _constructor = constructor;
+    /// <summary>
+    /// 返回类型
+    /// </summary>
+    protected readonly Type _returnType = returnType;
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    protected readonly ConstructorInfo _constructor = constructor;
     /// <inheritdoc />
     public Type ReturnType
         => _returnType;
@@ -24,11 +30,10 @@ public class ConstructorActivator(Type returnType, ConstructorInfo constructor)
     /// </summary>
     public ConstructorInfo Constructor
         => _constructor;
-
     bool IEmitInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />
-    public Expression New()
+    public virtual Expression New(Expression argument)
         => Expression.New(_constructor);
 }

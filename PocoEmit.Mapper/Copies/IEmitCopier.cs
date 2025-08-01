@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 namespace PocoEmit.Copies;
 
 /// <summary>
-/// 复制器
+/// Emit类型复制器
 /// </summary>
 public interface IEmitCopier : IEmitInfo
 {

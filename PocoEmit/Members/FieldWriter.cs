@@ -17,6 +17,9 @@ public class FieldWriter(FieldInfo field)
     , IEmitMemberWriter
 {
     /// <inheritdoc />
+    MemberInfo IEmitMemberWriter.Info
+        => Member;
+    /// <inheritdoc />
     bool IEmitInfo.Compiled
         => false;
     /// <inheritdoc />

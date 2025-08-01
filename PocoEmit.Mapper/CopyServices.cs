@@ -27,13 +27,13 @@ public static partial class MapperServices
         var sourceType = typeof(TSource);
         var destType = typeof(TDest);
         var key = new MapTypeKey(sourceType, destType);
-        var emitCopier = options.CopierFactory.Get(key);
+        var emitCopier = options.GetEmitCopier(key);
         if (emitCopier is null)
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled;
         var compiledCopier = emitCopier.CompileCopier<TSource, TDest>(Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest"));
-        options.CopierFactory.Set(key, compiledCopier);
+        options.Set(key, compiledCopier);
         return compiledCopier;
     }
     #endregion
@@ -48,7 +48,7 @@ public static partial class MapperServices
     public static object GetObjectCopier(this IMapperOptions options, Type sourceType, Type destType)
     {
         var key = new MapTypeKey(sourceType, destType);
-        var copier = options.CopierFactory.Get(key);
+        var copier = options.GetEmitCopier(key);
         if (copier is null)
             return null;
         if (copier.Compiled)
@@ -56,7 +56,7 @@ public static partial class MapperServices
         var compileConverter = Inner.CompileCopierMethod.MakeGenericMethod(sourceType, destType);
         var compiled = compileConverter.Invoke(null, [copier, Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest")]) as IEmitCopier;
         if (compiled != null)
-            options.CopierFactory.Set(key, compiled);
+            options.Set(key, compiled);
         return compiled;
     }
     #endregion
@@ -74,13 +74,13 @@ public static partial class MapperServices
         var sourceType = typeof(TSource);
         var destType = typeof(TDest);
         var key = new MapTypeKey(sourceType, destType);
-        var emitCopier = options.CopierFactory.Get(key);
+        var emitCopier = options.GetEmitCopier(key);
         if (emitCopier is null)
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled.CopyAction;
         var copyAction = emitCopier.Compile<TSource, TDest>(Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest"));
-        options.CopierFactory.Set(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
+        options.Set(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
         return copyAction;
     }
     #endregion

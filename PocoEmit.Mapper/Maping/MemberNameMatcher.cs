@@ -1,4 +1,4 @@
-using System.Reflection;
+using PocoEmit.Members;
 
 namespace PocoEmit.Maping;
 
@@ -25,7 +25,7 @@ public sealed class MemberNameMatcher(INameMatch nameMatch)
         => _nameMatch;
     #endregion
     /// <inheritdoc />
-    public bool Match(MemberInfo source, MemberInfo dest)
+    public bool Match(IMember source, IMember dest)
         => _nameMatch.Match(source.Name, dest.Name);
 
     /// <summary>

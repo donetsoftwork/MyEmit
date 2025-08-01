@@ -2,6 +2,8 @@ using PocoEmit.Collections;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using PocoEmit.Members;
+
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Frozen;
 #else
@@ -37,11 +39,10 @@ public class DefaultReflectionMember(IEqualityComparer<string> comparer, bool in
     public bool IncludeField
         => _includeField;
     #endregion
-
     /// <inheritdoc />
     public MemberBundle GetMembers(Type instanceType)
     {
-        List<MemberInfo> readMembers = [];
+        List<MemberInfo> readMembers = [];        
         List<MemberInfo> writeMembers = [];
         foreach (var property in GetProperties(instanceType))
         {
@@ -52,11 +53,47 @@ public class DefaultReflectionMember(IEqualityComparer<string> comparer, bool in
         }
         if(_includeField)
         {
-            var fields = ReflectionHelper.GetFields(instanceType);
+            var fields = GetFields(instanceType);
             readMembers.AddRange(fields);
             writeMembers.AddRange(fields);
         }
-        return new MemberBundle(CheckMembers(readMembers), CheckMembers(writeMembers));
+        List<IEmitMemberReader> readers = [];
+        CheckReader(readers, readMembers);
+        List<IEmitMemberWriter> writers = [];
+        CheckWriter(writers, writeMembers);
+        return new MemberBundle(CheckMembers(readMembers), CheckMembers(readers), CheckMembers(writeMembers), CheckMembers(writers));
+    }
+    /// <summary>
+    /// 处理读取器
+    /// </summary>
+    /// <param name="readers"></param>
+    /// <param name="members"></param>
+    private static void CheckReader(ICollection<IEmitMemberReader> readers, IEnumerable<MemberInfo> members)
+    {
+        var readerCacher = MemberContainer.Instance.MemberReaderCacher;
+        foreach (var member in members)
+        {
+            var reader = readerCacher.Get(member);
+            if (reader is null)
+                continue;
+            readers.Add(reader);
+        }
+    }
+    /// <summary>
+    /// 处理写入器
+    /// </summary>
+    /// <param name="writers"></param>
+    /// <param name="members"></param>
+    private static void CheckWriter(ICollection<IEmitMemberWriter> writers, IEnumerable<MemberInfo> members)
+    {
+        var writerCacher = MemberContainer.Instance.MemberWriterCacher;
+        foreach (var member in members)
+        {
+            var writer = writerCacher.Get(member);
+            if (writer is null)
+                continue;
+            writers.Add(writer);
+        }
     }
     /// <summary>
     /// 检查成员
@@ -64,6 +101,32 @@ public class DefaultReflectionMember(IEqualityComparer<string> comparer, bool in
     /// <param name="list"></param>
     /// <returns></returns>
     protected virtual IDictionary<string, MemberInfo> CheckMembers(IEnumerable<MemberInfo> list)
+    {
+#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+        return list.ToFrozenDictionary(m => m.Name, m => m, _comparer);
+#else
+        return list.ToDictionary(m => m.Name, m => m, _comparer);
+#endif
+    }
+    /// <summary>
+    /// 检查成员
+    /// </summary>
+    /// <param name="list"></param>
+    /// <returns></returns>
+    protected virtual IDictionary<string, IEmitMemberReader> CheckMembers(IEnumerable<IEmitMemberReader> list)
+    {
+#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+        return list.ToFrozenDictionary(m => m.Name, m => m, _comparer);
+#else
+        return list.ToDictionary(m => m.Name, m => m, _comparer);
+#endif
+    }
+    /// <summary>
+    /// 检查成员
+    /// </summary>
+    /// <param name="list"></param>
+    /// <returns></returns>
+    protected virtual IDictionary<string, IEmitMemberWriter> CheckMembers(IEnumerable<IEmitMemberWriter> list)
     {
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
         return list.ToFrozenDictionary(m => m.Name, m => m, _comparer);

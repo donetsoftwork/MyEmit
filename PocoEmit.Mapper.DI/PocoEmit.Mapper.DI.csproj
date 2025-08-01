@@ -14,7 +14,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.2.1-alpha</Version>
+    <Version>0.2.2-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
   </PropertyGroup>

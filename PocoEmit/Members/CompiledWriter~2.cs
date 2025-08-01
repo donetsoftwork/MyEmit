@@ -27,7 +27,10 @@ public sealed class CompiledWriter<TInstance, TValue>(IEmitMemberWriter inner, A
     private readonly Action<TInstance, TValue> _writeAction = writeAction;
     /// <inheritdoc />
     public Action<TInstance, TValue> WriteAction
-        => _writeAction;    
+        => _writeAction;
+    /// <inheritdoc />
+    MemberInfo IEmitMemberWriter.Info
+        => _inner.Info;
     /// <inheritdoc />
     bool IEmitInfo.Compiled
         => true;

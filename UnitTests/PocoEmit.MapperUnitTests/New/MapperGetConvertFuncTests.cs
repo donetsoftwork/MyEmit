@@ -76,7 +76,7 @@ public class MapperGetConvertFuncTests : MapperConvertTestBase
     public void GetConvertFunc_Id()
     {
         // Act
-        var convertFunc = _mapper.GetConvertFunc<int, MapperId>();
+        var convertFunc = _mapper.GetConvertFunc<int, MyMapperId>();
         Assert.NotNull(convertFunc);
         int source = 11;
         var result = convertFunc(source);
@@ -86,9 +86,9 @@ public class MapperGetConvertFuncTests : MapperConvertTestBase
     public void GetConvertFunc_MapperId()
     {
         // Act
-        var convertFunc = _mapper.GetConvertFunc<MapperId, int>();
+        var convertFunc = _mapper.GetConvertFunc<MyMapperId, int>();
         Assert.NotNull(convertFunc);
-        var source = new MapperId(22);
+        var source = new MyMapperId(22);
         var result = convertFunc(source);
         Assert.Equal(source.Id, result);
     }

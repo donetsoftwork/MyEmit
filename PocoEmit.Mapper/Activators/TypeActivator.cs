@@ -21,6 +21,6 @@ public class TypeActivator(Type returnType)
         => false;
     #endregion
     /// <inheritdoc />
-    public Expression New()
+    public Expression New(Expression argument)
         => Expression.New(_returnType);
 }

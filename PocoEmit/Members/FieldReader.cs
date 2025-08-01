@@ -18,6 +18,9 @@ public class FieldReader(FieldInfo field)
     , IEmitMemberReader
 {
     /// <inheritdoc />
+    MemberInfo IEmitMemberReader.Info
+        => Member;
+    /// <inheritdoc />
     bool IEmitInfo.Compiled
         => false;
     /// <inheritdoc />

@@ -18,6 +18,9 @@ public class PropertyWriter(PropertyInfo property)
     , IEmitMemberWriter
 {
     /// <inheritdoc />
+    MemberInfo IEmitMemberWriter.Info
+        => Member;
+    /// <inheritdoc />
     bool IEmitInfo.Compiled
         => false;
     /// <inheritdoc />

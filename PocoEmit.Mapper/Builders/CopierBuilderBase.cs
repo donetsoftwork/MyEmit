@@ -1,9 +1,8 @@
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
-using PocoEmit.Copies;
+using PocoEmit.Members;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
 
 namespace PocoEmit.Builders;
@@ -41,7 +40,7 @@ public abstract class CopierBuilderBase(CopierFactory factory)
     {
         var destType = key.DestType;
         TypeMemberCacher memberCacher = _options.MemberCacher;
-        var destMembers = memberCacher.Get(destType)?.WriteMembers.Values;
+        var destMembers = memberCacher.Get(destType)?.EmitWriters.Values;
         if (destMembers is null || destMembers.Count == 0)
             return null;
         var list = new List<IMemberConverter>(destMembers.Count);
@@ -60,7 +59,7 @@ public abstract class CopierBuilderBase(CopierFactory factory)
     /// <param name="key"></param>
     /// <param name="destMembers"></param>
     /// <param name="converters"></param>
-    protected abstract void CheckMembers(MapTypeKey key, IEnumerable<MemberInfo> destMembers, ICollection<IMemberConverter> converters);
+    public abstract void CheckMembers(MapTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters);
     /// <summary>
     /// 构建复制器
     /// </summary>

@@ -2,6 +2,7 @@ using PocoEmit.Activators;
 using PocoEmit.Collections;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
+using PocoEmit.Reflection;
 using System;
 
 namespace PocoEmit.Configuration;
@@ -14,19 +15,9 @@ public interface IMapperOptions : IPocoOptions
     , ISettings<Type, IEmitActivator>
     , ISettings<MapTypeKey, IMemberMatch>
     , ISettings<Type, bool>
+    , ISettings<Type, object>
+    , IReflectionConstructor
 {
-    /// <summary>
-    /// 复制器
-    /// </summary>
-    CopierFactory CopierFactory { get; }
-    /// <summary>
-    /// 激活器
-    /// </summary>
-    ActivatorFactory ActivatorFactory { get; }
-    /// <summary>
-    /// 基础类型配置
-    /// </summary>
-    PrimitiveConfiguration Primitives { get; }
     /// <summary>
     /// 获取成员匹配
     /// </summary>
@@ -37,4 +28,22 @@ public interface IMapperOptions : IPocoOptions
     /// 默认成员匹配
     /// </summary>
     IMemberMatch DefaultMatch { get; set; }
+    /// <summary>
+    /// 获取Emit类型复制器
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    IEmitCopier GetEmitCopier(MapTypeKey key);
+    /// <summary>
+    /// 获取Emit类型激活器
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    IEmitActivator GetEmitActivatorr(Type key);
+    /// <summary>
+    /// 是否基础类型
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    bool CheckPrimitive(Type type);
 }

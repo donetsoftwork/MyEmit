@@ -10,6 +10,9 @@
     <RootNamespace>PocoEmit</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Activators\ParameterActivatorBak.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 

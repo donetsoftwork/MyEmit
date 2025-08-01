@@ -26,6 +26,15 @@ public sealed class ActivatorFactory(IMapperOptions options)
     /// <inheritdoc />
     protected override IEmitActivator CreateNew(Type key)
     {
+        var constructor = _options.GetConstructor(key);
+        if (constructor is not null)
+        {
+            var parameters = constructor.GetParameters();
+            if(parameters.Length == 0)
+                return new ConstructorActivator(key, constructor);
+            return new ParameterConstructorActivator(_options, key, constructor, parameters);
+        }
+            
 #if (NETSTANDARD1_1 || NETSTANDARD1_3)
          var isValueType = key.GetTypeInfo().IsValueType;
 #else
@@ -33,10 +42,7 @@ public sealed class ActivatorFactory(IMapperOptions options)
 #endif
         if (isValueType)
             return new TypeActivator(key);
-        var constructor = ReflectionHelper.GetConstructor(key, static parameters => parameters.Length == 0);
-        if (constructor is null)
-            return null;
-        return new ConstructorActivator(key, constructor);
+        return null;
     }
     #endregion
 }

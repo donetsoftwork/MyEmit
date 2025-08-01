@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 namespace PocoEmit.Activators;
 
 /// <summary>
-/// 类型激活(初始化)
+/// Emit类型激活(初始化)器
 /// </summary>
 public interface IEmitActivator : IEmitInfo
 {
@@ -16,6 +16,7 @@ public interface IEmitActivator : IEmitInfo
     /// <summary>
     /// 激活
     /// </summary>
+    /// <param name="argument">参数</param>
     /// <returns></returns>
-    Expression New();
+    Expression New(Expression argument);
 }

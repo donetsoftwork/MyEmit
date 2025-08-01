@@ -28,6 +28,9 @@ public sealed class CompiledReader<TInstance, TValue>(IEmitMemberReader inner, F
     public Func<TInstance, TValue> ReadFunc
         => _readFunc;
     /// <inheritdoc />
+    MemberInfo IEmitMemberReader.Info
+        => _inner.Info;
+    /// <inheritdoc />
     bool IEmitInfo.Compiled
         => true;
     #endregion

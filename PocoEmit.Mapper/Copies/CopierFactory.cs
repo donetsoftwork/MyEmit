@@ -1,7 +1,6 @@
 using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
-using PocoEmit.Copies;
 using System;
 
 namespace PocoEmit.Copies;
@@ -81,5 +80,5 @@ public class CopierFactory
     public static IEmitCopier BuildForNullable(IEmitCopier original, Type sourceType, Type destType)
     => new CompatibleCopier(original, sourceType, destType);
     private bool CheckPrimitive(Type destType)
-        => _options.Primitives.Get(destType) || destType == typeof(object);    
+        => _options.CheckPrimitive(destType) || destType == typeof(object);    
 }

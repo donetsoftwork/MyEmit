@@ -25,6 +25,7 @@ public abstract partial class MapperConfigurationBase
     private IDictionary<Type, IEmitActivator> _activators = new ConcurrentDictionary<Type, IEmitActivator>();
     internal IDictionary<MapTypeKey, IMemberMatch> _matches = new ConcurrentDictionary<MapTypeKey, IMemberMatch>();
     private IDictionary<Type, bool> _primitiveTypes = new ConcurrentDictionary<Type, bool>();
+    private IDictionary<Type, object> _defaultValues = new ConcurrentDictionary<Type, object>();
     #endregion
     #region IMapperOptions
     /// <inheritdoc />
@@ -43,42 +44,61 @@ public abstract partial class MapperConfigurationBase
         return match ?? _defaultMatch;
     }
     #region ISettings<MapTypeKey, IEmitCopier>
+    /// <inheritdoc />
     bool ISettings<MapTypeKey, IEmitCopier>.ContainsKey(MapTypeKey key)
         => _copiers.ContainsKey(key);
     /// <inheritdoc />
-    public virtual bool TryGetValue(MapTypeKey key, out IEmitCopier value)
+    bool ISettings<MapTypeKey, IEmitCopier>.TryGetValue(MapTypeKey key, out IEmitCopier value)
         => _copiers.TryGetValue(key, out value);
-    void ISettings<MapTypeKey, IEmitCopier>.Set(MapTypeKey key, IEmitCopier value)
+    /// <inheritdoc />
+    public void Set(MapTypeKey key, IEmitCopier value)
         => _copiers[key] = value;
     #endregion
     #region ISettings<Type, IEmitActivator>
+    /// <inheritdoc />
     bool ISettings<Type, IEmitActivator>.ContainsKey(Type key)
         => _activators.ContainsKey(key);
     /// <inheritdoc />
-    public virtual bool TryGetValue(Type key, out IEmitActivator value)
+    bool ISettings<Type, IEmitActivator>.TryGetValue(Type key, out IEmitActivator value)
         => _activators.TryGetValue(key, out value);
+    /// <inheritdoc />
     void ISettings<Type, IEmitActivator>.Set(Type key, IEmitActivator value)
         => _activators[key] = value;
     #endregion
     #region ISettings<MapTypeKey, IMemberMatch>
+    /// <inheritdoc />
     bool ISettings<MapTypeKey, IMemberMatch>.ContainsKey(MapTypeKey key)
         => _matches.ContainsKey(key);
     /// <inheritdoc />
     public virtual bool TryGetValue(MapTypeKey key, out IMemberMatch value)
         => _matches.TryGetValue(key, out value);
+    /// <inheritdoc />
     void ISettings<MapTypeKey, IMemberMatch>.Set(MapTypeKey key, IMemberMatch value)
         => _matches[key] = value;
     #endregion
     #region ISettings<Type, bool>
+    /// <inheritdoc />
     bool ISettings<Type, bool>.ContainsKey(Type key)
         => _primitiveTypes.ContainsKey(key);
     /// <inheritdoc />
     public virtual bool TryGetValue(Type key, out bool value)
         => _primitiveTypes.TryGetValue(key, out value);
+    /// <inheritdoc />
     void ISettings<Type, bool>.Set(Type key, bool value)
         => _primitiveTypes[key] = value;
     #endregion
-#endregion
+    #region ISettings<Type, object>
+    /// <inheritdoc />
+    bool ISettings<Type, object>.ContainsKey(Type key)
+        => _defaultValues.ContainsKey(key);
+    /// <inheritdoc />
+    bool ISettings<Type, object>.TryGetValue(Type key, out object value)
+        => _defaultValues.TryGetValue(key, out value);
+    /// <inheritdoc />
+    void ISettings<Type, object>.Set(Type key, object value)
+        => _defaultValues[key] = value;
+    #endregion
+    #endregion
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 设置为不可变

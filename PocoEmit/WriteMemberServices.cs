@@ -23,10 +23,10 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(this IPocoOptions options, string memberName)
     {
-        var member = options.GetWriteMember<TInstance>(memberName);
-        if (member is null)
+        var writer = options.GetEmitWriter<TInstance>(memberName);
+        if (writer is null)
             return null;
-        return GetWriteAction<TInstance, TValue>(options, member);
+        return GetWriteAction<TInstance, TValue>(options, writer);
     }
     /// <summary>
     /// 写成员委托
@@ -41,21 +41,21 @@ public static partial class PocoEmitServices
         var emitWriter = MemberContainer.Instance.MemberWriterCacher.Get(member);
         if (emitWriter is null)
             return null;
-        bool noConvert = true;
+        return GetWriteAction<TInstance, TValue>(options, emitWriter);
+    }
+    /// <summary>
+    /// 写成员委托
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="emitWriter"></param>
+    /// <returns></returns>
+    public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(this IPocoOptions options, IEmitMemberWriter emitWriter)
+    {
         var instanceType = typeof(TInstance);
-        if(CheckCompatible(options, ref emitWriter, instanceType))
-        {
-            if (emitWriter is null)
-                return null;
-            noConvert = false;
-        }
         var valueType = typeof(TValue);
-        if(CheckConvert(options, ref emitWriter, valueType))
-        {
-            if (emitWriter is null)
-                return null;
-            noConvert = false;
-        }        
+        var noConvert = CheckType(options, ref emitWriter, instanceType, valueType);
         var instance = Expression.Parameter(instanceType, "instance");
         var value = Expression.Parameter(valueType, "value");
         if (noConvert)
@@ -63,8 +63,12 @@ public static partial class PocoEmitServices
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> typeWriter)
                 return typeWriter.WriteAction;
             var writeAction = Compile<TInstance, TValue>(emitWriter, instance, value);
-            MemberContainer.Instance.MemberWriterCacher.Set(member, new CompiledWriter<TInstance, TValue>(emitWriter, writeAction));
+            MemberContainer.Instance.MemberWriterCacher.Set(emitWriter.Info, new CompiledWriter<TInstance, TValue>(emitWriter, writeAction));
             return writeAction;
+        }
+        else if (emitWriter == null)
+        {
+            return null;
         }
         return Compile<TInstance, TValue>(emitWriter, instance, value);
     }
@@ -80,10 +84,10 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     public static IMemberWriter<TInstance, TValue> GetMemberWriter<TInstance, TValue>(this IPocoOptions options, string memberName)
     {
-        var member = options.GetWriteMember<TInstance>(memberName);
-        if (member is null)
+        var writer = options.GetEmitWriter<TInstance>(memberName);
+        if (writer is null)
             return null;
-        return GetMemberWriter<TInstance, TValue>(options, member);
+        return GetMemberWriter<TInstance, TValue>(options, writer);
     }
     /// <summary>
     /// 获取成员写入器
@@ -98,21 +102,21 @@ public static partial class PocoEmitServices
         var emitWriter = MemberContainer.Instance.MemberWriterCacher.Get(member);
         if (emitWriter is null)
             return null;
-        bool noConvert = true;
+        return GetMemberWriter<TInstance, TValue>(options, emitWriter);
+    }
+    /// <summary>
+    /// 获取成员写入器
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="emitWriter"></param>
+    /// <returns></returns>
+    public static IMemberWriter<TInstance, TValue> GetMemberWriter<TInstance, TValue>(this IPocoOptions options, IEmitMemberWriter emitWriter)
+    {
         var instanceType = typeof(TInstance);
-        if (CheckCompatible(options, ref emitWriter, instanceType))
-        {
-            if (emitWriter is null)
-                return null;
-            noConvert = false;
-        }
         var valueType = typeof(TValue);
-        if (CheckConvert(options, ref emitWriter, valueType))
-        {
-            if (emitWriter is null)
-                return null;
-            noConvert = false;
-        }
+        var noConvert = CheckType(options, ref emitWriter, instanceType, valueType);
         var instance = Expression.Parameter(instanceType, "instance");
         var value = Expression.Parameter(valueType, "value");
         if (noConvert)
@@ -120,13 +124,38 @@ public static partial class PocoEmitServices
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> compiledWriter)
                 return compiledWriter;
             compiledWriter = new CompiledWriter<TInstance, TValue>(emitWriter, Compile<TInstance, TValue>(emitWriter, instance, value));
-            MemberContainer.Instance.MemberWriterCacher.Set(member, compiledWriter);
+            MemberContainer.Instance.MemberWriterCacher.Set(emitWriter.Info, compiledWriter);
             return compiledWriter;
+        }
+        else if (emitWriter == null)
+        {
+            return null;
         }
         return new CompiledWriter<TInstance, TValue>(emitWriter, Compile<TInstance, TValue>(emitWriter, instance, value));
     }
     #endregion
     #region Check
+    /// <summary>
+    /// 检查类型
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="emitWriter"></param>
+    /// <param name="instanceType"></param>
+    /// <param name="valueType"></param>
+    /// <returns></returns>
+    public static bool CheckType(this IPocoOptions options, ref IEmitMemberWriter emitWriter, Type instanceType, Type valueType)
+    {
+        bool noConvert = true;
+        if (CheckInstanceType(options, ref emitWriter, instanceType))
+        {
+            if (emitWriter is null)
+                return false;
+            noConvert = false;
+        }
+        if (CheckValueType(options, ref emitWriter, valueType))
+            return false;
+        return noConvert;
+    }
     /// <summary>
     /// 检查实例类型是否需要兼容
     /// </summary>
@@ -134,12 +163,12 @@ public static partial class PocoEmitServices
     /// <param name="emitWriter"></param>
     /// <param name="instanceType"></param>
     /// <returns></returns>
-    public static bool CheckCompatible(this IPocoOptions options, ref IEmitMemberWriter emitWriter, Type instanceType)
+    public static bool CheckInstanceType(this IPocoOptions options, ref IEmitMemberWriter emitWriter, Type instanceType)
     {
         var instanceType0 = emitWriter.InstanceType;
         if (ReflectionHelper.CheckValueType(instanceType, instanceType0))
             return false;
-        var emitConverter = options.ConverterFactory.Get(instanceType, instanceType0);
+        var emitConverter = options.GetEmitConverter(instanceType, instanceType0);
         if (emitConverter is null)
             emitWriter = null;
         else
@@ -153,12 +182,12 @@ public static partial class PocoEmitServices
     /// <param name="emitWriter"></param>
     /// <param name="valueType"></param>
     /// <returns></returns>
-    public static bool CheckConvert(this IPocoOptions options, ref IEmitMemberWriter emitWriter, Type valueType)
+    public static bool CheckValueType(this IPocoOptions options, ref IEmitMemberWriter emitWriter, Type valueType)
     {
         var valueType0 = emitWriter.ValueType;
         if (ReflectionHelper.CheckValueType(valueType, valueType0))
             return false;
-        var emitConverter = options.ConverterFactory.Get(valueType, valueType0);
+        var emitConverter = options.GetEmitConverter(valueType, valueType0);
         if (emitConverter is null)
             emitWriter = null;
         else
@@ -178,52 +207,6 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     public static Action<TInstance, TValue> Compile<TInstance, TValue>(this IEmitMemberWriter emit, ParameterExpression instance, ParameterExpression value)
     {
-        //try
-        //{
-        //    var body = emit.Write(instance, value);
-        //    var lambda = Expression.Lambda<Action<TInstance, TValue>>(body, instance, value);
-        //    // 尝试编译
-        //    return lambda.Compile();
-        //}
-        //catch (Exception ex)
-        //{
-        //    if (emit is DelegateWriter<TInstance, TValue> delegateWriter)
-        //    {
-        //        var inner = delegateWriter.Inner;
-        //        if (inner is FieldWriter fieldWriter)
-        //        {
-        //            throw new InvalidOperationException($"Failed to compile delegateWriter Inner FieldWriter for {fieldWriter.Name} on {fieldWriter.InstanceType.Name}.", ex);
-        //        }
-        //        else if (inner is PropertyWriter propertyWriter)
-        //        {
-        //            throw new InvalidOperationException($"Failed to compile delegateWriter Inner PropertyWriter for {propertyWriter.Name} on {propertyWriter.InstanceType.Name}.", ex);
-        //        }
-        //        throw new InvalidOperationException($"Failed to compile delegateWriter for {inner.Name} on {inner.InstanceType.Name}.", ex);
-        //    }
-        //    else if (emit is CompatibleMemberWriter compatibleMemberWriter)
-        //    {
-        //        throw new InvalidOperationException($"Failed to compile CompatibleMemberWriter for {compatibleMemberWriter.Name} on {compatibleMemberWriter.InstanceType.Name}.", ex);
-        //    }
-        //    else if (emit is ConvertMemberWriter convertMemberWriter)
-        //    {
-        //        var converter = convertMemberWriter.Converter;
-        //        if(converter is DelegateConverter<int?, int> delegateConverter)
-        //        {
-        //            throw new InvalidOperationException($"Failed to compile ConvertMemberWriter for {convertMemberWriter.Name} with Converter with {delegateConverter.Method} on {convertMemberWriter.InstanceType.Name}.", ex);
-        //        }
-        //        throw new InvalidOperationException($"Failed to compile ConvertMemberWriter for {convertMemberWriter.Name} with Converter of {converter.GetType()} on {convertMemberWriter.InstanceType.Name}.", ex);
-        //    }
-        //    else if (emit is FieldWriter fieldWriter)
-        //    {
-        //        throw new InvalidOperationException($"Failed to compile FieldWriter for {fieldWriter.Name} on {fieldWriter.InstanceType.Name}.", ex);
-        //    }
-        //    else if (emit is PropertyWriter propertyWriter)
-        //    {
-        //        throw new InvalidOperationException($"Failed to compile PropertyWriter for {propertyWriter.Name} on {propertyWriter.InstanceType.Name}.", ex);
-        //    }
-        //    // 编译失败，抛出异常
-        //    throw new InvalidOperationException($"Failed to compile member writer for {emit.Name} of {emit.GetType()} on {emit.InstanceType.Name}.", ex);
-        //}
         var body = emit.Write(instance, value);
         var lambda = Expression.Lambda<Action<TInstance, TValue>>(body, instance, value);
         return lambda.Compile();

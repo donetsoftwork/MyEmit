@@ -1,8 +1,7 @@
-using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
+using PocoEmit.Members;
 using System;
-using System.Linq;
 
 namespace PocoEmit.Builders;
 
@@ -24,19 +23,18 @@ public class ComplexConvertBuilder(IMapperOptions options)
     /// <inheritdoc />
     public override IEmitConverter Build(Type sourceType, Type destType)
     {
-        var primitives = _options.Primitives;
-        if (primitives.Get(sourceType))
+        if (_options.CheckPrimitive(sourceType))
             return base.Build(sourceType, destType);
         var converter = TryBuildByMember(sourceType, destType);
         if(converter is not null)
             return converter;
-        if (primitives.Get(destType))
+        if (_options.CheckPrimitive(destType))
             return null;
         var key = new MapTypeKey(sourceType, destType);
-        var copier = _options.CopierFactory.Get(key);
+        var copier = _options.GetEmitCopier(key);
         if (copier is null)
             return null;
-        var activator = _options.ActivatorFactory.Get(destType);
+        var activator = _options.GetEmitActivatorr(destType);
         if (activator is null)
             return null;
         return new ComplexTypeConverter(activator, copier);
@@ -52,14 +50,42 @@ public class ComplexConvertBuilder(IMapperOptions options)
         var bundle = _options.MemberCacher.Get(sourceType);
         if (bundle is null)
             return null;
-        foreach (var member in bundle.ReadMembers.Values)
+        foreach (var memberReader in bundle.EmitReaders.Values)
         {
-            var memberReader = MemberContainer.Instance.MemberReaderCacher.Get(member);
-            if (memberReader is null)
-                continue;
-            if (memberReader.ValueType == destType)
-                return new MemberReadConverter(memberReader);
+            var reader = memberReader;
+            if (CheckReader(_options, ref reader, destType) && reader is not null)
+                return new MemberReadConverter(reader);
         }
         return null;
+    }
+    /// <summary>
+    /// 检查成员是否匹配
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="reader"></param>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    private static bool CheckReader(IMapperOptions options, ref IEmitMemberReader reader, Type destType)
+    {
+        var valueType = reader.ValueType;
+        if (ReflectionHelper.CheckValueType(valueType, destType))
+            return true;
+        bool isNullable = false;
+        if (ReflectionHelper.IsNullable(valueType))
+        {
+            valueType = valueType.GenericTypeArguments[0];
+            isNullable = true;
+        }
+        if (ReflectionHelper.IsNullable(destType))
+        {
+            isNullable = true;
+            destType = destType.GenericTypeArguments[0];
+        }
+        if(isNullable && ReflectionHelper.CheckValueType(valueType, destType))
+        {
+            options.CheckValueType(ref reader, destType);
+            return true;
+        }
+        return false;
     }
 }
