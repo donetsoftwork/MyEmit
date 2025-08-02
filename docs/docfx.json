@@ -6,7 +6,9 @@
         {
           "src": "../",
           "files": [
-            "PocoEmit/PocoEmit.csproj"
+            "PocoEmit/PocoEmit.csproj",
+            "PocoEmit.Mapper/PocoEmit.Mapper.csproj",
+            "PocoEmit.Mapper.DI/PocoEmit.Mapper.DI.csproj"
           ],
           "exclude": [ "Tests/*" ]
         }

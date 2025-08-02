@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\package.props" />
   <PropertyGroup>
+    <TargetFrameworks>net4.5;net7.0;net8.0;net9.0;netstandard1.1;netstandard1.3;netstandard1.6;netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageId>PocoEmit</PackageId>
     <Description>Emit加速操作属性和字段</Description>
     <PackageTags>Emit;Poco;Reflection;Property;Field</PackageTags>

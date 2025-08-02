@@ -8,7 +8,7 @@
 >* 支持netstandard1.1;netstandard1.3;netstandard1.6;netstandard2.0;netstandard2.1
 
 
-## 一、 读取
+## 一、成员读取
 >按属性或字段名读取
 
 ### 1. 用委托
@@ -34,7 +34,7 @@ IMemberReader<User, string> reader = Poco.Global.GetMemberReader<User, string>("
 string name = reader.Read(user);
 ```
 
-## 二、 写入
+## 二、 成员写入
 > 按属性或字段名写入
 
 ## 1.1 按实际类型写入

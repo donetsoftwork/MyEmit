@@ -1,7 +1,7 @@
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using System;
-#if (NETSTANDARD1_1 || NETSTANDARD1_3)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
 using System.Reflection;
 #endif
 
@@ -34,9 +34,8 @@ public sealed class ActivatorFactory(IMapperOptions options)
                 return new ConstructorActivator(key, constructor);
             return new ParameterConstructorActivator(_options, key, constructor, parameters);
         }
-            
-#if (NETSTANDARD1_1 || NETSTANDARD1_3)
-         var isValueType = key.GetTypeInfo().IsValueType;
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        var isValueType = key.GetTypeInfo().IsValueType;
 #else
         var isValueType = key.IsValueType;
 #endif

@@ -20,11 +20,13 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     /// <param name="reflectionMember"></param>
     /// <param name="reflectionConstructor"></param>
-    public MapperConfigurationBase(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor)
+    /// <param name="defaultMatch"></param>
+    public MapperConfigurationBase(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatch)
         : base(reflectionMember)
     {
         // 初始化配置
         _reflectionConstructor = reflectionConstructor;
+        _defaultMatch = defaultMatch;
         ConvertBuilder = new ComplexConvertBuilder(this);
         _copierFactory = new CopierFactory(this);
         _activatorFactory = new ActivatorFactory(this);
@@ -32,6 +34,10 @@ public abstract partial class MapperConfigurationBase
     }
     #region 配置
     private IReflectionConstructor _reflectionConstructor;
+    /// <summary>
+    /// 默认成员匹配
+    /// </summary>
+    protected IMemberMatch _defaultMatch;
     /// <summary>
     /// 复制器
     /// </summary>
@@ -44,10 +50,6 @@ public abstract partial class MapperConfigurationBase
     /// 基础类型配置
     /// </summary>
     private readonly PrimitiveConfiguration _primitives;
-    /// <summary>
-    /// 默认成员匹配
-    /// </summary>
-    protected IMemberMatch _defaultMatch = MemberNameMatcher.Default;
     #endregion
     /// <summary>
     /// 反射获取构造函数

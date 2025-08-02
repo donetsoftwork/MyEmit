@@ -49,7 +49,7 @@ public sealed class Poco(IReflectionMember reflection)
         }
     }
     /// <summary>
-    /// Emit配置
+    /// 全局配置
     /// </summary>
     public static IPocoOptions Global
         => GlobalOptions.Instance;

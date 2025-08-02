@@ -76,4 +76,16 @@ public class MapperConvertTests : MapperConvertTestBase
         Assert.Equal(source.Id, dest.Id);
         Assert.Equal(source.Name, dest.Name);
     }
+
+    [Fact]
+    public void Convert_DTO2Manager2()
+    {
+        var source = new ManagerDTO { Id = 22, Name = "BBB", User = new UserDTO { Id = 3, Name = "张三" } };
+        var result = _mapper.Convert<ManagerDTO, Manager2>(source);
+        Assert.NotNull(result);
+        Assert.Equal(source.Id, result.Id);
+        Assert.Equal(source.Name, result.Name);
+        Assert.Equal(source.User.Id, result.User.Id);
+        Assert.Equal(source.User.Name, result.User.Name);
+    }
 }

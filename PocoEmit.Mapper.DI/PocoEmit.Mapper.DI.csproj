@@ -1,20 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>    
-    <TargetFrameworks>net7.0;net8.0;net9.0;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <LangVersion>Latest</LangVersion>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <Authors>jiangxiangji</Authors>
-    <Company>MyEmit</Company>
-    <Copyright>Copyright (c) MyEmit All Rights Reserved</Copyright>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/donetsoftwork/MyEmit</RepositoryUrl>
-    <PackageProjectUrl>https://donetsoftwork.github.io/MyEmit</PackageProjectUrl>
-    <!-- SourceLink settings -->
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.2.2-alpha</Version>
+  <Import Project="..\package.props" />
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <PackageId>PocoEmit.Mapper.DI</PackageId>
+    <Description>Emit加速操作属性和字段</Description>
+    <PackageTags>Emit;Poco;Mapper;Map</PackageTags>
+    <Version>$(VersionBase).0-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
   </PropertyGroup>

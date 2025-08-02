@@ -51,6 +51,8 @@ public abstract class CopierBuilderBase(CopierFactory factory)
         // 初始化完成,允许读
         block.Set();
         copier.MembersToArray();
+        if (list.Count == 0)
+            return null;
         return copier;
     }
     /// <summary>

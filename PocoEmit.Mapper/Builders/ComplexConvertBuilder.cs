@@ -31,12 +31,10 @@ public class ComplexConvertBuilder(IMapperOptions options)
         if (_options.CheckPrimitive(destType))
             return null;
         var key = new MapTypeKey(sourceType, destType);
-        var copier = _options.GetEmitCopier(key);
-        if (copier is null)
-            return null;
         var activator = _options.GetEmitActivatorr(destType);
         if (activator is null)
             return null;
+        var copier = _options.GetEmitCopier(key);
         return new ComplexTypeConverter(activator, copier);
     }
     /// <summary>

@@ -1,11 +1,9 @@
-- name: 操作
-  href: ./member.md
-- name: 属性操作
-  href: ./property.md
-- name: 字段操作
-  href: ./field.md
-- name: 缓存
-  href: ./cache.md
+- name: 基本操作
+  href: ./poco/index.md
+- name: 映射
+  href: ./mapper/index.md
+- name: DI
+  href: ./di/index.md
 - name: API
   href: ./api/
 - name: 源码

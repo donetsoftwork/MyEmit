@@ -12,15 +12,11 @@ public abstract class MapperConvertIdTestBase
     #region Supports
     internal class MyMapperId(int id)
     {
-        private readonly int _id = id;
-        public int Id
-            => _id;
+        public int Id { get; } = id;
     }
     internal class MyMapperId2(int? id)
     {
-        private readonly int? _id = id;
-        public int? Id
-            => _id;
+        public int? Id { get; } = id;
     }
     internal class MyMapper(MyMapperId id)
     {

@@ -21,11 +21,19 @@ public abstract partial class MapperConfigurationBase
     , IMapperOptions
 {
     #region 配置
+#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     private IDictionary<MapTypeKey, IEmitCopier> _copiers = new ConcurrentDictionary<MapTypeKey, IEmitCopier>();
     private IDictionary<Type, IEmitActivator> _activators = new ConcurrentDictionary<Type, IEmitActivator>();
     internal IDictionary<MapTypeKey, IMemberMatch> _matches = new ConcurrentDictionary<MapTypeKey, IMemberMatch>();
     private IDictionary<Type, bool> _primitiveTypes = new ConcurrentDictionary<Type, bool>();
     private IDictionary<Type, object> _defaultValues = new ConcurrentDictionary<Type, object>();
+#else
+    private ConcurrentDictionary<MapTypeKey, IEmitCopier> _copiers = new();
+    private ConcurrentDictionary<Type, IEmitActivator> _activators = new();
+    internal ConcurrentDictionary<MapTypeKey, IMemberMatch> _matches = new();
+    private ConcurrentDictionary<Type, bool> _primitiveTypes = new();
+    private ConcurrentDictionary<Type, object> _defaultValues = new();
+#endif
     #endregion
     #region IMapperOptions
     /// <inheritdoc />

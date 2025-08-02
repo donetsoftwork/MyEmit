@@ -29,23 +29,6 @@ public static partial class PocoEmitServices
         return converter;
     }
     /// <summary>
-    /// 尝试设置委托来转化不覆盖
-    /// </summary>
-    /// <typeparam name="TSource"></typeparam>
-    /// <typeparam name="TDest"></typeparam>
-    /// <param name="settings"></param>
-    /// <param name="convertFunc"></param>
-    /// <returns></returns>
-    public static IEmitConverter TrySetConvertFunc<TSource, TDest>(this IPocoOptions settings, Func<TSource, TDest> convertFunc)
-    {
-        var key = new MapTypeKey(typeof(TSource), typeof(TDest));
-        if (settings.TryGetValue(key, out var value0) && value0 is not null)
-            return value0;
-        var converter = new DelegateConverter<TSource, TDest>(convertFunc);
-        settings.SetConvertSetting(key, converter);
-        return converter;
-    }
-    /// <summary>
     /// 加载System.Convert
     /// </summary>
     /// <typeparam name="TSettings"></typeparam>
@@ -61,20 +44,20 @@ public static partial class PocoEmitServices
     public static TSettings SetStringConvert<TSettings>(this TSettings settings)
         where TSettings : IPocoOptions
     {
-        settings.TrySetConvertFunc<string, bool>(System.Convert.ToBoolean);
-        settings.TrySetConvertFunc<string, byte>(System.Convert.ToByte);
-        settings.TrySetConvertFunc<string, char>(System.Convert.ToChar);
-        settings.TrySetConvertFunc<string, DateTime>(System.Convert.ToDateTime);
-        settings.TrySetConvertFunc<string, decimal>(System.Convert.ToDecimal);
-        settings.TrySetConvertFunc<string, float>(System.Convert.ToSingle);
-        settings.TrySetConvertFunc<string, double>(System.Convert.ToDouble);
-        settings.TrySetConvertFunc<string, short>(System.Convert.ToInt16);
-        settings.TrySetConvertFunc<string, int>(System.Convert.ToInt32);
-        settings.TrySetConvertFunc<string, long>(System.Convert.ToInt64);
-        settings.TrySetConvertFunc<string, sbyte>(System.Convert.ToSByte);
-        settings.TrySetConvertFunc<string, ushort>(System.Convert.ToUInt16);
-        settings.TrySetConvertFunc<string, uint>(System.Convert.ToUInt32);
-        settings.TrySetConvertFunc<string, ulong>(System.Convert.ToUInt64);
+        settings.SetConvertFunc<string, bool>(System.Convert.ToBoolean);
+        settings.SetConvertFunc<string, byte>(System.Convert.ToByte);
+        settings.SetConvertFunc<string, char>(System.Convert.ToChar);
+        settings.SetConvertFunc<string, DateTime>(System.Convert.ToDateTime);
+        settings.SetConvertFunc<string, decimal>(System.Convert.ToDecimal);
+        settings.SetConvertFunc<string, float>(System.Convert.ToSingle);
+        settings.SetConvertFunc<string, double>(System.Convert.ToDouble);
+        settings.SetConvertFunc<string, short>(System.Convert.ToInt16);
+        settings.SetConvertFunc<string, int>(System.Convert.ToInt32);
+        settings.SetConvertFunc<string, long>(System.Convert.ToInt64);
+        settings.SetConvertFunc<string, sbyte>(System.Convert.ToSByte);
+        settings.SetConvertFunc<string, ushort>(System.Convert.ToUInt16);
+        settings.SetConvertFunc<string, uint>(System.Convert.ToUInt32);
+        settings.SetConvertFunc<string, ulong>(System.Convert.ToUInt64);
         return settings;
     }
     /// <summary>

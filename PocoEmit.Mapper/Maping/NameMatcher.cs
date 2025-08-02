@@ -7,7 +7,7 @@ namespace PocoEmit.Maping;
 /// 成员名匹配
 /// </summary>
 /// <param name="comparer"></param>
-public sealed class NameMatcher(IEqualityComparer<string> comparer)
+public class NameMatcher(IEqualityComparer<string> comparer)
     : INameMatch
 {
     /// <summary>
@@ -18,6 +18,9 @@ public sealed class NameMatcher(IEqualityComparer<string> comparer)
     {
     }
     #region 配置
+    /// <summary>
+    /// 比较规则
+    /// </summary>
     private readonly IEqualityComparer<string> _comparer = comparer;
     /// <summary>
     /// 比较规则
@@ -26,6 +29,6 @@ public sealed class NameMatcher(IEqualityComparer<string> comparer)
         => _comparer;
     #endregion
     /// <inheritdoc />
-    public bool Match(string sourceName, string destName)
+    public virtual bool Match(string sourceName, string destName)
         => _comparer.Equals(sourceName, destName);
 }

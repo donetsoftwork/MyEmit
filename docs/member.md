@@ -10,14 +10,14 @@ _layout: landing
 
 ### 1.1 按实际类型读取
 ```csharp
-Func<Test, int> getter = InstanceHelper.EmitGetter<Test, int>("Id");
-int id = getter(instance);
+Func<Test, int> readFunc = InstanceHelper.GetReadFunc<Test, int>("Id");
+int id = readFunc(instance);
 ```
 ### 1.2 按object类型读取
 ```csharp
 // 按实际类型读取
-Func<Test, object> getter = InstanceHelper.EmitGetter<Test, object>("Id");
-object id = getter(instance);
+Func<Test, object> readFunc = InstanceHelper.GetReadFunc<Test, object>("Id");
+object id = readFunc(instance);
 ```
 
 ## 2. 写入
@@ -25,14 +25,14 @@ object id = getter(instance);
 
 ### 2.1 按实际类型写入
 ```csharp
-Action<Test, int> setter = InstanceHelper.EmitSetter<Test, int>("Id");
+Action<Test, int> writeAction = InstanceHelper.GetWriteAction<Test, int>("Id");
 int id = 1;
-setter(instance, id);
+writeAction(instance, id);
 ```
 ### 2.2 按object类型写入
 ```csharp
 // 按实际类型写入
-Action<Test, object> setter = InstanceHelper.EmitSetter<Test, object>("Id");
+Action<Test, object> writeAction = InstanceHelper.GetWriteAction<Test, object>("Id");
 object id = 2;
-setter(instance, id);
+writeAction(instance, id);
 ```

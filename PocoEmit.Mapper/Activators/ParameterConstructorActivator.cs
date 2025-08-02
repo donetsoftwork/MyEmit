@@ -55,13 +55,19 @@ public class ParameterConstructorActivator(IMapperOptions options, Type returnTy
         foreach (var parameter in _parameters)
         {
             var valueType = parameter.ValueType;
-            var reader = readers.FirstOrDefault(m => match.Match(m, parameter));
-            if (reader is not null)
-                _options.CheckValueType(ref reader, valueType);
-            if (reader is null)
+            IEmitMemberReader emitMemberReader = null;
+            foreach (var reader in match.Select(readers, parameter))
+            {
+                emitMemberReader = reader;
+                _options.CheckValueType(ref emitMemberReader, valueType);
+                if (emitMemberReader is not null)
+                {
+                    arguments[i++] = emitMemberReader.Read(source);
+                    break;
+                }      
+            }
+            if (emitMemberReader is null)
                 arguments[i++] = Expression.Default(valueType);
-            else
-                arguments[i++] = reader.Read(source);
         }
         return arguments;
     }

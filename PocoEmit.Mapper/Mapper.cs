@@ -14,14 +14,15 @@ namespace PocoEmit;
 /// </summary>
 /// <param name="reflectionMember"></param>
 /// <param name="reflectionConstructor"></param>
-public sealed class Mapper(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor)
-    : MapperConfigurationBase(reflectionMember, reflectionConstructor)
+/// <param name="defaultMatch"></param>
+public sealed class Mapper(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatch)
+    : MapperConfigurationBase(reflectionMember, reflectionConstructor, defaultMatch)
 {
     /// <summary>
     /// Emit配置
     /// </summary>
     public Mapper()
-        : this(DefaultReflectionMember, DefaultReflectConstructor)
+        : this(DefaultReflectionMember, DefaultReflectConstructor, GlobalOptions.Instance.DefaultMatch)
     {
     }
     #region IMapperOptions
@@ -105,7 +106,7 @@ public sealed class Mapper(IReflectionMember reflectionMember, IReflectionConstr
         }
     }
     /// <summary>
-    /// Emit配置
+    /// 全局配置
     /// </summary>
     public static IMapperOptions Global
         => GlobalOptions.Instance;
@@ -113,7 +114,7 @@ public sealed class Mapper(IReflectionMember reflectionMember, IReflectionConstr
     /// 全局配置
     /// </summary>
     sealed class GlobalOptions()
-        : MapperConfigurationBase(DefaultReflectionMember, DefaultReflectConstructor)
+        : MapperConfigurationBase(DefaultReflectionMember, DefaultReflectConstructor, MemberNameMatcher.Default)
     {
         /// <summary>
         /// Emit全局配置

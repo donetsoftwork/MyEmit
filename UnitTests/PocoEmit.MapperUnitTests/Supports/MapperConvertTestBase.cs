@@ -23,6 +23,8 @@ public abstract class MapperConvertTestBase
         public User User { get; set; }
     }
 
+    internal record Manager2(int Id, string Name, User User);
+
     internal class ManagerDTO
     {
         public int Id { get; set; }

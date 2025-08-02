@@ -16,8 +16,6 @@ public abstract class PocoConvertTestBase
 
     internal class PocoId(int id)
     {
-        private readonly int _id = id;
-        public int Id 
-            => _id;
+        public int Id { get; } = id;
     }
 }
