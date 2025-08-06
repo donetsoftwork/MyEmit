@@ -73,7 +73,7 @@ public abstract class CopierBuilderBase(CopierFactory factory)
     {
         ComplexTypeCopier copier = new(Wait(block, members));
         // 提前设置复制器,避免重复构建
-        _factory.TrySet(key, copier);
+        _factory.TryCache(key, copier);
         return copier;
     }
     /// <summary>

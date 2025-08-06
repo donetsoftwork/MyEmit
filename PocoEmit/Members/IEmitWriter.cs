@@ -6,7 +6,7 @@ namespace PocoEmit.Members;
 /// <summary>
 /// 成员写入接口
 /// </summary>
-public interface IEmitWriter : IEmitInfo
+public interface IEmitWriter : ICompileInfo
 {
     /// <summary>
     /// 写入

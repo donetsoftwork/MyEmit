@@ -1,4 +1,3 @@
-using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
 
@@ -7,7 +6,7 @@ namespace PocoEmit.Activators;
 /// <summary>
 /// Emit类型激活(初始化)器
 /// </summary>
-public interface IEmitActivator : IEmitInfo
+public interface IEmitActivator
 {
     /// <summary>
     /// 返回类型

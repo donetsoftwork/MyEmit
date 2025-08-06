@@ -5,11 +5,11 @@ namespace PocoEmit.MapperUnitTests.Supports;
 /// </summary>
 public abstract class MapperMemberTestBase
 {
-    protected Mapper _mapper = new();
+    protected IMapper _mapper = Mapper.Create();
     protected TestInstance _instance = new();
     public MapperMemberTestBase()
     {
         // 加载System.Convert
-        Mapper.Global.SetSystemConvert();
+        Mapper.Global.UseSystemConvert();
     }
 }

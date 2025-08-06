@@ -8,7 +8,7 @@ namespace PocoEmit.Collections;
 /// </summary>
 /// <param name="cacher"></param>
 /// <param name="reflection"></param>
-public class TypeMemberCacher(ISettings<Type, MemberBundle> cacher, IReflectionMember reflection)
+public class TypeMemberCacher(ICacher<Type, MemberBundle> cacher, IReflectionMember reflection)
     : CacheBase<Type, MemberBundle>(cacher)
 {
     #region 配置

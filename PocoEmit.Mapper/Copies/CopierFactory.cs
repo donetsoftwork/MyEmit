@@ -78,7 +78,7 @@ public class CopierFactory
     /// <param name="destType"></param>
     /// <returns></returns>
     public static IEmitCopier BuildForNullable(IEmitCopier original, Type sourceType, Type destType)
-    => new CompatibleCopier(original, sourceType, destType);
+        => new CompatibleCopier(original, sourceType, destType);
     private bool CheckPrimitive(Type destType)
         => _options.CheckPrimitive(destType) || destType == typeof(object);    
 }

@@ -1,4 +1,3 @@
-using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
 
@@ -16,9 +15,6 @@ public class TypeActivator(Type returnType)
     /// <inheritdoc />
     public Type ReturnType
         => _returnType;
-
-    bool IEmitInfo.Compiled
-        => false;
     #endregion
     /// <inheritdoc />
     public Expression New(Expression argument)

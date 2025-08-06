@@ -2,12 +2,12 @@ namespace PocoEmit.MapperUnitTests.Supports;
 
 public abstract class MapperConvertIdTestBase
 {
-    protected readonly Mapper _mapper = new();
+    protected readonly IMapper _mapper = Mapper.Create();
 
     public MapperConvertIdTestBase()
     {
         // 继承Global配置,能被EmitOptions对象引用
-        Mapper.Global.SetSystemConvert();
+        Mapper.Global.UseSystemConvert();
     }
     #region Supports
     internal class MyMapperId(int id)

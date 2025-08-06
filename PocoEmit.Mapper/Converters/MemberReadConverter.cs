@@ -19,7 +19,7 @@ public class MemberReadConverter(IEmitMemberReader reader)
     public IEmitMemberReader Reader
         => _reader;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />

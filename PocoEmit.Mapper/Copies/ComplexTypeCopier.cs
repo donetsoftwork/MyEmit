@@ -18,7 +18,7 @@ public class ComplexTypeCopier(IEnumerable<IMemberConverter> members)
     public IEnumerable<IMemberConverter> Members 
         => _members;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     /// <inheritdoc />
     public IEnumerable<Expression> Copy(Expression source, Expression dest)

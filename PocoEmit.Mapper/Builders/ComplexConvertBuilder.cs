@@ -31,7 +31,7 @@ public class ComplexConvertBuilder(IMapperOptions options)
         if (_options.CheckPrimitive(destType))
             return null;
         var key = new MapTypeKey(sourceType, destType);
-        var activator = _options.GetEmitActivatorr(destType);
+        var activator = _options.GetEmitActivator(key);
         if (activator is null)
             return null;
         var copier = _options.GetEmitCopier(key);
@@ -54,6 +54,10 @@ public class ComplexConvertBuilder(IMapperOptions options)
             if (CheckReader(_options, ref reader, destType) && reader is not null)
                 return new MemberReadConverter(reader);
         }
+        //var method = ReflectionHelper.GetMethod(sourceType, m => m.GetParameters().Length == 0 && m.ReturnType == destType);
+        //if (method is null)
+        //    return null;
+        //return new SelfMethodConverter(method);
         return null;
     }
     /// <summary>

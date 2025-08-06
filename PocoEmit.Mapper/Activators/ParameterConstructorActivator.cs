@@ -1,7 +1,8 @@
 using PocoEmit.Configuration;
+using PocoEmit.Maping;
 using PocoEmit.Members;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -54,35 +55,32 @@ public class ParameterConstructorActivator(IMapperOptions options, Type returnTy
         var i = 0;
         foreach (var parameter in _parameters)
         {
-            var valueType = parameter.ValueType;
-            IEmitMemberReader emitMemberReader = null;
-            foreach (var reader in match.Select(readers, parameter))
-            {
-                emitMemberReader = reader;
-                _options.CheckValueType(ref emitMemberReader, valueType);
-                if (emitMemberReader is not null)
-                {
-                    arguments[i++] = emitMemberReader.Read(source);
-                    break;
-                }      
-            }
+            IEmitMemberReader emitMemberReader = GetReader(parameter, match, readers);
             if (emitMemberReader is null)
-                arguments[i++] = Expression.Default(valueType);
+                arguments[i++] = _options.CreateDefault(parameter.ValueType);
+            else
+                arguments[i++] = emitMemberReader.Read(source);
         }
         return arguments;
     }
-    ///// <summary>
-    ///// 构造参数表达式
-    ///// </summary>
-    ///// <param name="source"></param>
-    ///// <param name="members"></param>
-    ///// <returns></returns>
-    //public static Expression[] CreateParameters(Expression source, IEmitReader[] members)
-    //{
-    //    var parameters = new Expression[members.Length];
-    //    var i = 0;
-    //    foreach (var member in members)
-    //        parameters[i++] = member.Read(source);
-    //    return parameters;
-    //}
+    /// <summary>
+    /// 获取读取器
+    /// </summary>
+    /// <param name="parameter"></param>
+    /// <param name="match"></param>
+    /// <param name="readers"></param>
+    /// <returns></returns>
+    private IEmitMemberReader GetReader(ConstructorParameterMember parameter, IMemberMatch match, IEnumerable<IEmitMemberReader> readers)
+    {
+        var valueType = parameter.ValueType;
+        IEmitMemberReader emitMemberReader = null;
+        foreach (var reader in match.Select(_options.Recognizer, readers, parameter))
+        {
+            emitMemberReader = reader;
+            _options.CheckValueType(ref emitMemberReader, valueType);
+            if (emitMemberReader is not null)
+                break;
+        }
+        return emitMemberReader;
+    }
 }

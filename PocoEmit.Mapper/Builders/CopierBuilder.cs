@@ -40,16 +40,16 @@ public class CopierBuilder(CopierFactory factory)
     /// <returns></returns>
     public static MemberConverter CheckMember(IMapperOptions options, IMemberMatch match, IEnumerable<IEmitMemberReader> sourceMembers, IEmitMemberWriter writer)
     {
-        foreach (var reader in match.Select(sourceMembers, writer))
+        foreach (var reader in match.Select(options.Recognizer, sourceMembers, writer))
         {
             var sourceType = reader.ValueType;
             var destType = writer.ValueType;
             if (sourceType == destType || ReflectionHelper.CheckValueType(sourceType, destType))
-                return new MemberConverter(reader, writer);
+                return new MemberConverter(options, reader, writer);
             var converter = options.GetEmitConverter(sourceType, destType);
             if (converter is null)
                 continue;
-            return new MemberConverter(reader, new ConvertValueWriter(converter, writer));
+            return new MemberConverter(options, reader, new ConvertValueWriter(converter, writer));
         }
         return null;
     }

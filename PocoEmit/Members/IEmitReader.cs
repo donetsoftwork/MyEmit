@@ -7,7 +7,7 @@ namespace PocoEmit.Members;
 /// 成员读取接口
 /// </summary>
 public interface IEmitReader
-    : IEmitInfo
+    : ICompileInfo
 {
     /// <summary>
     /// 读取

@@ -1,9 +1,9 @@
 using PocoEmit.Collections;
-using PocoEmit.Configuration;
 using PocoEmit.Members;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace PocoEmit;
@@ -18,30 +18,30 @@ public static class ReflectionHelper
     /// 获取类型所有成员
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <returns></returns>
-    public static MemberBundle GetTypeMembers<TInstance>(this IPocoOptions options)
-        => options.MemberCacher.Get(typeof(TInstance));
+    public static MemberBundle GetTypeMembers<TInstance>(this IPoco poco)
+        => poco.MemberCacher.Get(typeof(TInstance));
     /// <summary>
     /// 获取类型所有成员
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="instanceType"></param>
     /// <returns></returns>
-    public static MemberBundle GetTypeMembers(this IPocoOptions options, Type instanceType)
-        => options.MemberCacher.Get(instanceType);
+    public static MemberBundle GetTypeMembers(this IPoco poco, Type instanceType)
+        => poco.MemberCacher.Get(instanceType);
     #endregion
     #region GetReadMember
     /// <summary>
     /// 获取可读成员
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="instanceType"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static MemberInfo GetReadMember(this IPocoOptions options, Type instanceType, string memberName)
+    public static MemberInfo GetReadMember(this IPoco poco, Type instanceType, string memberName)
     {
-        return options.MemberCacher
+        return poco.MemberCacher
             .Get(instanceType)
             ?.GetReadMember(memberName);
     }
@@ -49,12 +49,12 @@ public static class ReflectionHelper
     /// 获取可读成员
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static MemberInfo GetReadMember<TInstance>(this IPocoOptions options, string memberName)
+    public static MemberInfo GetReadMember<TInstance>(this IPoco poco, string memberName)
     {
-        return options.MemberCacher
+        return poco.MemberCacher
             .Get(typeof(TInstance))
             ?.GetReadMember(memberName);
     }
@@ -75,13 +75,13 @@ public static class ReflectionHelper
     /// <summary>
     /// 获取可读成员
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="instanceType"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static IEmitMemberReader GetEmitReader(this IPocoOptions options, Type instanceType, string memberName)
+    public static IEmitMemberReader GetEmitReader(this IPoco poco, Type instanceType, string memberName)
     {
-        return options.MemberCacher
+        return poco.MemberCacher
             .Get(instanceType)
             ?.GetEmitReader(memberName);
     }
@@ -89,12 +89,12 @@ public static class ReflectionHelper
     /// 获取可读成员
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static IEmitMemberReader GetEmitReader<TInstance>(this IPocoOptions options, string memberName)
+    public static IEmitMemberReader GetEmitReader<TInstance>(this IPoco poco, string memberName)
     {
-        return options.MemberCacher
+        return poco.MemberCacher
             .Get(typeof(TInstance))
             ?.GetEmitReader(memberName);
     }
@@ -115,13 +115,13 @@ public static class ReflectionHelper
     /// <summary>
     /// 获取可写成员
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="instanceType"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static MemberInfo GetWriteMember(this IPocoOptions options, Type instanceType, string memberName)
+    public static MemberInfo GetWriteMember(this IPoco poco, Type instanceType, string memberName)
     {
-        return options.MemberCacher
+        return poco.MemberCacher
             .Get(instanceType)
             ?.GetWriteMember(memberName);
     }
@@ -129,12 +129,12 @@ public static class ReflectionHelper
     /// 获取可写成员
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static MemberInfo GetWriteMember<TInstance>(this IPocoOptions options, string memberName)
+    public static MemberInfo GetWriteMember<TInstance>(this IPoco poco, string memberName)
     {
-        return options.MemberCacher
+        return poco.MemberCacher
             .Get(typeof(TInstance))
             ?.GetWriteMember(memberName);
     }
@@ -155,13 +155,13 @@ public static class ReflectionHelper
     /// <summary>
     /// 获取可写成员
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="instanceType"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static IEmitMemberWriter GetEmitWriter(this IPocoOptions options, Type instanceType, string memberName)
+    public static IEmitMemberWriter GetEmitWriter(this IPoco poco, Type instanceType, string memberName)
     {
-        return options.MemberCacher
+        return poco.MemberCacher
             .Get(instanceType)
             ?.GetEmitWriter(memberName);
     }
@@ -169,12 +169,12 @@ public static class ReflectionHelper
     /// 获取可写成员
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static IEmitMemberWriter GetEmitWriter<TInstance>(this IPocoOptions options, string memberName)
+    public static IEmitMemberWriter GetEmitWriter<TInstance>(this IPoco poco, string memberName)
     {
-        return options.MemberCacher
+        return poco.MemberCacher
             .Get(typeof(TInstance))
             ?.GetEmitWriter(memberName);
     }
@@ -303,6 +303,27 @@ public static class ReflectionHelper
         return toType.IsAssignableFrom(fromType);
     }
     #endregion
+    #region CheckMethodCallInstance
+    /// <summary>
+    /// 检查调用委托目标
+    /// </summary>
+    /// <param name="delegate"></param>
+    /// <returns></returns>
+    public static Expression CheckMethodCallInstance(Delegate @delegate)
+        => CheckMethodCallInstance(@delegate.Target);
+    /// <summary>
+    /// 检查调用对象
+    /// </summary>
+    /// <param name="instance"></param>
+    /// <returns></returns>
+    public static Expression CheckMethodCallInstance(object instance)
+    {
+        if (instance is null)
+            return null;
+        return Expression.Constant(instance);
+    }
+    #endregion
+    #region Is
     /// <summary>
     /// 是否可空类型
     /// </summary>
@@ -330,6 +351,7 @@ public static class ReflectionHelper
 #else
         => type.IsGenericType && type.GetGenericTypeDefinition() == genericType;
 #endif
+    #endregion
     #region ConstructorInfo
     /// <summary>
     /// 获取构造函数

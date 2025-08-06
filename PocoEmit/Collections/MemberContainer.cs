@@ -13,8 +13,8 @@ namespace PocoEmit.Collections;
 /// 成员容器
 /// </summary>
 public class MemberContainer
-    : ISettings<MemberInfo, IEmitMemberReader>
-    , ISettings<MemberInfo, IEmitMemberWriter>
+    : ICacher<MemberInfo, IEmitMemberReader>
+    , ICacher<MemberInfo, IEmitMemberWriter>
 {
     /// <summary>
     /// 成员容器
@@ -61,19 +61,19 @@ public class MemberContainer
         => _memberWriterCacher;
     #endregion    
     #region ISettings<MemberInfo, IMemberReader>
-    bool ISettings<MemberInfo, IEmitMemberReader>.ContainsKey(MemberInfo key)
+    bool ICacher<MemberInfo, IEmitMemberReader>.ContainsKey(MemberInfo key)
         => _memberReaders.ContainsKey(key);
-    void ISettings<MemberInfo, IEmitMemberReader>.Set(MemberInfo key, IEmitMemberReader value)
+    void IStore<MemberInfo, IEmitMemberReader>.Set(MemberInfo key, IEmitMemberReader value)
         => _memberReaders[key] = value;
-    bool ISettings<MemberInfo, IEmitMemberReader>.TryGetValue(MemberInfo key, out IEmitMemberReader value)
+    bool ICacher<MemberInfo, IEmitMemberReader>.TryGetValue(MemberInfo key, out IEmitMemberReader value)
         => _memberReaders.TryGetValue(key, out value);
     #endregion
     #region ISettings<MemberInfo, IMemberWriter>
-    bool ISettings<MemberInfo, IEmitMemberWriter>.ContainsKey(MemberInfo key)
+    bool ICacher<MemberInfo, IEmitMemberWriter>.ContainsKey(MemberInfo key)
         => _memberWriters.ContainsKey(key);
-    void ISettings<MemberInfo, IEmitMemberWriter>.Set(MemberInfo key, IEmitMemberWriter value)
+    void IStore<MemberInfo, IEmitMemberWriter>.Set(MemberInfo key, IEmitMemberWriter value)
         => _memberWriters[key] = value;
-    bool ISettings<MemberInfo, IEmitMemberWriter>.TryGetValue(MemberInfo key, out IEmitMemberWriter value)
+    bool ICacher<MemberInfo, IEmitMemberWriter>.TryGetValue(MemberInfo key, out IEmitMemberWriter value)
         => _memberWriters.TryGetValue(key, out value);
     #endregion
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER

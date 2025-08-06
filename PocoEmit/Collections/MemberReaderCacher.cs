@@ -7,7 +7,7 @@ namespace PocoEmit.Collections;
 /// 属性读取缓存
 /// </summary>
 /// <param name="cacher"></param>
-public class MemberReaderCacher(ISettings<MemberInfo, IEmitMemberReader> cacher)
+public class MemberReaderCacher(ICacher<MemberInfo, IEmitMemberReader> cacher)
     : CacheBase<MemberInfo, IEmitMemberReader>(cacher)
 {
     #region CacheBase<MemberInfo, IMemberReader>

@@ -1,13 +1,14 @@
 using PocoEmit.Configuration;
+using System;
 
 namespace PocoEmit.MapperUnitTests.Global;
 
 public class GlobalGetConvertTests
 {
-    private IMapperOptions _global = Mapper.Global;
+    private IMapper _global = Mapper.Global;
     public GlobalGetConvertTests()
     {
-        _global.SetSystemConvert();
+        _global.UseSystemConvert();
     }
     [Fact]
     public void GetConvert_int2long()
@@ -17,6 +18,11 @@ public class GlobalGetConvertTests
         // Assert
         Assert.NotNull(converter);
         Assert.Equal(123L, converter(123));
+
+        //Func<int> func = () => 1;
+        //object obj = func;
+        //Delegate func2 = obj as Delegate;
+        //Assert.NotNull(func2);
     }
     [Fact]
     public void GetConvert_int2string()

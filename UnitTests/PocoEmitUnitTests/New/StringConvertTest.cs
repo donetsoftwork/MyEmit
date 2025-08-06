@@ -4,18 +4,18 @@ namespace PocoEmitUnitTests.New;
 
 public class StringConvertTest
 {
-    Poco _options;
+    IPoco _poco;
     public StringConvertTest()
     {
-        _options = new();
-        _options.SetStringConvert();
+        _poco = Poco.Create();
+        _poco.SetStringConvert();
     }
 
     [Fact]
     public void GetConvertFunc_int2long()
     {
         // Act
-        var convertFunc = _options.GetConvertFunc<int, long>();
+        var convertFunc = _poco.GetConvertFunc<int, long>();
         // Assert
         Assert.NotNull(convertFunc);
         Assert.Equal(123L, convertFunc(123));
@@ -24,7 +24,7 @@ public class StringConvertTest
     public void GetConvertFunc_int2string()
     {
         // Act
-        var convertFunc = _options.GetConvertFunc<int, string>();
+        var convertFunc = _poco.GetConvertFunc<int, string>();
         // Assert
         Assert.NotNull(convertFunc);
         Assert.Equal("123", convertFunc(123));
@@ -33,7 +33,7 @@ public class StringConvertTest
     public void GetConvertFunc_intNullable()
     {
         // Act
-        var convertFunc = _options.GetConvertFunc<int?, int>();
+        var convertFunc = _poco.GetConvertFunc<int?, int>();
         // Assert
         Assert.NotNull(convertFunc);
         int? source = 123;
@@ -43,7 +43,7 @@ public class StringConvertTest
     public void GetConvertFunc_stringNullable()
     {
         // Act
-        var convertFunc = _options.GetConvertFunc<string, string?>();
+        var convertFunc = _poco.GetConvertFunc<string, string?>();
         // Assert
         Assert.NotNull(convertFunc);
         string source = "123";
@@ -54,7 +54,7 @@ public class StringConvertTest
     public void GetConvertFunc_intSelf()
     {
         // Act
-        var convertFunc = _options.GetConvertFunc<int, int>();
+        var convertFunc = _poco.GetConvertFunc<int, int>();
         // Assert
         Assert.NotNull(convertFunc);
         int source = 123;
@@ -64,7 +64,7 @@ public class StringConvertTest
     public void GetConvertFunc_string2int()
     {
         // Act
-        var convertFunc = _options.GetConvertFunc<string, int>();
+        var convertFunc = _poco.GetConvertFunc<string, int>();
         // Assert
         Assert.NotNull(convertFunc);
         Assert.Equal(123, convertFunc("123"));
@@ -73,7 +73,7 @@ public class StringConvertTest
     public void GetConvertFunc_string2DateTime()
     {
         // Act
-        var convertFunc = _options.GetConvertFunc<string, DateTime>();
+        var convertFunc = _poco.GetConvertFunc<string, DateTime>();
         // Assert
         Assert.NotNull(convertFunc);
         var source = "2025-07-21 00:00:00";
@@ -84,7 +84,7 @@ public class StringConvertTest
     public void GetConvertFunc_DateTime2string()
     {
         // Act
-        var convertFunc = _options.GetConvertFunc<DateTime, string>();
+        var convertFunc = _poco.GetConvertFunc<DateTime, string>();
         // Assert
         Assert.NotNull(convertFunc);
         var source = DateTime.Now;

@@ -26,7 +26,7 @@ public class DefaultConvertBuilder : IConvertBuilder
         => new EmitConverter(typeof(object));
     /// <inheritdoc />
     public virtual IEmitConverter BuildForString(Type sourceType)
-        => InstanceMethodConverter.ToStringConverter;
+        => SelfMethodConverter.ToStringConverter;
     /// <inheritdoc />
     public virtual IEmitConverter BuildForNullable(IEmitConverter original, Type originalSourceType, Type destType)
         => new CompatibleConverter(original, originalSourceType, destType);

@@ -19,7 +19,7 @@ public sealed class EmitConverter(Type destType)
     public Type DestType
         => _destType;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />

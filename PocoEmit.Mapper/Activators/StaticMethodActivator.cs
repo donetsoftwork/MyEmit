@@ -5,14 +5,24 @@ using System.Reflection;
 namespace PocoEmit.Activators;
 
 /// <summary>
-/// 静态方法激活类型
+/// 方法激活类型
 /// </summary>
+/// <param name="target"></param>
 /// <param name="method"></param>
-public class StaticMethodActivator(MethodInfo method)
+public class MethodActivator(object target, MethodInfo method)
     : IEmitActivator
 {
     #region 配置
-    private readonly MethodInfo _method = method;
+    private readonly object _target = target;
+    /// <summary>
+    /// 实例
+    /// </summary>
+    public object Target
+        => _target;
+    /// <summary>
+    /// 方法
+    /// </summary>
+    protected readonly MethodInfo _method = method;
     /// <inheritdoc />
     public Type ReturnType 
         => _method.ReturnType;
@@ -21,11 +31,13 @@ public class StaticMethodActivator(MethodInfo method)
     /// </summary>
     public MethodInfo Method 
         => _method;
-    /// <inheritdoc />
-    public virtual bool Compiled
-        => false;
+    /// <summary>
+    /// 调用实例
+    /// </summary>
+    public Expression Instance
+        => ReflectionHelper.CheckMethodCallInstance(_target);
     #endregion
     /// <inheritdoc />
-    public Expression New(Expression argument)
-        => Expression.Call(_method);
+    public virtual Expression New(Expression argument)
+        => Expression.Call(Instance, _method);
 }

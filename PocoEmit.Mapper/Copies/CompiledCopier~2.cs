@@ -27,7 +27,7 @@ public sealed class CompiledCopier<TSource, TDest>(IEmitCopier inner, Action<TSo
     public Action<TSource, TDest> CopyAction
         => _copyAction;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => true;
     #endregion
     /// <inheritdoc />

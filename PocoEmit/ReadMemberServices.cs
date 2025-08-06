@@ -1,5 +1,4 @@
 using PocoEmit.Collections;
-using PocoEmit.Configuration;
 using PocoEmit.Members;
 using System;
 using System.Linq.Expressions;
@@ -18,44 +17,44 @@ public static partial class PocoEmitServices
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static Func<TInstance, TValue> GetReadFunc<TInstance, TValue>(this IPocoOptions options, string memberName)
+    public static Func<TInstance, TValue> GetReadFunc<TInstance, TValue>(this IPoco poco, string memberName)
     {
-        var reader = options.GetEmitReader<TInstance>(memberName);
+        var reader = poco.GetEmitReader<TInstance>(memberName);
         if (reader is null)
             return null;
-        return GetReadFunc<TInstance, TValue>(options, reader);
+        return GetReadFunc<TInstance, TValue>(poco, reader);
     }
     /// <summary>
     /// 读成员委托
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="member"></param>
     /// <returns></returns>
-    public static Func<TInstance, TValue> GetReadFunc<TInstance, TValue>(this IPocoOptions options, MemberInfo member)
+    public static Func<TInstance, TValue> GetReadFunc<TInstance, TValue>(this IPoco poco, MemberInfo member)
     {
         var emitReader = MemberContainer.Instance.MemberReaderCacher.Get(member);
         if (emitReader is null)
             return null;
-        return GetReadFunc<TInstance, TValue>(options, emitReader);
+        return GetReadFunc<TInstance, TValue>(poco, emitReader);
     }
     /// <summary>
     /// 读成员委托
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitReader"></param>
     /// <returns></returns>
-    public static Func<TInstance, TValue> GetReadFunc<TInstance, TValue>(this IPocoOptions options, IEmitMemberReader emitReader)
+    public static Func<TInstance, TValue> GetReadFunc<TInstance, TValue>(this IPoco poco, IEmitMemberReader emitReader)
     {
         var instanceType = typeof(TInstance);
         var valueType = typeof(TValue);
-        var noConvert = CheckType(options, ref emitReader, instanceType, valueType);
+        var noConvert = CheckType(poco, ref emitReader, instanceType, valueType);
         var instance = Expression.Parameter(instanceType, "instance");
         if (noConvert)
         {
@@ -78,44 +77,44 @@ public static partial class PocoEmitServices
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static IMemberReader<TInstance, TValue> GetMemberReader<TInstance, TValue>(this IPocoOptions options, string memberName)
+    public static IMemberReader<TInstance, TValue> GetMemberReader<TInstance, TValue>(this IPoco poco, string memberName)
     {
-        var reader = options.GetEmitReader<TInstance>(memberName);
+        var reader = poco.GetEmitReader<TInstance>(memberName);
         if (reader is null)
             return null;
-        return GetMemberReader<TInstance, TValue>(options, reader);
+        return GetMemberReader<TInstance, TValue>(poco, reader);
     }
     /// <summary>
     /// 获取成员读取器
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="member"></param>
     /// <returns></returns>
-    public static IMemberReader<TInstance, TValue> GetMemberReader<TInstance, TValue>(this IPocoOptions options, MemberInfo member)
+    public static IMemberReader<TInstance, TValue> GetMemberReader<TInstance, TValue>(this IPoco poco, MemberInfo member)
     {
         var emitReader = MemberContainer.Instance.MemberReaderCacher.Get(member);
         if (emitReader is null)
             return null;
-        return GetMemberReader<TInstance, TValue>(options, emitReader);
+        return GetMemberReader<TInstance, TValue>(poco, emitReader);
     }
     /// <summary>
     /// 获取成员读取器
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitReader"></param>
     /// <returns></returns>
-    public static IMemberReader<TInstance, TValue> GetMemberReader<TInstance, TValue>(this IPocoOptions options, IEmitMemberReader emitReader)
+    public static IMemberReader<TInstance, TValue> GetMemberReader<TInstance, TValue>(this IPoco poco, IEmitMemberReader emitReader)
     {
         var instanceType = typeof(TInstance);
         var valueType = typeof(TValue);
-        var noConvert = CheckType(options, ref emitReader, instanceType, valueType);
+        var noConvert = CheckType(poco, ref emitReader, instanceType, valueType);
         if (noConvert)
         {
             if (emitReader.Compiled && emitReader is ICompiledReader<TInstance, TValue> compiledReader)
@@ -136,37 +135,37 @@ public static partial class PocoEmitServices
     /// <summary>
     /// 检查类型
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitReader"></param>
     /// <param name="instanceType"></param>
     /// <param name="valueType"></param>
     /// <returns></returns>
-    public static bool CheckType(this IPocoOptions options, ref IEmitMemberReader emitReader, Type instanceType, Type valueType)
+    public static bool CheckType(this IPoco poco, ref IEmitMemberReader emitReader, Type instanceType, Type valueType)
     {
         bool noConvert = true;
-        if (CheckInstanceType(options, ref emitReader, instanceType))
+        if (CheckInstanceType(poco, ref emitReader, instanceType))
         {
             if (emitReader is null)
                 return false;
             noConvert = false;
         }
-        if (CheckValueType(options, ref emitReader, valueType))
+        if (CheckValueType(poco, ref emitReader, valueType))
             return false;
         return noConvert;
     }
     /// <summary>
     /// 检查实例类型是否需要兼容
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitReader"></param>
     /// <param name="instanceType"></param>
     /// <returns></returns>
-    public static bool CheckInstanceType(this IPocoOptions options, ref IEmitMemberReader emitReader, Type instanceType)
+    public static bool CheckInstanceType(this IPoco poco, ref IEmitMemberReader emitReader, Type instanceType)
     {
         var instanceType0 = emitReader.InstanceType;
         if (ReflectionHelper.CheckValueType(instanceType, instanceType0))
             return false;
-        var emitConverter = options.GetEmitConverter(instanceType, instanceType0);
+        var emitConverter = poco.GetEmitConverter(instanceType, instanceType0);
         if (emitConverter is null)
             emitReader = null;
         else
@@ -176,16 +175,16 @@ public static partial class PocoEmitServices
     /// <summary>
     /// 检查值类型是否需要转化
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitReader"></param>
     /// <param name="valueType"></param>
     /// <returns></returns>
-    public static bool CheckValueType(this IPocoOptions options, ref IEmitMemberReader emitReader, Type valueType)
+    public static bool CheckValueType(this IPoco poco, ref IEmitMemberReader emitReader, Type valueType)
     {
         var valueType0 = emitReader.ValueType;
         if (ReflectionHelper.CheckValueType(valueType0, valueType))
             return false;
-        var emitConverter = options.GetEmitConverter(valueType0, valueType);
+        var emitConverter = poco.GetEmitConverter(valueType0, valueType);
         if (emitConverter is null)
             emitReader = null;
         else

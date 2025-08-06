@@ -18,19 +18,19 @@ public static partial class PocoEmitServices
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <returns></returns>
-    public static IPocoConverter<TSource, TDest> GetConverter<TSource, TDest>(this IPocoOptions options)
+    public static IPocoConverter<TSource, TDest> GetConverter<TSource, TDest>(this IPoco poco)
     {
         var sourceType = typeof(TSource);
         var key = new MapTypeKey(sourceType, typeof(TDest));
-        var emitConverter = options.GetEmitConverter(key);
+        var emitConverter = poco.GetEmitConverter(key);
         if (emitConverter is null)
             return null;
         if (emitConverter.Compiled && emitConverter is IPocoConverter<TSource, TDest> converter)
             return converter;
         var compiledConverter = CompileConverter<TSource, TDest>(emitConverter, Expression.Parameter(sourceType, "source"));
-        options.Set(key, compiledConverter);
+        poco.Set(key, compiledConverter);
         return compiledConverter;
     }
     #endregion
@@ -38,14 +38,14 @@ public static partial class PocoEmitServices
     /// <summary>
     /// 获取弱类型转化(IObjectConverter)
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    public static object GetObjectConverter(this IPocoOptions options, Type sourceType, Type destType)
+    public static object GetObjectConverter(this IPoco poco, Type sourceType, Type destType)
     {
         var key = new MapTypeKey(sourceType, destType);
-        var converter = options.GetEmitConverter(key);
+        var converter = poco.GetEmitConverter(key);
         if (converter is null)
             return null;
         if (converter.Compiled)
@@ -53,7 +53,7 @@ public static partial class PocoEmitServices
         var compileConverter = Inner.CompileConverterMethod.MakeGenericMethod(sourceType, destType);
         var compiled = compileConverter.Invoke(null, [converter, Expression.Parameter(sourceType, "source")]) as IEmitConverter;
         if (compiled != null)
-            options.Set(key, compiled);
+            poco.Set(key, compiled);
         return compiled;
     }
     #endregion
@@ -63,20 +63,20 @@ public static partial class PocoEmitServices
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <returns></returns>
-    public static Func<TSource, TDest> GetConvertFunc<TSource, TDest>(this IPocoOptions options)
+    public static Func<TSource, TDest> GetConvertFunc<TSource, TDest>(this IPoco poco)
     {
         var sourceType = typeof(TSource);
         var key = new MapTypeKey(sourceType, typeof(TDest));
-        var emitConverter = options.GetEmitConverter(key);
+        var emitConverter = poco.GetEmitConverter(key);
         if (emitConverter is null)
             return null;
         if (emitConverter.Compiled && emitConverter is ICompiledConverter<TSource, TDest> compiled)
             return compiled.ConvertFunc;
         var convertFunc = Compile<TSource, TDest>(emitConverter, Expression.Parameter(sourceType, "source"));       
         var compiledConverter = new CompiledConverter<TSource, TDest>(emitConverter, convertFunc);
-        options.Set(key, compiledConverter);
+        poco.Set(key, compiledConverter);
         return convertFunc;
     }
     #endregion
@@ -86,13 +86,13 @@ public static partial class PocoEmitServices
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="source"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static TDest Convert<TSource, TDest>(this IPocoOptions options, TSource source)
+    public static TDest Convert<TSource, TDest>(this IPoco poco, TSource source)
     {
-        var convertFunc = options.GetConvertFunc<TSource, TDest>()
+        var convertFunc = poco.GetConvertFunc<TSource, TDest>()
             ?? throw new InvalidOperationException($"不支持转换的类型：{typeof(TSource).FullName} -> {typeof(TDest).FullName}");
         return convertFunc(source);
     }
@@ -100,12 +100,12 @@ public static partial class PocoEmitServices
     /// <summary>
     /// 获取Emit类型转化
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    public static IEmitConverter GetEmitConverter(this IPocoOptions options, Type sourceType, Type destType)
-        => options.GetEmitConverter(new MapTypeKey(sourceType, destType));
+    public static IEmitConverter GetEmitConverter(this IPoco poco, Type sourceType, Type destType)
+        => poco.GetEmitConverter(new MapTypeKey(sourceType, destType));
     /// <summary>
     /// 编译转化器
     /// </summary>

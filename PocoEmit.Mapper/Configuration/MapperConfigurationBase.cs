@@ -20,24 +20,30 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     /// <param name="reflectionMember"></param>
     /// <param name="reflectionConstructor"></param>
-    /// <param name="defaultMatch"></param>
-    public MapperConfigurationBase(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatch)
+    /// <param name="defaultMatcher"></param>
+    /// <param name="recognizer"></param>
+    public MapperConfigurationBase(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatcher, IRecognizer recognizer)
         : base(reflectionMember)
     {
         // 初始化配置
         _reflectionConstructor = reflectionConstructor;
-        _defaultMatch = defaultMatch;
+        _defaultMatcher = defaultMatcher;
         ConvertBuilder = new ComplexConvertBuilder(this);
         _copierFactory = new CopierFactory(this);
         _activatorFactory = new ActivatorFactory(this);
         _primitives = new PrimitiveConfiguration(this);
+        _recognizer = recognizer;
     }
     #region 配置
     private IReflectionConstructor _reflectionConstructor;
     /// <summary>
     /// 默认成员匹配
     /// </summary>
-    protected IMemberMatch _defaultMatch;
+    protected IMemberMatch _defaultMatcher;
+    /// <summary>
+    /// 识别器
+    /// </summary>
+    private readonly IRecognizer _recognizer;
     /// <summary>
     /// 复制器
     /// </summary>
@@ -61,11 +67,14 @@ public abstract partial class MapperConfigurationBase
     }
     #region IMapperOptions
     /// <inheritdoc />
-    public IMemberMatch DefaultMatch
+    public IMemberMatch DefaultMatcher
     {
-        get => _defaultMatch;
-        set => _defaultMatch = value ?? throw new ArgumentNullException(nameof(value));
+        get => _defaultMatcher;
+        set => _defaultMatcher = value ?? throw new ArgumentNullException(nameof(value));
     }
+    /// <inheritdoc />
+    public IRecognizer Recognizer 
+        => _recognizer;
     #endregion
     #region 功能
     /// <summary>
@@ -80,8 +89,13 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual IEmitActivator GetEmitActivatorr(Type key)
-        => _activatorFactory.Get(key);
+    public IEmitActivator GetEmitActivator(MapTypeKey key)
+    {
+        if (TryRead(key, out IEmitActivator activator))
+            return activator;
+        return _activatorFactory.Get(key.DestType);
+    }
+
     /// <summary>
     /// 是否基础类型
     /// </summary>

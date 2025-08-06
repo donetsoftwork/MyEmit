@@ -1,5 +1,4 @@
 using PocoEmit.Activators;
-using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Helpers;
 using PocoEmit.Maping;
@@ -13,75 +12,106 @@ namespace PocoEmit;
 /// </summary>
 public static partial class MapperServices
 {
-    #region Activator
+    #region UseActivator
     /// <summary>
     /// 设置委托来激活
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
-    /// <param name="settings"></param>
-    /// <param name="new"></param>
+    /// <param name="mapper"></param>
+    /// <param name="activatorFunc"></param>
     /// <returns></returns>
-    public static DelegateActivator<TInstance> SetNew<TInstance>(this ISettings<Type, IEmitActivator> settings, Func<TInstance> @new)
+    public static IMapper UseActivator<TInstance>(this IMapper mapper, Func<TInstance> activatorFunc)
     {
         var key = typeof(TInstance);
-        var activator = new DelegateActivator<TInstance>(@new);
-        settings.Set(key, activator);
-        return activator;
+        mapper.Configure(key, new DelegateActivator<TInstance>(activatorFunc));
+        return mapper;
+    }
+    /// <summary>
+    /// 设置带参委托来激活
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="mapper"></param>
+    /// <param name="activatorFunc"></param>
+    /// <returns></returns>
+    public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Func<TSource, TDest> activatorFunc)
+    {
+        var key = new MapTypeKey(typeof(TSource), typeof(TDest));
+        mapper.Configure(key, new ArgumentDelegateActivator<TSource, TDest>(activatorFunc));
+        return mapper;
+    }
+    /// <summary>
+    /// 设置带参委托来激活
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="mapper"></param>
+    /// <param name="activatorFunc"></param>
+    /// <returns></returns>
+    public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Func<TDest> activatorFunc)
+    {
+        var key = new MapTypeKey(typeof(TSource), typeof(TDest));
+        var activator = new DelegateActivator<TDest>(activatorFunc);
+        mapper.Configure(key, activator);
+        return mapper;
     }
     /// <summary>
     /// 设置new来激活
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
-    /// <param name="settings"></param>
+    /// <param name="mapper"></param>
     /// <returns></returns>
-    public static DelegateActivator<TInstance> SetNew<TInstance>(this ISettings<Type, IEmitActivator> settings)
+    public static IMapper UseActivator<TInstance>(this IMapper mapper)
         where TInstance : new()
-        => settings.SetNew(() => new TInstance());
-    ///// <summary>
-    ///// 尝试设置委托来激活不覆盖
-    ///// </summary>
-    ///// <typeparam name="TInstance"></typeparam>
-    ///// <param name="settings"></param>
-    ///// <param name="new"></param>
-    ///// <returns></returns>
-    //public static IEmitActivator TrySetNew<TInstance>(this ISettings<Type, IEmitActivator> settings, Func<TInstance> @new)
-    //{
-    //    var key = typeof(TInstance);
-    //    if (settings.TryGetValue(key, out var value0) && value0 is not null)
-    //        return value0;
-    //    var activator = new DelegateActivator<TInstance>(@new);
-    //    settings.Set(key, activator);
-    //    return activator;
-    //}
-    ///// <summary>
-    ///// 设置new来激活
-    ///// </summary>
-    ///// <typeparam name="TInstance"></typeparam>
-    ///// <param name="settings"></param>
-    ///// <returns></returns>
-    //public static IEmitActivator TrySetNew<TInstance>(this ISettings<Type, IEmitActivator> settings)
-    //    where TInstance : new()
-    //    => settings.TrySetNew(() => new TInstance());
+        => mapper.UseActivator(static () => new TInstance());
+    #endregion
+    #region UseDefault
+    /// <summary>
+    /// 配置类型默认值
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="mapper"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static IMapper UseDefault<TValue>(this IMapper mapper, TValue value)
+    {
+        object defaultValue = value;
+        mapper.Configure(typeof(TValue), defaultValue);
+        return mapper;
+    }
+    /// <summary>
+    /// 配置类型默认值
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="mapper"></param>
+    /// <param name="valueFunc"></param>
+    /// <returns></returns>
+    public static IMapper UseDefault<TValue>(this IMapper mapper, Func<TValue> valueFunc)
+    {
+        object defaultValue = valueFunc;
+        mapper.Configure(typeof(TValue), defaultValue);
+        return mapper;
+    }
     #endregion
     /// <summary>
     /// 获取成员匹配
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="mapper"></param>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    public static IMemberMatch GetMemberMatch(this IMapperOptions options, Type sourceType, Type destType)
-        => options.GetMemberMatch(new MapTypeKey(sourceType, destType));
+    public static IMemberMatch GetMemberMatch(this IMapper mapper, Type sourceType, Type destType)
+        => mapper.GetMemberMatch(new MapTypeKey(sourceType, destType));
     /// <summary>
     /// 配置类型映射
     /// </summary>
     /// <typeparam name="TSource">源类型</typeparam>
     /// <typeparam name="TDest">目标类型</typeparam>
     /// <param name="mapper">映射配置</param>
-    /// <param name="comparer">比较器</param>
+    /// <param name="comparison">比较器</param>
     /// <returns></returns>
-    public static MapHelper<TSource, TDest> Configure<TSource, TDest>(this IMapperOptions mapper, IEqualityComparer<string> comparer)
-        =>new(mapper, comparer);
+    public static MapHelper<TSource, TDest> ConfigureMap<TSource, TDest>(this IMapper mapper, StringComparison comparison)
+        => new(mapper, comparison);
     /// <summary>
     /// 配置类型映射
     /// </summary>
@@ -89,6 +119,6 @@ public static partial class MapperServices
     /// <typeparam name="TDest">目标类型</typeparam>
     /// <param name="mapper">映射配置</param>
     /// <returns></returns>
-    public static MapHelper<TSource, TDest> Configure<TSource, TDest>(this IMapperOptions mapper)
-        => new(mapper, StringComparer.OrdinalIgnoreCase);
+    public static MapHelper<TSource, TDest> ConfigureMap<TSource, TDest>(this IMapper mapper)
+        => new(mapper, StringComparison.OrdinalIgnoreCase);
 }

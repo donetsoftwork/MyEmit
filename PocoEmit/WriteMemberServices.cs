@@ -1,5 +1,4 @@
 using PocoEmit.Collections;
-using PocoEmit.Configuration;
 using PocoEmit.Members;
 using System;
 using System.Linq.Expressions;
@@ -18,44 +17,44 @@ public static partial class PocoEmitServices
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(this IPocoOptions options, string memberName)
+    public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(this IPoco poco, string memberName)
     {
-        var writer = options.GetEmitWriter<TInstance>(memberName);
+        var writer = poco.GetEmitWriter<TInstance>(memberName);
         if (writer is null)
             return null;
-        return GetWriteAction<TInstance, TValue>(options, writer);
+        return GetWriteAction<TInstance, TValue>(poco, writer);
     }
     /// <summary>
     /// 写成员委托
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="member"></param>
     /// <returns></returns>
-    public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(this IPocoOptions options, MemberInfo member)
+    public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(this IPoco poco, MemberInfo member)
     {
         var emitWriter = MemberContainer.Instance.MemberWriterCacher.Get(member);
         if (emitWriter is null)
             return null;
-        return GetWriteAction<TInstance, TValue>(options, emitWriter);
+        return GetWriteAction<TInstance, TValue>(poco, emitWriter);
     }
     /// <summary>
     /// 写成员委托
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitWriter"></param>
     /// <returns></returns>
-    public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(this IPocoOptions options, IEmitMemberWriter emitWriter)
+    public static Action<TInstance, TValue> GetWriteAction<TInstance, TValue>(this IPoco poco, IEmitMemberWriter emitWriter)
     {
         var instanceType = typeof(TInstance);
         var valueType = typeof(TValue);
-        var noConvert = CheckType(options, ref emitWriter, instanceType, valueType);
+        var noConvert = CheckType(poco, ref emitWriter, instanceType, valueType);
         var instance = Expression.Parameter(instanceType, "instance");
         var value = Expression.Parameter(valueType, "value");
         if (noConvert)
@@ -79,44 +78,44 @@ public static partial class PocoEmitServices
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="memberName"></param>
     /// <returns></returns>
-    public static IMemberWriter<TInstance, TValue> GetMemberWriter<TInstance, TValue>(this IPocoOptions options, string memberName)
+    public static IMemberWriter<TInstance, TValue> GetMemberWriter<TInstance, TValue>(this IPoco poco, string memberName)
     {
-        var writer = options.GetEmitWriter<TInstance>(memberName);
+        var writer = poco.GetEmitWriter<TInstance>(memberName);
         if (writer is null)
             return null;
-        return GetMemberWriter<TInstance, TValue>(options, writer);
+        return GetMemberWriter<TInstance, TValue>(poco, writer);
     }
     /// <summary>
     /// 获取成员写入器
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="member"></param>
     /// <returns></returns>
-    public static IMemberWriter<TInstance, TValue> GetMemberWriter<TInstance, TValue>(this IPocoOptions options, MemberInfo member)
+    public static IMemberWriter<TInstance, TValue> GetMemberWriter<TInstance, TValue>(this IPoco poco, MemberInfo member)
     {
         var emitWriter = MemberContainer.Instance.MemberWriterCacher.Get(member);
         if (emitWriter is null)
             return null;
-        return GetMemberWriter<TInstance, TValue>(options, emitWriter);
+        return GetMemberWriter<TInstance, TValue>(poco, emitWriter);
     }
     /// <summary>
     /// 获取成员写入器
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitWriter"></param>
     /// <returns></returns>
-    public static IMemberWriter<TInstance, TValue> GetMemberWriter<TInstance, TValue>(this IPocoOptions options, IEmitMemberWriter emitWriter)
+    public static IMemberWriter<TInstance, TValue> GetMemberWriter<TInstance, TValue>(this IPoco poco, IEmitMemberWriter emitWriter)
     {
         var instanceType = typeof(TInstance);
         var valueType = typeof(TValue);
-        var noConvert = CheckType(options, ref emitWriter, instanceType, valueType);
+        var noConvert = CheckType(poco, ref emitWriter, instanceType, valueType);
         var instance = Expression.Parameter(instanceType, "instance");
         var value = Expression.Parameter(valueType, "value");
         if (noConvert)
@@ -138,37 +137,37 @@ public static partial class PocoEmitServices
     /// <summary>
     /// 检查类型
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitWriter"></param>
     /// <param name="instanceType"></param>
     /// <param name="valueType"></param>
     /// <returns></returns>
-    public static bool CheckType(this IPocoOptions options, ref IEmitMemberWriter emitWriter, Type instanceType, Type valueType)
+    public static bool CheckType(this IPoco poco, ref IEmitMemberWriter emitWriter, Type instanceType, Type valueType)
     {
         bool noConvert = true;
-        if (CheckInstanceType(options, ref emitWriter, instanceType))
+        if (CheckInstanceType(poco, ref emitWriter, instanceType))
         {
             if (emitWriter is null)
                 return false;
             noConvert = false;
         }
-        if (CheckValueType(options, ref emitWriter, valueType))
+        if (CheckValueType(poco, ref emitWriter, valueType))
             return false;
         return noConvert;
     }
     /// <summary>
     /// 检查实例类型是否需要兼容
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitWriter"></param>
     /// <param name="instanceType"></param>
     /// <returns></returns>
-    public static bool CheckInstanceType(this IPocoOptions options, ref IEmitMemberWriter emitWriter, Type instanceType)
+    public static bool CheckInstanceType(this IPoco poco, ref IEmitMemberWriter emitWriter, Type instanceType)
     {
         var instanceType0 = emitWriter.InstanceType;
         if (ReflectionHelper.CheckValueType(instanceType, instanceType0))
             return false;
-        var emitConverter = options.GetEmitConverter(instanceType, instanceType0);
+        var emitConverter = poco.GetEmitConverter(instanceType, instanceType0);
         if (emitConverter is null)
             emitWriter = null;
         else
@@ -178,16 +177,16 @@ public static partial class PocoEmitServices
     /// <summary>
     /// 检查值类型是否需要转化
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="poco"></param>
     /// <param name="emitWriter"></param>
     /// <param name="valueType"></param>
     /// <returns></returns>
-    public static bool CheckValueType(this IPocoOptions options, ref IEmitMemberWriter emitWriter, Type valueType)
+    public static bool CheckValueType(this IPoco poco, ref IEmitMemberWriter emitWriter, Type valueType)
     {
         var valueType0 = emitWriter.ValueType;
         if (ReflectionHelper.CheckValueType(valueType, valueType0))
             return false;
-        var emitConverter = options.GetEmitConverter(valueType, valueType0);
+        var emitConverter = poco.GetEmitConverter(valueType, valueType0);
         if (emitConverter is null)
             emitWriter = null;
         else

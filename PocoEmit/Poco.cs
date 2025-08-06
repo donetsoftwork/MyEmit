@@ -9,15 +9,15 @@ namespace PocoEmit;
 /// <summary>
 /// 简单对象配置
 /// </summary>
-/// <param name="reflection"></param>
-public sealed class Poco(IReflectionMember reflection)
-    : ConfigurationBase(reflection)
+public sealed class Poco
+    : ConfigurationBase
 {
     /// <summary>
     /// 简单对象配置
     /// </summary>
-    public Poco()
-        : this(DefaultReflectMember)
+    /// <param name="reflection"></param>
+    private Poco(IReflectionMember reflection)
+        : base(reflection)
     {
     }
     #region 功能
@@ -30,9 +30,24 @@ public sealed class Poco(IReflectionMember reflection)
     /// <inheritdoc />
     public override IEmitConverter GetEmitConverter(MapTypeKey key)
         => base.GetEmitConverter(key) ?? GlobalOptions.Instance.GetEmitConverter(key);
+    /// <summary>
+    /// 简单对象处理对象
+    /// </summary>
+    /// <param name="reflection"></param>
+    /// <returns></returns>
+    public static IPoco Create(IReflectionMember reflection)
+        => new Poco(reflection);
+    /// <summary>
+    /// 简单对象处理对象
+    /// </summary>
+    /// <returns></returns>
+    public static IPoco Create()
+        => new Poco(DefaultReflectMember);
+    #endregion
+    #region 配置
     /// <inheritdoc />
-    public override bool TryGetConvertSetting(MapTypeKey key, out IEmitConverter value)
-        => base.TryGetConvertSetting(key, out value) || GlobalOptions.Instance.TryGetConvertSetting(key, out value);
+    internal override bool TryRead(MapTypeKey key, out IEmitConverter value)
+        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
     #endregion
     #region Global
     private static IReflectionMember _defaultReflectMember = DefaultReflectionMember.Default;
@@ -51,7 +66,7 @@ public sealed class Poco(IReflectionMember reflection)
     /// <summary>
     /// 全局配置
     /// </summary>
-    public static IPocoOptions Global
+    public static IPoco Global
         => GlobalOptions.Instance;
     /// <summary>
     /// Emit全局配置

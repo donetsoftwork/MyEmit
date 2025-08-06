@@ -2,7 +2,6 @@ using PocoEmit.Activators;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Converters;
@@ -29,7 +28,7 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
     public IEmitCopier Copier 
         => _copier;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />

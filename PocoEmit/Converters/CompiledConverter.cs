@@ -28,7 +28,7 @@ public sealed class CompiledConverter<TSource, TDest>(IEmitConverter inner, Func
     public Func<TSource, TDest> ConvertFunc
         => _convertFunc;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => true;
     #endregion
     /// <inheritdoc />

@@ -10,7 +10,7 @@ namespace PocoEmit.Collections;
 /// <typeparam name="TValue"></typeparam>
 /// <param name="provider"></param>
 public class DictionaryStorage<TKey, TValue>(IDictionary<TKey, TValue> provider)
-    : ISettings<TKey, TValue>
+    : ICacher<TKey, TValue>
     where TKey : notnull
 {
     /// <summary>

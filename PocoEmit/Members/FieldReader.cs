@@ -21,7 +21,7 @@ public class FieldReader(FieldInfo field)
     MemberInfo IEmitMemberReader.Info
         => Member;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     /// <inheritdoc />
     public Expression Read(Expression instance)

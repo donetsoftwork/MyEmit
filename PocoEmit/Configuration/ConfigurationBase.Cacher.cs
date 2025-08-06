@@ -13,15 +13,15 @@ public abstract partial class ConfigurationBase
     /// <summary>
     /// 读成员缓存
     /// </summary>
-    class ReadFuncCacher(IPocoOptions options)
-        : CacheBase<MemberInfo, Func<object, object>>(options)
+    class ReadFuncCacher(IPoco poco)
+        : CacheBase<MemberInfo, Func<object, object>>()
     {
         #region 配置
-        private readonly IPocoOptions _options = options;
+        private readonly IPoco _options = poco;
         /// <summary>
         /// Emit配置
         /// </summary>
-        public IPocoOptions Options
+        public IPoco Poco
             => _options;
         #endregion
         /// <inheritdoc />
@@ -31,20 +31,20 @@ public abstract partial class ConfigurationBase
     /// <summary>
     /// 写成员缓存
     /// </summary>
-    class WriteActionCacher(IPocoOptions options)
-        : CacheBase<MemberInfo, Action<object, object>>(options)
+    class WriteActionCacher(IPoco poco)
+        : CacheBase<MemberInfo, Action<object, object>>()
     {
         #region 配置
-        private readonly IPocoOptions _options = options;
+        private readonly IPoco _poco = poco;
         /// <summary>
         /// Emit配置
         /// </summary>
-        public IPocoOptions Options
-            => _options;
+        public IPoco Poco
+            => _poco;
         #endregion
         /// <inheritdoc />
         protected override Action<object, object> CreateNew(MemberInfo key)
-            => _options.GetWriteAction<object, object>(key);
+            => _poco.GetWriteAction<object, object>(key);
     }
     #endregion
 }

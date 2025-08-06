@@ -24,8 +24,6 @@ public abstract partial class ConfigurationBase
         _convertBuilder = DefaultConvertBuilder.Default;
         _converterFactory = new(this);
         _memberCacher = new TypeMemberCacher(this, reflectionMember);
-        _readerFuncCacher = new ReadFuncCacher(this);
-        _writerActionCacher = new WriteActionCacher(this);
     }
     #region 配置
     /// <summary>
@@ -44,11 +42,11 @@ public abstract partial class ConfigurationBase
     /// <summary>
     /// 读成员缓存
     /// </summary>
-    private readonly ReadFuncCacher _readerFuncCacher;
+    private ReadFuncCacher _readerFuncCacher = null;
     /// <summary>
     /// 写成员缓存
     /// </summary>
-    private readonly WriteActionCacher _writerActionCacher;
+    private WriteActionCacher _writerActionCacher = null;
     /// <inheritdoc />
     public IEnumerable<IEmitConverter> Converters
         => _converters.Values;
@@ -71,29 +69,19 @@ public abstract partial class ConfigurationBase
     /// </summary>
     public TypeMemberCacher MemberCacher
         => _memberCacher;
-    /// <summary>
-    /// 读成员委托
-    /// </summary>
-    public IEnumerable<Func<object, object>> ReadFuncs
-        => _readFuncs.Values;
-    /// <summary>
-    /// 写成员委托
-    /// </summary>
-    public IDictionary<MemberInfo, Action<object, object>> WriteActions
-        => _writeActions;
     #endregion
     #region 功能
     /// <inheritdoc />
     public virtual Func<object, object> GetReadFunc(MemberInfo member)
-        => _readerFuncCacher.Get(member);
+        => (_readerFuncCacher ??= new ReadFuncCacher(this)).Get(member);
     /// <inheritdoc />
     public virtual Action<object, object> GetWriteAction(MemberInfo member)
-        => _writerActionCacher.Get(member);
+        => (_writerActionCacher ??= new WriteActionCacher(this)).Get(member);
     /// <inheritdoc />
     public virtual IEmitConverter GetEmitConverter(MapTypeKey key)
         => _converterFactory.Get(key);
     /// <inheritdoc />
     public void SetConvertSetting(MapTypeKey key, IEmitConverter converter)
-        => _convertSetting[key] = converter;
+        => _convertConfiguration[key] = converter;
     #endregion
 }

@@ -11,7 +11,7 @@ public partial class MapHelper<TSource, TDest>
 	public class DestMemberHelper
 	{
 		/// <summary>
-		/// 映射源成员
+		/// 映射目标成员
 		/// </summary>
 		/// <param name="sourceHelper"></param>
 		/// <param name="name"></param>
@@ -30,11 +30,11 @@ public partial class MapHelper<TSource, TDest>
 		/// <returns></returns>
 		public DestHelper MapFrom(string sourceName)
 			=> _sourceHelper.MapFrom(_name, sourceName);
-		/// <summary>
-		/// 忽略源成员
-		/// </summary>
-		/// <returns></returns>
-		public DestHelper Ignore()
+        /// <summary>
+        /// 忽略目标成员
+        /// </summary>
+        /// <returns></returns>
+        public DestHelper Ignore()
 			=> _sourceHelper.Ignore(_name);
 	}
 }

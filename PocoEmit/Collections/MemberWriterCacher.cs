@@ -7,7 +7,7 @@ namespace PocoEmit.Collections;
 /// 成员写入器缓存
 /// </summary>
 /// <param name="cacher"></param>
-public class MemberWriterCacher(ISettings<MemberInfo, IEmitMemberWriter> cacher)
+public class MemberWriterCacher(ICacher<MemberInfo, IEmitMemberWriter> cacher)
     : CacheBase<MemberInfo, IEmitMemberWriter>(cacher)
 {
     #region CacheBase<MemberInfo, IMemberWriter>

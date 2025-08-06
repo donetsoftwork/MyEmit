@@ -11,7 +11,7 @@ namespace PocoEmit.Copies;
 /// <param name="copyAction"></param>
 /// <param name="method"></param>
 public class DelegateCopier<TSource, TDest>(Action<TSource, TDest> copyAction, MethodInfo method)
-    : StaticMethodCopier(method), ICompiledCopier<TSource, TDest>
+    : MethodCopier(copyAction.Target, method), ICompiledCopier<TSource, TDest>
 {
     /// <summary>
     /// 委托复制器

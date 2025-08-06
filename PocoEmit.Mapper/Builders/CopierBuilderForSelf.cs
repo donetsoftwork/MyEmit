@@ -22,7 +22,7 @@ public class CopierBuilderForSelf(CopierFactory factory)
             var reader = readerCacher.Get(writer.Info);
             if (reader is null)
                 continue;
-            converters.Add(new MemberConverter(reader, writer));
+            converters.Add(new MemberConverter(_options, reader, writer));
         }
     }
 }

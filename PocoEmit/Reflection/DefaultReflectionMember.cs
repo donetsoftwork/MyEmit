@@ -15,7 +15,7 @@ namespace PocoEmit.Reflection;
 /// <summary>
 /// 默认反射成员
 /// </summary>
-public class DefaultReflectionMember(IEqualityComparer<string> comparer, bool includeField = true)
+public class DefaultReflectionMember(StringComparer comparer, bool includeField = true)
     : IReflectionMember
 {
     /// <summary>
@@ -26,12 +26,12 @@ public class DefaultReflectionMember(IEqualityComparer<string> comparer, bool in
     {
     }
     #region 配置
-    private readonly IEqualityComparer<string> _comparer = comparer;
+    private readonly StringComparer _comparer = comparer;
     private readonly bool _includeField = includeField;
     /// <summary>
     /// 成员名比较器
     /// </summary>
-    public IEqualityComparer<string> Comparer
+    public StringComparer Comparer
         => _comparer;
     /// <summary>
     /// 是否包含字段

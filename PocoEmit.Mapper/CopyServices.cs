@@ -19,21 +19,21 @@ public static partial class MapperServices
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="mapper"></param>
     /// <returns></returns>
-    public static IPocoCopier<TSource, TDest> GetCopier<TSource, TDest>(this IMapperOptions options)
+    public static IPocoCopier<TSource, TDest> GetCopier<TSource, TDest>(this IMapper mapper)
         where TDest : class
     {
         var sourceType = typeof(TSource);
         var destType = typeof(TDest);
         var key = new MapTypeKey(sourceType, destType);
-        var emitCopier = options.GetEmitCopier(key);
+        var emitCopier = mapper.GetEmitCopier(key);
         if (emitCopier is null)
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled;
         var compiledCopier = emitCopier.CompileCopier<TSource, TDest>(Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest"));
-        options.Set(key, compiledCopier);
+        mapper.Set(key, compiledCopier);
         return compiledCopier;
     }
     #endregion
@@ -41,14 +41,14 @@ public static partial class MapperServices
     /// <summary>
     /// 获取弱类型复制器(IObjectCopier)
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="mapper"></param>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    public static object GetObjectCopier(this IMapperOptions options, Type sourceType, Type destType)
+    public static object GetObjectCopier(this IMapper mapper, Type sourceType, Type destType)
     {
         var key = new MapTypeKey(sourceType, destType);
-        var copier = options.GetEmitCopier(key);
+        var copier = mapper.GetEmitCopier(key);
         if (copier is null)
             return null;
         if (copier.Compiled)
@@ -56,7 +56,7 @@ public static partial class MapperServices
         var compileConverter = Inner.CompileCopierMethod.MakeGenericMethod(sourceType, destType);
         var compiled = compileConverter.Invoke(null, [copier, Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest")]) as IEmitCopier;
         if (compiled != null)
-            options.Set(key, compiled);
+            mapper.Set(key, compiled);
         return compiled;
     }
     #endregion
@@ -66,21 +66,21 @@ public static partial class MapperServices
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="mapper"></param>
     /// <returns></returns>
-    public static Action<TSource, TDest> GetCopyAction<TSource, TDest>(this IMapperOptions options)
+    public static Action<TSource, TDest> GetCopyAction<TSource, TDest>(this IMapper mapper)
         where TDest : class
     {
         var sourceType = typeof(TSource);
         var destType = typeof(TDest);
         var key = new MapTypeKey(sourceType, destType);
-        var emitCopier = options.GetEmitCopier(key);
+        var emitCopier = mapper.GetEmitCopier(key);
         if (emitCopier is null)
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled.CopyAction;
         var copyAction = emitCopier.Compile<TSource, TDest>(Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest"));
-        options.Set(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
+        mapper.Set(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
         return copyAction;
     }
     #endregion
@@ -90,14 +90,14 @@ public static partial class MapperServices
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="options"></param>
+    /// <param name="mapper"></param>
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <exception cref="InvalidOperationException"></exception>
-    public static void Copy<TSource, TDest>(this IMapperOptions options, TSource source, TDest dest)
+    public static void Copy<TSource, TDest>(this IMapper mapper, TSource source, TDest dest)
         where TDest : class
     {
-        var copyAction = options.GetCopyAction<TSource, TDest>()
+        var copyAction = mapper.GetCopyAction<TSource, TDest>()
             ?? throw new InvalidOperationException($"不支持复制的类型：{typeof(TSource).FullName} -> {typeof(TDest).FullName}");
         copyAction(source, dest);
     }
@@ -161,7 +161,7 @@ public static partial class MapperServices
     /// <param name="settings"></param>
     /// <param name="copy"></param>
     /// <returns></returns>
-    public static DelegateCopier<TSource, TDest> SetCopy<TSource, TDest>(this ISettings<MapTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
+    public static DelegateCopier<TSource, TDest> SetCopy<TSource, TDest>(this ICacher<MapTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
         where TDest : class
     {
         var key = new MapTypeKey(typeof(TSource), typeof(TDest));
@@ -177,7 +177,7 @@ public static partial class MapperServices
     /// <param name="settings"></param>
     /// <param name="copy"></param>
     /// <returns></returns>
-    public static IEmitCopier TrySetCopy<TSource, TDest>(this ISettings<MapTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
+    public static IEmitCopier TrySetCopy<TSource, TDest>(this ICacher<MapTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
         where TDest : class
     {
         var key = new MapTypeKey(typeof(TSource), typeof(TDest));

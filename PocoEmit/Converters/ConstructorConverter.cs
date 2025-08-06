@@ -19,7 +19,7 @@ public class ConstructorConverter(ConstructorInfo constructor)
     public ConstructorInfo Constructor
         => _constructor;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     #endregion
     #region IEmitConverter

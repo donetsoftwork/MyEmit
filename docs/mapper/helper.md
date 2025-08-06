@@ -2,7 +2,8 @@
 >通过类[MapHelper\<TSource, TDest\>](xref:PocoEmit.Helpers.MapHelper%602)实现方便快捷的配置
 
 ## 一、构造MapHelper
->[MapHelper\<TSource, TDest\>](xref:PocoEmit.Helpers.MapHelper%602)
+>* [MapHelper\<TSource, TDest\>](xref:PocoEmit.Helpers.MapHelper%602)
+>* 默认增加类名为前缀
 
 ```csharp
 Mapper mapper = new();
@@ -63,6 +64,22 @@ mapper.Configure<User, UserCustomDTO>()
     .ForMember(nameof(User.Name)).MapTo(nameof(UserCustomDTO.UserName));
 ```
 
+### 5. 添加来源前缀
+```csharp
+IMapper mapper = Mapper.Create();
+mapper.ConfigureMap<UserCustomDTO, User>()
+    .Source
+    .AddPrefix("U");
+```
+
+### 6. 清空来源前缀
+```csharp
+IMapper mapper = Mapper.Create();
+mapper.ConfigureMap<UserCustomDTO, User>()
+    .Source
+    .ClearPrefix();
+```
+
 ## 三、按目标配置
 ### 1. 获取目标配置
 >[MapHelper\<TSource, TDest\>.DestHelper](xref:PocoEmit.Helpers.MapHelper%602.DestHelper)
@@ -115,4 +132,20 @@ mapper.Configure<UserCustomDTO, User>()
     .Dest
     .ForMember(nameof(User.Id)).MapFrom(nameof(UserCustomDTO.UserId))
     .ForMember(nameof(User.Name)).MapFrom(nameof(UserCustomDTO.UserName));
+```
+
+### 5. 添加目标前缀
+```csharp
+IMapper mapper = Mapper.Create();
+mapper.ConfigureMap<User, UserCustomDTO>()
+    .Dest
+    .AddPrefix("U");
+```
+
+### 6. 清空目标前缀
+```csharp
+IMapper mapper = Mapper.Create();
+mapper.ConfigureMap<UserCustomDTO, User>()
+    .Dest
+    .ClearPrefix();
 ```

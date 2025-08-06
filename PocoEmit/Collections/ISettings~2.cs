@@ -8,12 +8,6 @@ namespace PocoEmit.Collections;
 public interface ISettings<TKey, TValue>
 {
     /// <summary>
-    /// 判断是否存在
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    bool ContainsKey(TKey key);
-    /// <summary>
     /// 获取
     /// </summary>
     /// <param name="key"></param>

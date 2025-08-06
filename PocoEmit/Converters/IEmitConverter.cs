@@ -7,7 +7,7 @@ namespace PocoEmit.Converters;
 /// Emit类型转化
 /// </summary>
 public interface IEmitConverter
-    : IEmitInfo
+    : ICompileInfo
 {
     /// <summary>
     /// 转化

@@ -7,11 +7,11 @@ namespace PocoEmitUnitTests.Supports;
 /// </summary>
 public abstract class PocoMemberTestBase
 {
-    protected Poco _poco = new();
+    protected IPoco _poco = Poco.Create();
     protected TestInstance _instance = new();
     public PocoMemberTestBase()
     {
         // 加载System.Convert
-        Poco.Global.SetSystemConvert();
+        Poco.Global.UseSystemConvert();
     }
 }

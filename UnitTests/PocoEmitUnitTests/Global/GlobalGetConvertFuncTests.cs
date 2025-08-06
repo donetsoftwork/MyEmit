@@ -1,15 +1,13 @@
 using PocoEmit;
-using PocoEmit.Configuration;
-using PocoEmitUnitTests.Supports;
 
 namespace PocoEmitUnitTests.Global;
 
 public class GlobalGetConvertFuncTests
 {
-    private IPocoOptions _global = Poco.Global;
+    private IPoco _global = Poco.Global;
     public GlobalGetConvertFuncTests()
     {
-        _global.SetSystemConvert();
+        _global.UseSystemConvert();
     }
     [Fact]
     public void GetConvert_int2long()

@@ -30,8 +30,6 @@ public class ConstructorActivator(Type returnType, ConstructorInfo constructor)
     /// </summary>
     public ConstructorInfo Constructor
         => _constructor;
-    bool IEmitInfo.Compiled
-        => false;
     #endregion
     /// <inheritdoc />
     public virtual Expression New(Expression argument)

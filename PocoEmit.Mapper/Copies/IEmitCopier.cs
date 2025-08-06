@@ -7,7 +7,7 @@ namespace PocoEmit.Copies;
 /// <summary>
 /// Emit类型复制器
 /// </summary>
-public interface IEmitCopier : IEmitInfo
+public interface IEmitCopier : ICompileInfo
 {
     /// <summary>
     /// 复制

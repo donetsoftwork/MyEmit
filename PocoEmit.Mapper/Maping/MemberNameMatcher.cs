@@ -9,22 +9,22 @@ namespace PocoEmit.Maping;
 /// 成员名匹配
 /// </summary>
 /// <param name="nameMatch"></param>
-public sealed class MemberNameMatcher(INameMatch nameMatch)
+public class MemberNameMatcher(INameMatch nameMatch)
     : IMemberMatch
 {
     /// <summary>
     /// 成员名匹配
     /// </summary>
-    /// <param name="comparer"></param>
-    public MemberNameMatcher(IEqualityComparer<string> comparer)
-        : this(new NameMatcher(comparer))
+    /// <param name="comparison"></param>
+    public MemberNameMatcher(StringComparison comparison)
+        : this(new NameMatcher(comparison))
     {
     }
     /// <summary>
     /// 成员名匹配
     /// </summary>
     public MemberNameMatcher()
-    : this(new NameMatcher(StringComparer.OrdinalIgnoreCase))
+    : this(new NameMatcher(StringComparison.OrdinalIgnoreCase))
     {
     }
     #region 配置
@@ -35,21 +35,49 @@ public sealed class MemberNameMatcher(INameMatch nameMatch)
     public INameMatch NameMatch
         => _nameMatch;
     #endregion
+
     /// <inheritdoc />
-    public bool Match(IMember source, IMember dest)
-        => _nameMatch.Match(source.Name, dest.Name);
+    public IEnumerable<IEmitMemberReader> Select(IRecognizer recognizer, IEnumerable<IEmitMemberReader> sources, IMember dest)
+    {
+        var sourceVariants = RecognizeSource(recognizer, sources).ToArray();
+        var destVariants = RecognizeDest(recognizer, dest);
+        return destVariants.SelectMany(destVariant => SelectCore(destVariant, sourceVariants));
+    }
     /// <summary>
-    /// 筛选
+    /// 识别成员
     /// </summary>
-    /// <param name="sources"></param>
+    /// <param name="recognizer"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    public IEnumerable<TSource> Select<TSource>(IEnumerable<TSource> sources, IMember dest)
-        where TSource : IMember
+    protected virtual IEnumerable<IMember> RecognizeDest(IRecognizer recognizer, IMember dest)
+        => recognizer.Recognize(dest);
+    /// <summary>
+    /// 识别读取器
+    /// </summary>
+    /// <param name="recognizer"></param>
+    /// <param name="sources"></param>
+    /// <returns></returns>
+    protected virtual IEnumerable<IEmitMemberReader> RecognizeSource(IRecognizer recognizer, IEnumerable<IEmitMemberReader> sources)
+        => recognizer.Recognize(sources);
+    /// <summary>
+    /// 按成员名筛选
+    /// </summary>
+    /// <param name="dest"></param>
+    /// <param name="sources"></param>
+    /// <returns></returns>
+    private IEnumerable<IEmitMemberReader> SelectCore(IMember dest, IEnumerable<IEmitMemberReader> sources)
     {
         var name = dest.Name;
-        return sources.Where(source => _nameMatch.Match(source.Name, name));
+        return sources.Where(source => MatchName(source.Name, name));
     }
+    /// <summary>
+    /// 按成员名匹配
+    /// </summary>
+    /// <param name="sourceName"></param>
+    /// <param name="destName"></param>
+    /// <returns></returns>
+    protected virtual bool MatchName(string sourceName, string destName)
+        => _nameMatch.Match(sourceName, destName);
     /// <summary>
     /// 默认实例
     /// </summary>

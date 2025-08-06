@@ -10,24 +10,23 @@ using System.Reflection;
 namespace PocoEmit;
 
 /// <summary>
-/// 映射配置
+/// 对象映射配置
 /// </summary>
-/// <param name="reflectionMember"></param>
-/// <param name="reflectionConstructor"></param>
-/// <param name="defaultMatch"></param>
-public sealed class Mapper(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatch)
-    : MapperConfigurationBase(reflectionMember, reflectionConstructor, defaultMatch)
+public sealed class Mapper : MapperConfigurationBase
 {
     /// <summary>
-    /// Emit配置
+    /// 对象映射配置
     /// </summary>
-    public Mapper()
-        : this(DefaultReflectionMember, DefaultReflectConstructor, GlobalOptions.Instance.DefaultMatch)
-    {
+    /// <param name="reflectionMember"></param>
+    /// <param name="reflectionConstructor"></param>
+    /// <param name="defaultMatch"></param>
+    private Mapper(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatch)
+        : base(reflectionMember, reflectionConstructor, defaultMatch, new InheritRecognizer(GlobalOptions.Instance.Recognizer)) 
+    { 
     }
     #region IMapperOptions
-    #region IEmitOptions
     #region 功能
+    #region IEmitOptions
     /// <inheritdoc />
     public override Func<object, object> GetReadFunc(MemberInfo member)
         => base.GetReadFunc(member) ?? Global.GetReadFunc(member);
@@ -37,12 +36,7 @@ public sealed class Mapper(IReflectionMember reflectionMember, IReflectionConstr
     /// <inheritdoc />
     public override IEmitConverter GetEmitConverter(MapTypeKey key)
         => base.GetEmitConverter(key) ?? Global.GetEmitConverter(key);
-    /// <inheritdoc />
-    public override bool TryGetConvertSetting(MapTypeKey key, out IEmitConverter value)
-        => base.TryGetConvertSetting(key, out value) || GlobalOptions.Instance.TryGetConvertSetting(key, out value);
     #endregion
-    #endregion
-    #region 功能
     /// <summary>
     /// 获取Emit类型复制器
     /// </summary>
@@ -50,33 +44,55 @@ public sealed class Mapper(IReflectionMember reflectionMember, IReflectionConstr
     /// <returns></returns>
     public override IEmitCopier GetEmitCopier(MapTypeKey key)
         => base.GetEmitCopier(key) ?? GlobalOptions.Instance.GetEmitCopier(key);
-    /// <summary>
-    /// 获取Emit类型激活器
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public override IEmitActivator GetEmitActivatorr(Type key)
-        => base.GetEmitActivatorr(key) ?? GlobalOptions.Instance.GetEmitActivatorr(key);
     #endregion
+    #region 配置
     /// <inheritdoc />
-    public override IMemberMatch GetMemberMatch(MapTypeKey key)
-    {
-        if (_matches.TryGetValue(key, out IMemberMatch match) || GlobalOptions.Instance._matches.TryGetValue(key, out match))
-            return match;
-        return _defaultMatch;
-    }
+    internal override bool TryRead(MapTypeKey key, out IEmitConverter value)
+        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
     /// <inheritdoc />
-    public override bool TryGetValue(MapTypeKey key, out IMemberMatch value)
-    {
-        return base.TryGetValue(key, out value)
-            || GlobalOptions.Instance.TryGetValue(key, out value);
-    }
+    internal override bool TryRead(MapTypeKey key, out IEmitCopier value)
+        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
+    /// <inheritdoc />
+    internal override bool TryRead(Type key, out IEmitActivator value)
+        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
+    /// <inheritdoc />
+    internal override bool TryRead(MapTypeKey key, out IEmitActivator value)
+        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
+    /// <inheritdoc />
+    internal override bool TryRead(MapTypeKey key, out IMemberMatch value)
+        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
+    /// <inheritdoc />
+    internal override bool TryRead(Type key, out object value)
+        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
     /// <inheritdoc />
     public override bool TryGetValue(Type key, out bool value)
-    {
-        return base.TryGetValue(key, out value)
-            || GlobalOptions.Instance.TryGetValue(key, out value);
-    }
+        => base.TryGetValue(key, out value) || GlobalOptions.Instance.TryGetValue(key, out value);
+    #endregion
+    #endregion
+    #region Create
+    /// <summary>
+    /// 构造映射器
+    /// </summary>
+    /// <param name="reflectionMember"></param>
+    /// <param name="reflectionConstructor"></param>
+    /// <param name="defaultMatch"></param>
+    /// <returns></returns>
+    public static IMapper Create(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatch)
+        => new Mapper(reflectionMember, reflectionConstructor, defaultMatch);
+    /// <summary>
+    /// 构造映射器
+    /// </summary>
+    /// <param name="reflectionMember"></param>
+    /// <param name="reflectionConstructor"></param>
+    /// <returns></returns>
+    public static IMapper Create(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor)
+        => new Mapper(reflectionMember, reflectionConstructor, GlobalOptions.Instance.DefaultMatcher);
+    /// <summary>
+    /// 构造映射器
+    /// </summary>
+    /// <returns></returns>
+    public static IMapper Create()
+        => new Mapper(DefaultReflectionMember, DefaultReflectConstructor, GlobalOptions.Instance.DefaultMatcher);
     #endregion
     #region Global
     private static IReflectionMember _defaultReflectionMember = Reflection.DefaultReflectionMember.Default;
@@ -108,13 +124,13 @@ public sealed class Mapper(IReflectionMember reflectionMember, IReflectionConstr
     /// <summary>
     /// 全局配置
     /// </summary>
-    public static IMapperOptions Global
+    public static IMapper Global
         => GlobalOptions.Instance;
     /// <summary>
     /// 全局配置
     /// </summary>
     sealed class GlobalOptions()
-        : MapperConfigurationBase(DefaultReflectionMember, DefaultReflectConstructor, MemberNameMatcher.Default)
+        : MapperConfigurationBase(DefaultReflectionMember, DefaultReflectConstructor, MemberNameMatcher.Default, new Recognizer(MemberNameMatcher.Default.NameMatch))
     {
         /// <summary>
         /// Emit全局配置

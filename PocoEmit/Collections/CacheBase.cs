@@ -9,8 +9,8 @@ namespace PocoEmit.Collections;
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TValue"></typeparam>
-public abstract class CacheBase<TKey, TValue>(ISettings<TKey, TValue> cacher)
-    : ISettings<TKey, TValue>
+public abstract class CacheBase<TKey, TValue>(ICacher<TKey, TValue> cacher)
+    : ICacher<TKey, TValue>
 {
     /// <summary>
     /// 缓存基类
@@ -22,7 +22,7 @@ public abstract class CacheBase<TKey, TValue>(ISettings<TKey, TValue> cacher)
     /// <summary>
     /// 缓存字典
     /// </summary>
-    private readonly ISettings<TKey, TValue> _cacher = cacher;
+    private readonly ICacher<TKey, TValue> _cacher = cacher;
 #if NET9_0_OR_GREATER
     private readonly Lock _cacherLock = new();
 #endif

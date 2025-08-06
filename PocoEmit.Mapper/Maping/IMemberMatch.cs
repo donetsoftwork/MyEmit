@@ -9,19 +9,15 @@ namespace PocoEmit.Maping;
 public interface IMemberMatch
 {
     /// <summary>
-    /// 匹配
+    /// 名称匹配规则
     /// </summary>
-    /// <param name="source"></param>
-    /// <param name="dest"></param>
-    /// <returns></returns>
-    bool Match(IMember source, IMember dest);
+    INameMatch NameMatch { get; }
     /// <summary>
     /// 筛选
     /// </summary>
-    /// <typeparam name="TSource"></typeparam>
+    /// <param name="recognizer"></param>
     /// <param name="sources"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    IEnumerable<TSource> Select<TSource>(IEnumerable<TSource> sources, IMember dest)
-        where TSource : IMember;
+    IEnumerable<IEmitMemberReader> Select(IRecognizer recognizer, IEnumerable<IEmitMemberReader> sources, IMember dest);
 }

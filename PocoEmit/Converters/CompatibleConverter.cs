@@ -33,7 +33,7 @@ public sealed class CompatibleConverter(IEmitConverter original, Type originalSo
     public Type DestType
         => _destType;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />

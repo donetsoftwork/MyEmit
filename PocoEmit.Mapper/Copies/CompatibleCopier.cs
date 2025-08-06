@@ -34,7 +34,7 @@ public sealed class CompatibleCopier(IEmitCopier inner, Type innerSourceType, Ty
     public Type DestType
         => _destType;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />

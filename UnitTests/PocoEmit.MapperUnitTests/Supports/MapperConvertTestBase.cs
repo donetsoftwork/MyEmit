@@ -5,15 +5,15 @@ namespace PocoEmit.MapperUnitTests.Supports;
 /// </summary>
 public abstract class MapperConvertTestBase
 {
-    protected readonly Mapper _mapper = new();
+    protected readonly IMapper _mapper = Mapper.Create();
     protected readonly TimeConverter _timeConverter = new();
 
     public MapperConvertTestBase()
     {
         // 继承Global配置,能被EmitOptions对象引用
-        Mapper.Global.SetSystemConvert();
+        Mapper.Global.UseSystemConvert();
         // 多态,覆盖Global配置
-        _mapper.AddConverter(_timeConverter);
+        _mapper.UseConverter(_timeConverter);
     }
     #region Supports
     internal class Manager

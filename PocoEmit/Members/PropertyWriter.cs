@@ -21,7 +21,7 @@ public class PropertyWriter(PropertyInfo property)
     MemberInfo IEmitMemberWriter.Info
         => Member;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     /// <inheritdoc />
     public Expression Write(Expression instance, Expression value)

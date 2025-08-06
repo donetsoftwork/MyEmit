@@ -9,7 +9,7 @@ namespace PocoEmit.Converters;
 public sealed class PassConverter : IEmitConverter
 {
     private PassConverter() { }
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
 
     /// <inheritdoc />

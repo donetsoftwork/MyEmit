@@ -16,7 +16,7 @@ public class PrimitiveConfiguration
     /// 基础类型配置
     /// </summary>
     /// <param name="settings"></param>
-    public PrimitiveConfiguration(ISettings<Type, bool> settings)
+    public PrimitiveConfiguration(ICacher<Type, bool> settings)
         : base(settings)
     {
         Set(typeof(decimal), true);

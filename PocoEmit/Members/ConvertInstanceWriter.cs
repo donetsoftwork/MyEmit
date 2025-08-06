@@ -40,7 +40,7 @@ public class ConvertInstanceWriter(IEmitConverter converter, IEmitMemberWriter i
     MemberInfo IEmitMemberWriter.Info
         => _inner.Info;
     /// <inheritdoc />
-    bool IEmitInfo.Compiled
+    bool ICompileInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />

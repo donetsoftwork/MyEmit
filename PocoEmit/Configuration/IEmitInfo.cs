@@ -1,9 +1,9 @@
 namespace PocoEmit.Configuration;
 
 /// <summary>
-/// Emit信息
+/// 编译信息
 /// </summary>
-public interface IEmitInfo
+public interface ICompileInfo
 {
     /// <summary>
     /// 是否已编译
