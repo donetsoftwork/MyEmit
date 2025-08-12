@@ -4,6 +4,8 @@ using PocoEmit.Copies;
 using PocoEmit.Maping;
 using PocoEmit.Reflection;
 using System;
+using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace PocoEmit.Configuration;
@@ -18,23 +20,28 @@ public abstract partial class MapperConfigurationBase
     /// <summary>
     /// 映射配置基类
     /// </summary>
-    /// <param name="reflectionMember"></param>
-    /// <param name="reflectionConstructor"></param>
-    /// <param name="defaultMatcher"></param>
-    /// <param name="recognizer"></param>
-    public MapperConfigurationBase(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatcher, IRecognizer recognizer)
-        : base(reflectionMember)
+    public MapperConfigurationBase(MapperOptions options)
+        : base(options)
     {
         // 初始化配置
-        _reflectionConstructor = reflectionConstructor;
-        _defaultMatcher = defaultMatcher;
+        var concurrencyLevel = options.ConcurrencyLevel;
+        _copiers = new ConcurrentDictionary<MapTypeKey, IEmitCopier>(concurrencyLevel, options.CopierCapacity);
+        _copyConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitCopier>(concurrencyLevel, options.CopierConfigurationCapacity);
+        _activeConfiguration = new ConcurrentDictionary<Type, IEmitActivator>(concurrencyLevel, options.ActivatorConfigurationCapacity);
+        _argumentActiveConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitActivator>(concurrencyLevel, options.ArgumentActivatorConfigurationCapacity);
+        _matchConfiguration = new ConcurrentDictionary<MapTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
+        _primitiveTypes = new ConcurrentDictionary<Type, bool>(concurrencyLevel, options.PrimitiveCapacity);
+        _defaultValueConfiguration = new ConcurrentDictionary<Type, object>(concurrencyLevel, options.DefaultValueCapacity);
+        _reflectionConstructor = DefaultReflectionConstructor.Default;
+        _defaultMatcher = MemberNameMatcher.Default;
+        _recognizer = new Recognizer(_defaultMatcher.NameMatch);
         ConvertBuilder = new ComplexConvertBuilder(this);
+        _copierBuilder = new CopierBuilder(this);
         _copierFactory = new CopierFactory(this);
-        _activatorFactory = new ActivatorFactory(this);
         _primitives = new PrimitiveConfiguration(this);
-        _recognizer = recognizer;
     }
     #region 配置
+    private CopierBuilder _copierBuilder;
     private IReflectionConstructor _reflectionConstructor;
     /// <summary>
     /// 默认成员匹配
@@ -49,14 +56,9 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     private readonly CopierFactory _copierFactory;
     /// <summary>
-    /// 激活器
-    /// </summary>
-    private readonly ActivatorFactory _activatorFactory;
-    /// <summary>
     /// 基础类型配置
     /// </summary>
     private readonly PrimitiveConfiguration _primitives;
-    #endregion
     /// <summary>
     /// 反射获取构造函数
     /// </summary>
@@ -65,6 +67,8 @@ public abstract partial class MapperConfigurationBase
         get => _reflectionConstructor;
         internal set => _reflectionConstructor = value;
     }
+    #endregion
+
     #region IMapperOptions
     /// <inheritdoc />
     public IMemberMatch DefaultMatcher
@@ -75,6 +79,12 @@ public abstract partial class MapperConfigurationBase
     /// <inheritdoc />
     public IRecognizer Recognizer 
         => _recognizer;
+    /// <inheritdoc />
+    public CopierBuilder CopierBuilder 
+    { 
+        get => _copierBuilder; 
+        internal set => _copierBuilder = value ?? throw new ArgumentNullException(nameof(value));
+    }
     #endregion
     #region 功能
     /// <summary>
@@ -85,18 +95,6 @@ public abstract partial class MapperConfigurationBase
     public virtual IEmitCopier GetEmitCopier(MapTypeKey key)
         => _copierFactory.Get(key);
     /// <summary>
-    /// 获取Emit类型激活器
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public IEmitActivator GetEmitActivator(MapTypeKey key)
-    {
-        if (TryRead(key, out IEmitActivator activator))
-            return activator;
-        return _activatorFactory.Get(key.DestType);
-    }
-
-    /// <summary>
     /// 是否基础类型
     /// </summary>
     /// <param name="type"></param>
@@ -104,7 +102,38 @@ public abstract partial class MapperConfigurationBase
     public bool CheckPrimitive(Type type)
         => _primitives.Get(type);
     /// <inheritdoc />
-    public ConstructorInfo GetConstructor(Type instanceType)
+    public virtual ConstructorInfo GetConstructor(Type instanceType)
         => _reflectionConstructor.GetConstructor(instanceType);
+    /// <inheritdoc />
+    public IEmitActivator GetEmitActivator(MapTypeKey key)
+    {
+        if (_argumentActiveConfiguration.TryGetValue(key, out IEmitActivator activator) || _activeConfiguration.TryGetValue(key.DestType, out activator))
+            return activator;
+        return activator;
+    }
+    /// <inheritdoc />
+    public Expression CreateDefault(Type destType)
+    {
+        if (_defaultValueConfiguration.TryGetValue(destType, out object defaultValue))
+        {
+            if (defaultValue is Delegate func)
+            {
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+                var call = Expression.Call(EmitHelper.CheckMethodCallInstance(func), func.GetMethodInfo());
+#else
+                var call = Expression.Call(EmitHelper.CheckMethodCallInstance(func), func.Method);
+#endif
+                return Expression.Convert(call, destType);
+            }
+            else
+            {
+                return Expression.Constant(defaultValue);
+            }
+        }
+        else
+        {
+            return Expression.Default(destType);
+        }
+    }
     #endregion
 }

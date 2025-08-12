@@ -1,6 +1,6 @@
 # 类型转化
->* 调用[IMapperOptions](xref:PocoEmit.Configuration.IMapperOptions)的方法来转化
->* IMapperOptions继承[IPocoOptions](xref:PocoEmit.Configuration.IPocoOptions)
+>* 调用[IMapper](xref:PocoEmit.Configuration.IMapper)的方法来转化
+>* IMapper继承[IPoco](xref:PocoEmit.Configuration.IPoco)
 >* 一般使用[Mapper](xref:PocoEmit.Mapper)的实例或Mapper.Global
 
 

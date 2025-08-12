@@ -11,10 +11,10 @@ public class StringPropertyGetBench : PropertyBenchBase
     static readonly PropertyInfo _property = typeof(TestClass).GetProperty("StringProperty")!;
     readonly IPropertyAccessor _fastReflect = FastReflectionCaches.PropertyAccessorCache.Get(_property);
     readonly Func<object, object> _hardCode = obj => ((TestClass)obj).StringProperty;
-    readonly Func<object, object> _poco = PocoEmit.Poco.Global.GetReadFunc<object, object>(_property);
+    readonly Func<object, object> _poco = PocoEmit.Poco.Default.GetReadFunc<object, object>(_property);
     readonly Func<object, object> _il = ILPropertyHelper.GetReadFunc<object, object>(_property);
     readonly Func<TestClass, object> _hardCode0 = obj => obj.StringProperty;
-    readonly Func<TestClass, object> _poco0 = PocoEmit.Poco.Global.GetReadFunc<TestClass, object>(_property);
+    readonly Func<TestClass, object> _poco0 = PocoEmit.Poco.Default.GetReadFunc<TestClass, object>(_property);
 
     [Benchmark]
     public object? Reflect()

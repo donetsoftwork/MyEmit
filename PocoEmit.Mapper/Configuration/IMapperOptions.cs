@@ -1,4 +1,5 @@
 using PocoEmit.Activators;
+using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
@@ -15,15 +16,17 @@ public interface IMapperOptions
     : IPocoOptions
     , IMapper
     , ICacher<MapTypeKey, IEmitCopier>
-    , ICacher<Type, IEmitActivator>
     , ICacher<Type, bool>
     , IReflectionConstructor
 {
     /// <summary>
+    /// 复制器构造器
+    /// </summary>
+    CopierBuilder CopierBuilder { get; }
+    /// <summary>
     /// 默认成员匹配
     /// </summary>
     IMemberMatch DefaultMatcher { get; set; }
-
     /// <summary>
     /// 获取Emit类型激活器
     /// </summary>
@@ -42,4 +45,12 @@ public interface IMapperOptions
     /// <param name="destType"></param>
     /// <returns></returns>
     Expression CreateDefault(Type destType);
+    ///// <summary>
+    ///// 构造复制器
+    ///// </summary>
+    ///// <param name="sourcetype"></param>
+    ///// <param name="destType"></param>
+    ///// <param name="clear"></param>
+    ///// <returns></returns>
+    //IEmitCopier CreateCollectionCopier(Type sourcetype, Type destType, bool clear = true);
 }

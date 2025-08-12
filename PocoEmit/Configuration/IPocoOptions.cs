@@ -18,7 +18,7 @@ public interface IPocoOptions
     /// <summary>
     /// 转换器构造器
     /// </summary>
-    IConvertBuilder ConvertBuilder { get; }
+    ConvertBuilder ConvertBuilder { get; }
     /// <summary>
     /// 转换器
     /// </summary>

@@ -3,6 +3,7 @@ using PocoEmit.Collections;
 using PocoEmit.Converters;
 using PocoEmit.Reflection;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -17,13 +18,18 @@ public abstract partial class ConfigurationBase
     /// <summary>
     /// Emit配置
     /// </summary>
-    public ConfigurationBase(IReflectionMember reflectionMember)
+    /// <param name="options"></param>
+    protected ConfigurationBase(PocoOptions options)
     {
         // 初始化配置
-        _reflectionMember = reflectionMember;
-        _convertBuilder = DefaultConvertBuilder.Default;
+        var concurrencyLevel = options.ConcurrencyLevel;
+        _converters = new ConcurrentDictionary<MapTypeKey, IEmitConverter>(concurrencyLevel, options.ConverterCapacity);
+        _convertConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitConverter>(concurrencyLevel, options.ConverterConfigurationCapacity);
+        _memberBundles = new ConcurrentDictionary<Type, MemberBundle>(concurrencyLevel, options.MemberBundleCapacity);
+        _reflectionMember = DefaultReflectionMember.Default;
+        _convertBuilder = ConvertBuilder.Default;
         _converterFactory = new(this);
-        _memberCacher = new TypeMemberCacher(this, reflectionMember);
+        _memberCacher = new TypeMemberCacher(this);
     }
     #region 配置
     /// <summary>
@@ -33,7 +39,10 @@ public abstract partial class ConfigurationBase
     /// <summary>
     /// 构建转换器
     /// </summary>
-    private IConvertBuilder _convertBuilder;
+    private ConvertBuilder _convertBuilder;
+    /// <summary>
+    /// 反射获取成员
+    /// </summary>
     private IReflectionMember _reflectionMember;
     /// <summary>
     /// 成员缓存器
@@ -59,10 +68,10 @@ public abstract partial class ConfigurationBase
         internal set => _reflectionMember = value;
     }
     /// <inheritdoc />
-    public IConvertBuilder ConvertBuilder
+    public ConvertBuilder ConvertBuilder
     {
         get => _convertBuilder;
-        protected set => _convertBuilder = value;
+        internal set => _convertBuilder = value;
     }
     /// <summary>
     /// 成员缓存器
@@ -72,16 +81,13 @@ public abstract partial class ConfigurationBase
     #endregion
     #region 功能
     /// <inheritdoc />
-    public virtual Func<object, object> GetReadFunc(MemberInfo member)
+    public Func<object, object> GetReadFunc(MemberInfo member)
         => (_readerFuncCacher ??= new ReadFuncCacher(this)).Get(member);
     /// <inheritdoc />
-    public virtual Action<object, object> GetWriteAction(MemberInfo member)
+    public Action<object, object> GetWriteAction(MemberInfo member)
         => (_writerActionCacher ??= new WriteActionCacher(this)).Get(member);
     /// <inheritdoc />
-    public virtual IEmitConverter GetEmitConverter(MapTypeKey key)
+    public IEmitConverter GetEmitConverter(MapTypeKey key)
         => _converterFactory.Get(key);
-    /// <inheritdoc />
-    public void SetConvertSetting(MapTypeKey key, IEmitConverter converter)
-        => _convertConfiguration[key] = converter;
     #endregion
 }

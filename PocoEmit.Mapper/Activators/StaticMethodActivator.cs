@@ -9,15 +9,18 @@ namespace PocoEmit.Activators;
 /// </summary>
 /// <param name="target"></param>
 /// <param name="method"></param>
-public class MethodActivator(object target, MethodInfo method)
+public class MethodActivator(Expression target, MethodInfo method)
     : IEmitActivator
 {
     #region 配置
-    private readonly object _target = target;
     /// <summary>
     /// 实例
     /// </summary>
-    public object Target
+    protected readonly Expression _target = target;
+    /// <summary>
+    /// 实例
+    /// </summary>
+    public Expression Target
         => _target;
     /// <summary>
     /// 方法
@@ -31,13 +34,8 @@ public class MethodActivator(object target, MethodInfo method)
     /// </summary>
     public MethodInfo Method 
         => _method;
-    /// <summary>
-    /// 调用实例
-    /// </summary>
-    public Expression Instance
-        => ReflectionHelper.CheckMethodCallInstance(_target);
     #endregion
     /// <inheritdoc />
     public virtual Expression New(Expression argument)
-        => Expression.Call(Instance, _method);
+        => Expression.Call(_target, _method);
 }

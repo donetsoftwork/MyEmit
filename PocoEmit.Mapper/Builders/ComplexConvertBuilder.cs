@@ -1,7 +1,12 @@
+using PocoEmit.Activators;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using PocoEmit.Members;
 using System;
+using System.Collections.Generic;
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+using System.Reflection;
+#endif
 
 namespace PocoEmit.Builders;
 
@@ -10,10 +15,13 @@ namespace PocoEmit.Builders;
 /// </summary>
 /// <param name="options"></param>
 public class ComplexConvertBuilder(IMapperOptions options)
-    : DefaultConvertBuilder
+    : ConvertBuilder
 {
     #region 配置
-    private readonly IMapperOptions _options = options;
+    /// <summary>
+    /// Emit配置
+    /// </summary>
+    protected readonly IMapperOptions _options = options;
     /// <summary>
     /// Emit配置
     /// </summary>
@@ -23,6 +31,20 @@ public class ComplexConvertBuilder(IMapperOptions options)
     /// <inheritdoc />
     public override IEmitConverter Build(Type sourceType, Type destType)
     {
+        if (destType.IsArray)
+            return ToArray(sourceType, destType);
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        var isInterface = destType.GetTypeInfo().IsInterface;
+#else
+        var isInterface = destType.IsInterface;
+#endif
+        if (ReflectionHelper.HasGenericType(destType, typeof(IDictionary<,>)))
+            return ToDictionary(sourceType, destType, isInterface);
+        if (ReflectionHelper.HasGenericType(destType, typeof(IEnumerable<>)))
+            return ToCollection(sourceType, destType, isInterface);
+        // 接口不支持
+        if (isInterface)
+            return null;
         if (_options.CheckPrimitive(sourceType))
             return base.Build(sourceType, destType);
         var converter = TryBuildByMember(sourceType, destType);
@@ -31,12 +53,37 @@ public class ComplexConvertBuilder(IMapperOptions options)
         if (_options.CheckPrimitive(destType))
             return null;
         var key = new MapTypeKey(sourceType, destType);
-        var activator = _options.GetEmitActivator(key);
+        var activator = _options.GetEmitActivator(key) ?? CreateDefaultActivator(destType);
         if (activator is null)
             return null;
-        var copier = _options.GetEmitCopier(key);
-        return new ComplexTypeConverter(activator, copier);
+        return new ComplexTypeConverter(activator, _options.GetEmitCopier(key));
     }
+    /// <summary>
+    /// 数组不支持(预留扩展)
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    protected virtual IEmitConverter ToArray(Type sourceType, Type destType)
+        => null;
+    /// <summary>
+    /// 字典不支持(预留扩展)
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
+    /// <param name="isInterface"></param>
+    /// <returns></returns>
+    protected virtual IEmitConverter ToDictionary(Type sourceType, Type destType, bool isInterface)
+        => null;
+    /// <summary>
+    /// 集合不支持(预留扩展)
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
+    /// <param name="isInterface"></param>
+    /// <returns></returns>
+    protected virtual IEmitConverter ToCollection(Type sourceType, Type destType, bool isInterface)
+        => null;
     /// <summary>
     /// 尝试按成员读取来转化
     /// </summary>
@@ -89,5 +136,29 @@ public class ComplexConvertBuilder(IMapperOptions options)
             return true;
         }
         return false;
+    }
+    /// <summary>
+    /// 构造默认激活器
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public IEmitActivator CreateDefaultActivator(Type key)
+    {
+        var constructor = _options.GetConstructor(key);
+        if (constructor is not null)
+        {
+            var parameters = constructor.GetParameters();
+            if (parameters.Length == 0)
+                return new ConstructorActivator(key, constructor);
+            return new ParameterConstructorActivator(_options, key, constructor, parameters);
+        }
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        var isValueType = key.GetTypeInfo().IsValueType;
+#else
+        var isValueType = key.IsValueType;
+#endif
+        if (isValueType)
+            return new TypeActivator(key);
+        return null;
     }
 }

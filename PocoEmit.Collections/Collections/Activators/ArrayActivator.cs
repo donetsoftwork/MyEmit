@@ -1,0 +1,41 @@
+using PocoEmit.Activators;
+using System;
+using System.Linq.Expressions;
+
+namespace PocoEmit.Collections.Activators;
+
+/// <summary>
+/// 数组激活器
+/// </summary>
+/// <param name="elementType"></param>
+/// <param name="collectionType"></param>
+/// <param name="length"></param>
+public class ArrayActivator(Type collectionType, Type elementType, IEmitCounter length)
+    : EmitCollectionBase(collectionType, elementType)
+    , IEmitActivator
+{
+    #region 配置
+    /// <summary>
+    /// 数组长度
+    /// </summary>
+    protected readonly IEmitCounter _length = length;
+    /// <summary>
+    /// 数组长度
+    /// </summary>
+    public IEmitCounter Length
+        => _length;
+    /// <inheritdoc />
+    Type IEmitActivator.ReturnType
+        => _collectionType;
+    #endregion
+    /// <inheritdoc />
+    Expression IEmitActivator.New(Expression argument)
+        => New(_length.Count(argument));
+    /// <summary>
+    /// 构造数组
+    /// </summary>
+    /// <param name="len"></param>
+    /// <returns></returns>
+    public Expression New(Expression len)
+        => Expression.NewArrayBounds(_elementType, len);
+}

@@ -1,4 +1,4 @@
-using PocoEmit.Reflection;
+using PocoEmit.Configuration;
 using System;
 
 namespace PocoEmit.Collections;
@@ -6,22 +6,21 @@ namespace PocoEmit.Collections;
 /// <summary>
 /// 类型成员缓存
 /// </summary>
-/// <param name="cacher"></param>
-/// <param name="reflection"></param>
-public class TypeMemberCacher(ICacher<Type, MemberBundle> cacher, IReflectionMember reflection)
-    : CacheBase<Type, MemberBundle>(cacher)
+/// <param name="poco"></param>
+public sealed class TypeMemberCacher(IPocoOptions poco)
+    : CacheBase<Type, MemberBundle>(poco)
 {
     #region 配置
-    private readonly IReflectionMember _reflection = reflection;
+    private readonly IPocoOptions _poco = poco;
     /// <summary>
-    /// 成员反射
+    /// 配置
     /// </summary>
-    public IReflectionMember Reflection
-        => _reflection;
+    public IPocoOptions Poco
+        => _poco;
     #endregion
     #region CacheBase
     /// <inheritdoc />
     protected override MemberBundle CreateNew(Type key)
-        => _reflection.GetMembers(key);
+        => _poco.ReflectionMember.GetMembers(key);
     #endregion    
 }

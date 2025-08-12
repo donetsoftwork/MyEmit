@@ -10,6 +10,6 @@ public abstract class MapperMemberTestBase
     public MapperMemberTestBase()
     {
         // 加载System.Convert
-        Mapper.Global.UseSystemConvert();
+        Mapper.Default.UseSystemConvert();
     }
 }

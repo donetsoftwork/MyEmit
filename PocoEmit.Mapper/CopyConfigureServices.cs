@@ -1,6 +1,7 @@
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using System;
+using System.Linq.Expressions;
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
 using System.Reflection;
 #endif
@@ -73,12 +74,13 @@ public static partial class MapperServices
 #else
         var methods = converterType.GetMethods();
 #endif
+        var target = Expression.Constant(instance);
         foreach (var method in methods)
         {
             var parameters = method.GetParameters();
             if (method.DeclaringType == converterType && !method.IsStatic && method.ReturnType == typeof(void) && parameters.Length == 2)
             {
-                MethodCopier converter = new(instance, method);
+                MethodCopier converter = new(target, method);
                 MapTypeKey key = new(parameters[0].ParameterType, parameters[1].ParameterType);
                 mapper.Configure(key, converter);
             }

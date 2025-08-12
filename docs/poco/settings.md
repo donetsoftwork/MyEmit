@@ -3,7 +3,7 @@
 >* 已经生成的缓存修改相关配置不会生效
 
 ## 一、配置类型转化器
->通过IPocoOptions配置
+>通过IPoco配置
 
 ### 1. SetConvertFunc
 >* 配置类型转化委托

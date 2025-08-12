@@ -4,12 +4,9 @@ using PocoEmit.Copies;
 using PocoEmit.Maping;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+using System.Collections.Generic;
 using System.Collections.Frozen;
 #endif
 
@@ -32,10 +29,6 @@ public abstract partial class MapperConfigurationBase
     /// 复制器配置
     /// </summary>
     private IDictionary<MapTypeKey, IEmitCopier> _copyConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitCopier>();
-    /// <summary>
-    /// 激活器缓存
-    /// </summary>
-    private IDictionary<Type, IEmitActivator> _activators = new ConcurrentDictionary<Type, IEmitActivator>();
     /// <summary>
     /// 激活器配置
     /// </summary>
@@ -66,10 +59,6 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     private ConcurrentDictionary<MapTypeKey, IEmitCopier> _copyConfiguration= new();
     /// <summary>
-    /// 激活器缓存
-    /// </summary>
-    private ConcurrentDictionary<Type, IEmitActivator> _activators = new();
-    /// <summary>
     /// 激活器配置
     /// </summary>
     private ConcurrentDictionary<Type, IEmitActivator> _activeConfiguration = new();
@@ -92,39 +81,16 @@ public abstract partial class MapperConfigurationBase
 #endif
     #endregion
     #region IMapperOptions
-    /// <summary>
-    /// 复制器
-    /// </summary>
-    public IEnumerable<IEmitCopier> Copiers
-        => _copiers.Values;
-    /// <summary>
-    /// 成员匹配配置
-    /// </summary>
-    public IEnumerable<IMemberMatch> MatchConfiguration
-        => _matchConfiguration.Values.Concat([_defaultMatcher]).Distinct();
-    /// <summary>
-    /// 基础类型
-    /// </summary>
-    public IEnumerable<Type> PrimitiveTypes
-        => _primitiveTypes.Where(p => p.Value).Select(p => p.Key);
     /// <inheritdoc />
     public IMemberMatch GetMemberMatch(MapTypeKey key)
     {
-        TryRead(key, out IMemberMatch matcher);
+        _matchConfiguration.TryGetValue(key, out IMemberMatch matcher);
         return matcher ?? _defaultMatcher;
     }
     #region IConfigure<MapTypeKey, IEmitCopier>
     /// <inheritdoc />
     void IConfigure<MapTypeKey, IEmitCopier>.Configure(MapTypeKey key, IEmitCopier value)
         => _copyConfiguration[key] = value;
-    /// <summary>
-    /// 获取复制配置
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    internal virtual bool TryRead(MapTypeKey key, out IEmitCopier value)
-        => _copyConfiguration.TryGetValue(key, out value);
     #endregion
     #region ISettings<MapTypeKey, IEmitCopier>
     /// <inheritdoc />
@@ -132,55 +98,22 @@ public abstract partial class MapperConfigurationBase
         => _copiers.ContainsKey(key);
     /// <inheritdoc />
     bool ICacher<MapTypeKey, IEmitCopier>.TryGetValue(MapTypeKey key, out IEmitCopier value)
-        => _copiers.TryGetValue(key, out value) || TryRead(key, out value);
+        => _copiers.TryGetValue(key, out value) || _copyConfiguration.TryGetValue(key, out value);
     /// <inheritdoc />
     void IStore<MapTypeKey, IEmitCopier>.Set(MapTypeKey key, IEmitCopier value)
         => _copiers[key] = value;
     #endregion
     #region IConfigure<Type, IEmitActivator>
+    /// <inheritdoc />
     void IConfigure<Type, IEmitActivator>.Configure(Type key, IEmitActivator value)
         => _activeConfiguration[key] = value;
-    /// <summary>
-    /// 获取激活配置
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    internal virtual bool TryRead(Type key, out IEmitActivator value)
-        => _activeConfiguration.TryGetValue(key, out value);
-    #endregion
-    #region ISettings<Type, IEmitActivator>
-    /// <inheritdoc />
-    bool ICacher<Type, IEmitActivator>.ContainsKey(Type key)
-        => _activators.ContainsKey(key);
-    /// <inheritdoc />
-    bool ICacher<Type, IEmitActivator>.TryGetValue(Type key, out IEmitActivator value)
-        => _activators.TryGetValue(key, out value) || TryRead(key, out value);
-    /// <inheritdoc />
-    void IStore<Type, IEmitActivator>.Set(Type key, IEmitActivator value)
-        => _activators[key] = value;
     #endregion
     #region IConfigure<MapTypeKey, IEmitActivator>
+    /// <inheritdoc />
     void IConfigure<MapTypeKey, IEmitActivator>.Configure(MapTypeKey key, IEmitActivator value)
         => _argumentActiveConfiguration[key] = value;
-    /// <summary>
-    /// 获取带参激活配置
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    internal virtual bool TryRead(MapTypeKey key, out IEmitActivator value)
-        => _argumentActiveConfiguration.TryGetValue(key, out value);
     #endregion
     #region IConfigure<MapTypeKey, IMemberMatch>
-    /// <summary>
-    /// 获取匹配规则
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    internal virtual bool TryRead(MapTypeKey key, out IMemberMatch value)
-        => _matchConfiguration.TryGetValue(key, out value);
     /// <inheritdoc />
     void IConfigure<MapTypeKey, IMemberMatch>.Configure(MapTypeKey key, IMemberMatch value)
         => _matchConfiguration[key] = value;
@@ -202,42 +135,10 @@ public abstract partial class MapperConfigurationBase
        => _primitiveTypes[key] = value;
     #endregion
     #region IConfigure<Type, object>
-    /// <summary>
-    /// 读取默认值
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    internal virtual bool TryRead(Type key, out object value)
-        => _defaultValueConfiguration.TryGetValue(key, out value);
     /// <inheritdoc />
     void IConfigure<Type, object>.Configure(Type key, object value)
         => _defaultValueConfiguration[key] = value;
     #endregion
-    /// <inheritdoc />
-    public Expression CreateDefault(Type destType)
-    {
-        if (TryRead(destType, out object defaultValue))
-        {
-            if (defaultValue is Delegate func)
-            {
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-                var call = Expression.Call(ReflectionHelper.CheckMethodCallInstance(func), func.GetMethodInfo());
-#else
-                var call = Expression.Call(ReflectionHelper.CheckMethodCallInstance(func), func.Method);
-#endif
-                return Expression.Convert(call, destType);
-            }
-            else
-            {
-                return Expression.Constant(defaultValue);
-            }
-        }
-        else
-        {
-            return Expression.Default(destType);
-        }
-    }
     #endregion
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
@@ -247,10 +148,9 @@ public abstract partial class MapperConfigurationBase
     {
         base.ToFrozen();
         _copiers = _copiers.ToFrozenDictionary();
-        _activators = _activators.ToFrozenDictionary();
         _activeConfiguration = _activeConfiguration.ToFrozenDictionary();
         _argumentActiveConfiguration = _argumentActiveConfiguration.ToFrozenDictionary();
-        _matchConfiguration = _matchConfiguration.ToFrozenDictionary();
+        _matchConfiguration = _matchConfiguration.ToFrozenDictionary();        
         _primitiveTypes = _primitiveTypes.ToFrozenDictionary();
     }
 #endif

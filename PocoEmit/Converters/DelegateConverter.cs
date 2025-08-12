@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using System;
 using System.Reflection;
 
@@ -11,7 +12,7 @@ namespace PocoEmit.Converters;
 /// <param name="convertFunc"></param>
 /// <param name="method"></param>
 public sealed class DelegateConverter<TSource, TDest>(Func<TSource, TDest> convertFunc, MethodInfo method)
-    : MethodConverter(convertFunc.Target, method, typeof(TSource)), ICompiledConverter<TSource, TDest>
+    : MethodConverter(EmitHelper.CheckMethodCallInstance(convertFunc), method, typeof(TSource)), ICompiledConverter<TSource, TDest>
 {
     /// <summary>
     /// 委托类型转化

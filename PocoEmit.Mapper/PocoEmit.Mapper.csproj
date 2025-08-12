@@ -20,5 +20,9 @@
   <ItemGroup>
     <ProjectReference Include="..\PocoEmit\PocoEmit.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <InternalsVisibleTo Include="PocoEmit.Collections" />
+    <InternalsVisibleTo Include="PocoEmit.MapperUnitTests" />
+  </ItemGroup>
+  
 </Project>

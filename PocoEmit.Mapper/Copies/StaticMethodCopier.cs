@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -9,11 +10,11 @@ namespace PocoEmit.Copies;
 /// </summary>
 /// <param name="target"></param>
 /// <param name="method"></param>
-public class MethodCopier(object target, MethodInfo method)
+public class MethodCopier(Expression target, MethodInfo method)
     : IEmitCopier
 {
     #region 配置
-    private readonly object _target = target;
+    private readonly Expression _target = target;
     /// <summary>
     /// 方法
     /// </summary>
@@ -21,18 +22,13 @@ public class MethodCopier(object target, MethodInfo method)
     /// <summary>
     /// 实例
     /// </summary>
-    public object Target
+    public Expression Target
         => _target;
     /// <summary>
     /// 方法
     /// </summary>
     public MethodInfo Method
         => _method;
-    /// <summary>
-    /// 调用实例
-    /// </summary>
-    public Expression Instance
-        => ReflectionHelper.CheckMethodCallInstance(_target);
     /// <inheritdoc />
     public virtual bool Compiled
         => false;
@@ -40,7 +36,7 @@ public class MethodCopier(object target, MethodInfo method)
     /// <inheritdoc />
     public virtual IEnumerable<Expression> Copy(Expression source, Expression dest)
     {
-        var call = Expression.Call(Instance, _method, source, dest);
+        var call = Expression.Call(_target, _method, source, dest);
         return [call];
     }
 }

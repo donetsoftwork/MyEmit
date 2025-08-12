@@ -5,7 +5,7 @@ namespace PocoEmit.MapperUnitTests.Global;
 
 public class GlobalGetConvertTests
 {
-    private IMapper _global = Mapper.Global;
+    private IMapper _global = Mapper.Default;
     public GlobalGetConvertTests()
     {
         _global.UseSystemConvert();

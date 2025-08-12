@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
@@ -84,7 +85,7 @@ public static partial class PocoEmitServices
             var parameters = method.GetParameters();
             if (method.DeclaringType == converterType && !method.IsStatic && returnType != typeof(void) && parameters.Length == 1)
             {
-                MethodConverter converter = new(instance, method);
+                MethodConverter converter = new(EmitHelper.CheckMethodCallInstance(instance), method);
                 MapTypeKey key = new(parameters[0].ParameterType, returnType);
                 configuration.Configure(key, converter);
             }

@@ -3,6 +3,7 @@ using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
 using PocoEmit.Members;
+using System;
 using System.Collections.Generic;
 
 namespace PocoEmit.Builders;
@@ -10,10 +11,60 @@ namespace PocoEmit.Builders;
 /// <summary>
 /// 构建复制器
 /// </summary>
-/// <param name="factory"></param>
-public class CopierBuilder(CopierFactory factory)
-    : CopierBuilderBase(factory)
+/// <param name="options"></param>
+public class CopierBuilder(IMapperOptions options)
+    : CopierBuilderBase(options)
 {
+    #region 配置
+    /// <summary>
+    /// 同类型复制
+    /// </summary>
+    private readonly CopyToSelf _forSelf = new(options);
+    /// <summary>
+    /// 
+    /// </summary>
+    public CopyToSelf ForSelf 
+        => _forSelf;
+    #endregion
+    #region 功能
+    /// <summary>
+    /// 同类型复制
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public virtual IEmitCopier ToSelf(MapTypeKey key)
+        => _forSelf.Build(key);
+    /// <summary>
+    /// 为可空类型构建复制器
+    /// </summary>
+    /// <param name="original"></param>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    public virtual IEmitCopier ForNullable(IEmitCopier original, Type sourceType, Type destType)
+        => new CompatibleCopier(original, sourceType, destType);
+    /// <summary>
+    /// 不支持数组
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public virtual IEmitCopier ToArray(MapTypeKey key)
+        => null;
+    /// <summary>
+    /// 不支持字典(预留扩展)
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public virtual IEmitCopier ToDictionary(MapTypeKey key)
+        => null;
+    /// <summary>
+    /// 不支持集合(预留扩展)
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public virtual IEmitCopier ToCollection(MapTypeKey key)
+       => null;
+    #endregion
     /// <inheritdoc />
     public override void CheckMembers(MapTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
     {

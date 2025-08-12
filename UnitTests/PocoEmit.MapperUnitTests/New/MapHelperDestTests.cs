@@ -1,4 +1,5 @@
 using PocoEmit.MapperUnitTests.Supports;
+using FastExpressionCompiler;
 
 namespace PocoEmit.MapperUnitTests.New;
 
@@ -69,8 +70,13 @@ public class MapHelperDestTests : MapHelperBaseTests
             .Dest
             .AddPrefix("U");
         var source = new User { Id = 222, Name = "Jxj2" };
-        var converter = mapper.GetConverter<User, UserCustomDTO>();
-        var result = converter.Convert(source);
+        var emit = mapper.GetEmitConverter<User, UserCustomDTO>();
+        var expression = emit.Build<User, UserCustomDTO>();
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        //var compiler = FastExpressionCompiler.ExpressionCompiler.TryCompile<Func<User, UserCustomDTO>>(expression);
+        //Console.WriteLine(expression.ToString());
+        var converter = expression.Compile();
+        var result = converter(source);
         Assert.NotNull(result);
         Assert.Equal(source.Id, result.UId);
         Assert.Equal(source.Name, result.UName);

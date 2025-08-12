@@ -4,14 +4,16 @@ namespace PocoEmitUnitTests.Supports;
 
 public abstract class PocoConvertTestBase
 {
-    protected readonly IPoco _poco = Poco.Create();
+    protected readonly IPoco _poco;
     protected readonly TimeConverter _timeConverter = new();
     public PocoConvertTestBase()
     {
-        // 继承Global配置,能被EmitOptions对象引用
-        Poco.Global.UseSystemConvert();
-        // 多态,覆盖Global配置
-        _poco.UseConverter(_timeConverter);
+        // Global配置
+        Poco.GlobalConfigure(poco => {
+            poco.UseSystemConvert()
+                .UseConverter(_timeConverter);
+        });
+        _poco = Poco.Create();
     }
 
     internal class PocoId(int id)

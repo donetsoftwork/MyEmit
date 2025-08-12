@@ -10,33 +10,27 @@ namespace PocoEmit.Builders;
 /// <summary>
 /// 构建复制器基类
 /// </summary>
-/// <param name="factory"></param>
-public abstract class CopierBuilderBase(CopierFactory factory)
+/// <param name="options"></param>
+public abstract class CopierBuilderBase(IMapperOptions options)
 {
     #region 配置
     /// <summary>
     /// Emit配置
     /// </summary>
-    protected readonly IMapperOptions _options = factory.Options;
-    private readonly CopierFactory _factory = factory;
+    protected readonly IMapperOptions _options = options;
 
     /// <summary>
     /// Emit配置
     /// </summary>
     public IMapperOptions Options
         => _options;
-    /// <summary>
-    /// 复制器工厂
-    /// </summary>
-    public CopierFactory Factory
-        => _factory;
     #endregion
     /// <summary>
     /// 构建复制器
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public IEmitCopier Build(MapTypeKey key)
+    public virtual IEmitCopier Build(MapTypeKey key)
     {
         var destType = key.DestType;
         TypeMemberCacher memberCacher = _options.MemberCacher;
@@ -61,7 +55,9 @@ public abstract class CopierBuilderBase(CopierFactory factory)
     /// <param name="key"></param>
     /// <param name="destMembers"></param>
     /// <param name="converters"></param>
-    public abstract void CheckMembers(MapTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters);
+    public virtual void CheckMembers(MapTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
+    {
+    }
     /// <summary>
     /// 构建复制器
     /// </summary>
@@ -72,8 +68,9 @@ public abstract class CopierBuilderBase(CopierFactory factory)
     private ComplexTypeCopier New(MapTypeKey key, EventWaitHandle block, IEnumerable<IMemberConverter> members)
     {
         ComplexTypeCopier copier = new(Wait(block, members));
+        ICacher<MapTypeKey, IEmitCopier> cacher = _options;
         // 提前设置复制器,避免重复构建
-        _factory.TryCache(key, copier);
+        cacher.TryCache(key, copier);
         return copier;
     }
     /// <summary>

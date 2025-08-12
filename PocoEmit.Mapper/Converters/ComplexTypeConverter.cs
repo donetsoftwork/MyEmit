@@ -35,14 +35,14 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
     public Expression Convert(Expression source)
     {
         var destype = _destActivator.ReturnType;
-        LabelTarget returnTarget = Expression.Label(destype);
+        var destTarget = Expression.Label(destype, "returndest");
         var dest = Expression.Variable(destype, "dest");
         var assign = Expression.Assign(dest, _destActivator.New(source));
         var list = new List<Expression>() { assign };
          if(_copier is not null)
             list.AddRange(_copier.Copy(source, dest));
-        list.Add(Expression.Return(returnTarget, dest));
-        list.Add(Expression.Label(returnTarget, dest));
+        //list.Add(Expression.Return(destTarget, dest));     
+        list.Add(Expression.Label(destTarget, dest));
         return Expression.Block([dest], list);
     }
 }

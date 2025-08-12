@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="PocoEmit.Mapper" />
+    <InternalsVisibleTo Include="PocoEmit.Collections" />
     <InternalsVisibleTo Include="PocoEmitUnitTests" />
   </ItemGroup>
 </Project>

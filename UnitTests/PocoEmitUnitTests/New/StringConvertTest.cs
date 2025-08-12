@@ -8,6 +8,7 @@ public class StringConvertTest
     public StringConvertTest()
     {
         _poco = Poco.Create();
+        _poco.UseSystemConvert();
         _poco.SetStringConvert();
     }
 

@@ -1,11 +1,5 @@
-using PocoEmit.Activators;
 using PocoEmit.Configuration;
-using PocoEmit.Converters;
-using PocoEmit.Copies;
-using PocoEmit.Maping;
-using PocoEmit.Reflection;
 using System;
-using System.Reflection;
 
 namespace PocoEmit;
 
@@ -17,124 +11,76 @@ public sealed class Mapper : MapperConfigurationBase
     /// <summary>
     /// 对象映射配置
     /// </summary>
-    /// <param name="reflectionMember"></param>
-    /// <param name="reflectionConstructor"></param>
-    /// <param name="defaultMatch"></param>
-    private Mapper(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatch)
-        : base(reflectionMember, reflectionConstructor, defaultMatch, new InheritRecognizer(GlobalOptions.Instance.Recognizer)) 
-    { 
+    /// <param name="options"></param>
+    private Mapper(MapperOptions options)
+        : base(options) 
+    {        
     }
-    #region IMapperOptions
-    #region 功能
-    #region IEmitOptions
-    /// <inheritdoc />
-    public override Func<object, object> GetReadFunc(MemberInfo member)
-        => base.GetReadFunc(member) ?? Global.GetReadFunc(member);
-    /// <inheritdoc />
-    public override Action<object, object> GetWriteAction(MemberInfo member)
-        => base.GetWriteAction(member) ?? Global.GetWriteAction(member);
-    /// <inheritdoc />
-    public override IEmitConverter GetEmitConverter(MapTypeKey key)
-        => base.GetEmitConverter(key) ?? Global.GetEmitConverter(key);
-    #endregion
-    /// <summary>
-    /// 获取Emit类型复制器
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public override IEmitCopier GetEmitCopier(MapTypeKey key)
-        => base.GetEmitCopier(key) ?? GlobalOptions.Instance.GetEmitCopier(key);
-    #endregion
-    #region 配置
-    /// <inheritdoc />
-    internal override bool TryRead(MapTypeKey key, out IEmitConverter value)
-        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
-    /// <inheritdoc />
-    internal override bool TryRead(MapTypeKey key, out IEmitCopier value)
-        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
-    /// <inheritdoc />
-    internal override bool TryRead(Type key, out IEmitActivator value)
-        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
-    /// <inheritdoc />
-    internal override bool TryRead(MapTypeKey key, out IEmitActivator value)
-        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
-    /// <inheritdoc />
-    internal override bool TryRead(MapTypeKey key, out IMemberMatch value)
-        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
-    /// <inheritdoc />
-    internal override bool TryRead(Type key, out object value)
-        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
-    /// <inheritdoc />
-    public override bool TryGetValue(Type key, out bool value)
-        => base.TryGetValue(key, out value) || GlobalOptions.Instance.TryGetValue(key, out value);
-    #endregion
-    #endregion
     #region Create
-    /// <summary>
-    /// 构造映射器
-    /// </summary>
-    /// <param name="reflectionMember"></param>
-    /// <param name="reflectionConstructor"></param>
-    /// <param name="defaultMatch"></param>
-    /// <returns></returns>
-    public static IMapper Create(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor, IMemberMatch defaultMatch)
-        => new Mapper(reflectionMember, reflectionConstructor, defaultMatch);
-    /// <summary>
-    /// 构造映射器
-    /// </summary>
-    /// <param name="reflectionMember"></param>
-    /// <param name="reflectionConstructor"></param>
-    /// <returns></returns>
-    public static IMapper Create(IReflectionMember reflectionMember, IReflectionConstructor reflectionConstructor)
-        => new Mapper(reflectionMember, reflectionConstructor, GlobalOptions.Instance.DefaultMatcher);
     /// <summary>
     /// 构造映射器
     /// </summary>
     /// <returns></returns>
     public static IMapper Create()
-        => new Mapper(DefaultReflectionMember, DefaultReflectConstructor, GlobalOptions.Instance.DefaultMatcher);
+    {
+        var options = new MapperOptions();
+        _globalOptions?.Invoke(options);
+        var mapper = new Mapper(options);
+        _globalConfiguration?.Invoke(mapper);
+        return mapper;
+    }
     #endregion
     #region Global
-    private static IReflectionMember _defaultReflectionMember = Reflection.DefaultReflectionMember.Default;
     /// <summary>
-    /// 默认反射成员对象
+    /// 全局配置
     /// </summary>
-    public static IReflectionMember DefaultReflectionMember
-    {
-        get => _defaultReflectionMember;
-        set
-        {
-            _defaultReflectionMember = value ?? throw new ArgumentNullException(nameof(value));
-            GlobalOptions.Instance.ReflectionMember = value;
-        }
-    }
-    private static IReflectionConstructor _defaultReflectConstructor = DefaultReflectionConstructor.Default;
+    private static Action<MapperOptions> _globalOptions = null;
     /// <summary>
-    /// 默认反射构造函数
+    /// 全局配置
     /// </summary>
-    public static IReflectionConstructor DefaultReflectConstructor
+    private static Action<IMapper> _globalConfiguration = null;
+    /// <summary>
+    /// 全局配置
+    /// </summary>
+    /// <param name="options"></param>
+    public static void GlobalOptions(Action<MapperOptions> options)
     {
-        get => _defaultReflectConstructor;
-        set
-        {
-            _defaultReflectConstructor = value ?? throw new ArgumentNullException(nameof(value));
-            GlobalOptions.Instance.ReflectionConstructor = value;
-        }
+        if (options is null)
+            return;
+        if (_globalConfiguration is null)
+            _globalOptions = options;
+        else
+            _globalOptions += options;
     }
     /// <summary>
     /// 全局配置
     /// </summary>
-    public static IMapper Global
-        => GlobalOptions.Instance;
+    /// <param name="configuration"></param>
+    public static void GlobalConfigure(Action<IMapper> configuration)
+    {
+        if (configuration is null)
+            return;
+        if (_globalConfiguration is null)
+            _globalConfiguration = configuration;
+        else
+            _globalConfiguration += configuration;
+    }
+    #endregion
+    #region Default
     /// <summary>
-    /// 全局配置
+    /// 默认实例
     /// </summary>
-    sealed class GlobalOptions()
+    public static IMapper Default
+        => Inner.Default;
+    /// <summary>
+    /// 内部延迟初始化
+    /// </summary>
+    sealed class Inner
     {
         /// <summary>
         /// Emit全局配置
         /// </summary>
-        public static readonly GlobalOptions Instance = new();
+        internal static readonly IMapper Default = Create();
     }
     #endregion
 }

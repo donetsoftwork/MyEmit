@@ -79,11 +79,21 @@ public static partial class MapperServices
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled.CopyAction;
-        var copyAction = emitCopier.Compile<TSource, TDest>(Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest"));
+        var copyAction = emitCopier.Build<TSource, TDest>(Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest"))
+            .Compile();
         mapper.Set(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
         return copyAction;
     }
     #endregion
+    /// <summary>
+    /// 获取Emit类型复制器
+    /// </summary>
+    /// <param name="mapper"></param>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    public static IEmitCopier GetEmitCopier(this IMapper mapper, Type sourceType, Type destType)
+        => mapper.GetEmitCopier(new(sourceType, destType));
     #region Copy
     /// <summary>
     /// 复制
@@ -114,43 +124,36 @@ public static partial class MapperServices
     public static CompiledCopier<TSource, TDest> CompileCopier<TSource, TDest>(this IEmitCopier emit, ParameterExpression source, ParameterExpression dest)
         where TDest : class
     {
-        var copyFunc = Compile<TSource, TDest>(emit, source, dest);
+        var copyFunc = Build<TSource, TDest>(emit, source, dest)
+            .Compile();
         var compiledCopier = new CompiledCopier<TSource, TDest>(emit, copyFunc);
         return compiledCopier;
     }
-    #region Compile
+    #region Build
     /// <summary>
-    /// 编译转换委托
+    /// 转换委托
     /// </summary>
     /// <param name="emit"></param>
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    public static Action<TSource, TDest> Compile<TSource, TDest>(this IEmitCopier emit, ParameterExpression source, ParameterExpression dest)
+    public static Expression<Action<TSource, TDest>> Build<TSource, TDest>(this IEmitCopier emit, ParameterExpression source, ParameterExpression dest)
         where TDest : class
     {
         var list = emit.Copy(source, dest).ToArray();
         var body = list.Length == 1 ? list[0] : Expression.Block(list);
-        var lambda = Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
-        return lambda.Compile();
+        return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
     }
     /// <summary>
-    /// 编译转换委托
+    /// 转换委托
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
     /// <param name="emit"></param>
     /// <returns></returns>
-    public static Action<TSource, TDest> Compile<TSource, TDest>(this IEmitCopier emit)
+    public static Expression<Action<TSource, TDest>> Build<TSource, TDest>(this IEmitCopier emit)
         where TDest : class
-    {
-        ParameterExpression source = Expression.Parameter(typeof(TSource), "source");
-        ParameterExpression dest = Expression.Parameter(typeof(TDest), "dest");
-        var list = emit.Copy(source, dest).ToArray();
-        var body = list.Length == 1 ? list[0] : Expression.Block(list);
-        var lambda = Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
-        return lambda.Compile();
-    }
+        => Build<TSource, TDest>(emit, Expression.Parameter(typeof(TSource), "source"), Expression.Parameter(typeof(TDest), "dest"));
     #endregion
     #region Copier
     /// <summary>

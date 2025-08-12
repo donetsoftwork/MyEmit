@@ -4,7 +4,7 @@ namespace PocoEmitUnitTests.Global;
 
 public class GlobalGetConvertFuncTests
 {
-    private IPoco _global = Poco.Global;
+    private IPoco _global = Poco.Default;
     public GlobalGetConvertFuncTests()
     {
         _global.UseSystemConvert();

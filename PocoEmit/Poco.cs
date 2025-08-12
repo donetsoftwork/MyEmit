@@ -1,8 +1,5 @@
 using PocoEmit.Configuration;
-using PocoEmit.Converters;
-using PocoEmit.Reflection;
 using System;
-using System.Reflection;
 
 namespace PocoEmit;
 
@@ -15,69 +12,75 @@ public sealed class Poco
     /// <summary>
     /// 简单对象配置
     /// </summary>
-    /// <param name="reflection"></param>
-    private Poco(IReflectionMember reflection)
-        : base(reflection)
+    private Poco(PocoOptions options)
+        : base(options)
     {
     }
     #region 功能
-    /// <inheritdoc />
-    public override Func<object, object> GetReadFunc(MemberInfo member)
-        => base.GetReadFunc(member) ?? GlobalOptions.Instance.GetReadFunc(member);
-    /// <inheritdoc />
-    public override Action<object, object> GetWriteAction(MemberInfo member)
-        => base.GetWriteAction(member) ?? GlobalOptions.Instance.GetWriteAction(member);
-    /// <inheritdoc />
-    public override IEmitConverter GetEmitConverter(MapTypeKey key)
-        => base.GetEmitConverter(key) ?? GlobalOptions.Instance.GetEmitConverter(key);
-    /// <summary>
-    /// 简单对象处理对象
-    /// </summary>
-    /// <param name="reflection"></param>
-    /// <returns></returns>
-    public static IPoco Create(IReflectionMember reflection)
-        => new Poco(reflection);
     /// <summary>
     /// 简单对象处理对象
     /// </summary>
     /// <returns></returns>
     public static IPoco Create()
-        => new Poco(DefaultReflectMember);
-    #endregion
-    #region 配置
-    /// <inheritdoc />
-    internal override bool TryRead(MapTypeKey key, out IEmitConverter value)
-        => base.TryRead(key, out value) || GlobalOptions.Instance.TryRead(key, out value);
+    {
+        var options = new PocoOptions();
+        _globalOptions?.Invoke(options);
+        var poco = new Poco(options);
+        _globalConfiguration?.Invoke(poco);
+        return poco;
+    }
     #endregion
     #region Global
-    private static IReflectionMember _defaultReflectMember = DefaultReflectionMember.Default;
     /// <summary>
-    /// 默认反射成员对象
+    /// 全局配置
     /// </summary>
-    public static IReflectionMember DefaultReflectMember
+    private static Action<PocoOptions> _globalOptions = null;
+    /// <summary>
+    /// 全局配置
+    /// </summary>
+    private static Action<IPoco> _globalConfiguration = null;
+    /// <summary>
+    /// 全局配置
+    /// </summary>
+    /// <param name="options"></param>
+    public static void GlobalOptions(Action<PocoOptions> options)
     {
-        get => _defaultReflectMember;
-        set
-        {
-            _defaultReflectMember = value ?? throw new ArgumentNullException(nameof(value));
-            GlobalOptions.Instance.ReflectionMember = value;
-        }
+        if (options is null)
+            return;
+        if (_globalConfiguration is null)
+            _globalOptions = options;
+        else
+            _globalOptions += options;
     }
     /// <summary>
     /// 全局配置
     /// </summary>
-    public static IPoco Global
-        => GlobalOptions.Instance;
+    /// <param name="configuration"></param>
+    public static void GlobalConfigure(Action<IPoco> configuration)
+    {
+        if (configuration is null)
+            return;
+        if (_globalConfiguration is null)
+            _globalConfiguration = configuration;
+        else
+            _globalConfiguration += configuration;
+    }
+    #endregion
+    #region Default
     /// <summary>
-    /// Emit全局配置
+    /// 默认实例
     /// </summary>
-    sealed class GlobalOptions()
-        : ConfigurationBase(DefaultReflectMember)
+    public static IPoco Default
+        => Inner.Default;
+    /// <summary>
+    /// 内部延迟初始化
+    /// </summary>
+    sealed class Inner
     {
         /// <summary>
         /// Emit全局配置
         /// </summary>
-        public static readonly GlobalOptions Instance = new();
+        internal static readonly IPoco Default = Create();
     }
     #endregion
 }

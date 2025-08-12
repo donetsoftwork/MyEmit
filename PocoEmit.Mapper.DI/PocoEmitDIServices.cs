@@ -82,7 +82,7 @@ public static class PocoEmitDIServices
     /// <returns></returns>
     public static object GetGenericConverter(IServiceProvider sp, Type converterType)
     {
-        IMapper mapper = sp.GetService<IMapper>() ?? Mapper.Global;
+        IMapper mapper = sp.GetService<IMapper>() ?? Mapper.Default;
         return GetGenericConverter(mapper, converterType);
     }
     /// <summary>
@@ -93,7 +93,7 @@ public static class PocoEmitDIServices
     /// <returns></returns>
     public static object GetGenericConverter(this IPoco poco, Type converterType)
     {
-        if (!ReflectionHelper.IsGenericTypeDefinition(converterType, typeof(IPocoConverter<,>)))
+        if (!ReflectionHelper.IsGenericType(converterType, typeof(IPocoConverter<,>)))
             return null;
         var argumentsType = converterType.GetGenericArguments();
         return poco.GetObjectConverter(argumentsType[0], argumentsType[1]);
@@ -108,7 +108,7 @@ public static class PocoEmitDIServices
     /// <returns></returns>
     public static object GetGenericCopier(IServiceProvider sp, Type converterType)
     {
-        IMapper mapper = sp.GetService<IMapper>() ?? Mapper.Global;
+        IMapper mapper = sp.GetService<IMapper>() ?? Mapper.Default;
         return mapper.GetGenericCopier(converterType);
     }
     /// <summary>
@@ -119,7 +119,7 @@ public static class PocoEmitDIServices
     /// <returns></returns>
     public static object GetGenericCopier(this IMapper mapper, Type copierType)
     {
-        if (!ReflectionHelper.IsGenericTypeDefinition(copierType, typeof(IPocoCopier<,>)))
+        if (!ReflectionHelper.IsGenericType(copierType, typeof(IPocoCopier<,>)))
             return null;
         
         var argumentsType = copierType.GetGenericArguments();

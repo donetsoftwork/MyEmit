@@ -9,7 +9,7 @@ using TestApi.Modify;
 using TestApi.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
-var poco = PocoEmit.Mapper.Global;
+var poco = PocoEmit.Mapper.Default;
 poco.UseSystemConvert();
 IMyDeltaFactory deltaFactory = new EmitDeltaFactory();
 builder.Host.UseServiceProviderFactory(new TypedImplementationFactoryServiceProviderFactory());
@@ -27,10 +27,10 @@ app.Run();
 
 static void RegistServices(IServiceCollection services)
 {
-    services.UseConverter(PocoEmit.Mapper.Global)
+    services.UseConverter(PocoEmit.Mapper.Default)
         .AddSingleton<UserRepository>()
         .AddSingleton<UserModifyDTOValidator>()
         .AddFastEndpoints();
-    //services.AddSingletonTypedFactory(typeof(IPocoConverter<,>), (sp, converterType) => sp.GetRequiredService<IMapperOptions>().GetGenericConverter(converterType));
-    //services.AddSingletonTypedFactory(typeof(IPocoCopier<,>), (sp, copierType) => sp.GetRequiredService<IMapperOptions>().GetGenericCopier(copierType));
+    //services.AddSingletonTypedFactory(typeof(IPocoConverter<,>), (sp, converterType) => sp.GetRequiredService<IMapper>().GetGenericConverter(converterType));
+    //services.AddSingletonTypedFactory(typeof(IPocoCopier<,>), (sp, copierType) => sp.GetRequiredService<IMapper>().GetGenericCopier(copierType));
 }

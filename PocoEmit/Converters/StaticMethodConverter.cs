@@ -10,7 +10,7 @@ namespace PocoEmit.Converters;
 /// <param name="target"></param>
 /// <param name="method"></param>
 /// <param name="sourceType"></param>
-public class MethodConverter(object target, MethodInfo method, Type sourceType)
+public class MethodConverter(Expression target, MethodInfo method, Type sourceType)
     : IEmitConverter
 {
     /// <summary>
@@ -18,12 +18,12 @@ public class MethodConverter(object target, MethodInfo method, Type sourceType)
     /// </summary>
     /// <param name="target"></param>
     /// <param name="method"></param>
-    public MethodConverter(object target, MethodInfo method)
+    public MethodConverter(Expression target, MethodInfo method)
         : this(target, method, method.GetParameters()[0].ParameterType)
     {
     }
     #region 配置
-    private readonly object _target = target;
+    private readonly Expression _target = target;
     /// <summary>
     /// 方法
     /// </summary>
@@ -31,18 +31,13 @@ public class MethodConverter(object target, MethodInfo method, Type sourceType)
     /// <summary>
     /// 实例
     /// </summary>
-    public object Target
+    public Expression Target
         => _target;
     /// <summary>
     /// 方法
     /// </summary>
     public MethodInfo Method 
         => _method;
-    /// <summary>
-    /// 调用实例
-    /// </summary>
-    public Expression Instance
-        => ReflectionHelper.CheckMethodCallInstance(_target);
     /// <summary>
     /// summary
     /// </summary>
@@ -61,6 +56,6 @@ public class MethodConverter(object target, MethodInfo method, Type sourceType)
     {
         if (_method.IsStatic)
             return Expression.Convert(value, _method.ReturnType, _method);
-        return Expression.Call(Instance, _method, value);
+        return Expression.Call(_target, _method, value);
     }
 }

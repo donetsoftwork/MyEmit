@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,7 +11,7 @@ namespace PocoEmit.Activators;
 /// <typeparam name="TInstance"></typeparam>
 /// <param name="activator"></param>
 public class DelegateActivator<TInstance>(Func<TInstance> activator)
-    : MethodActivator(activator.Target, activator.GetMethodInfo()), IGenericActivator<TInstance>
+    : MethodActivator(EmitHelper.CheckMethodCallInstance(activator), activator.GetMethodInfo()), IGenericActivator<TInstance>
 {
     #region 配置
     private readonly Func<TInstance> _activator = activator;
@@ -20,5 +21,5 @@ public class DelegateActivator<TInstance>(Func<TInstance> activator)
     #endregion
     /// <inheritdoc />
     public override Expression New(Expression argument)
-        => Expression.Call(Instance, _method);
+        => Expression.Call(_target, _method);
 }

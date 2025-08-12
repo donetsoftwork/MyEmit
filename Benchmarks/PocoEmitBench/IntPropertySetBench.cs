@@ -11,10 +11,10 @@ public class IntPropertySetBench : PropertyBenchBase
     static readonly PropertyInfo _property = typeof(TestClass).GetProperty("IntProperty")!;
     readonly IPropertyAccessor _fastReflect = FastReflectionCaches.PropertyAccessorCache.Get(_property);
     readonly Action<object, object> _hardCode = (obj, p) => ((TestClass)obj).IntProperty = (int)p;
-    readonly Action<object, object> _poco = PocoEmit.Poco.Global.GetWriteAction<object, object>(_property);
+    readonly Action<object, object> _poco = PocoEmit.Poco.Default.GetWriteAction<object, object>(_property);
     readonly Action<object, object> _il = ILPropertyHelper.GetWriteAction<object, object>(_property);
     readonly Action<TestClass, int> _hardCode0 = (obj, p) => obj.IntProperty = p;
-    readonly Action<TestClass, int> _poco0 = PocoEmit.Poco.Global.GetWriteAction<TestClass, int>(_property);
+    readonly Action<TestClass, int> _poco0 = PocoEmit.Poco.Default.GetWriteAction<TestClass, int>(_property);
     readonly int _value = 42;
     [Benchmark]
     public void Reflect()

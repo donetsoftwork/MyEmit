@@ -32,6 +32,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApi", "IntegrationTests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmit.Mapper.DI", "PocoEmit.Mapper.DI\PocoEmit.Mapper.DI.csproj", "{03CBBEF1-90AC-4B82-98EF-C3F5365828F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmit.Collections", "PocoEmit.Collections\PocoEmit.Collections.csproj", "{85298B96-E614-4FA1-B936-865B85FCD41E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmit.CollectionsUnitTests", "UnitTests\PocoEmit.CollectionsUnitTests\PocoEmit.CollectionsUnitTests.csproj", "{8AC239C1-965B-45F8-BF55-D73780A7741F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +70,14 @@ Global
 		{03CBBEF1-90AC-4B82-98EF-C3F5365828F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03CBBEF1-90AC-4B82-98EF-C3F5365828F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03CBBEF1-90AC-4B82-98EF-C3F5365828F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85298B96-E614-4FA1-B936-865B85FCD41E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85298B96-E614-4FA1-B936-865B85FCD41E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85298B96-E614-4FA1-B936-865B85FCD41E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85298B96-E614-4FA1-B936-865B85FCD41E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AC239C1-965B-45F8-BF55-D73780A7741F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AC239C1-965B-45F8-BF55-D73780A7741F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AC239C1-965B-45F8-BF55-D73780A7741F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AC239C1-965B-45F8-BF55-D73780A7741F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,6 +87,7 @@ Global
 		{3D754630-93BC-A6CD-0D40-45E1CC4B5610} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{81C13555-6F09-4DD9-A7A9-96CCEC17FBB3} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{0BE79962-4015-4814-BA29-041370BDDDF9} = {EF90F585-E57E-4A79-B915-ADB67D2662A5}
+		{8AC239C1-965B-45F8-BF55-D73780A7741F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AD9CBBF6-66AD-48B2-A888-432E0BA9CDB8}

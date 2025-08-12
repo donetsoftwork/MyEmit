@@ -1,9 +1,8 @@
-using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
-using System.Reflection;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace PocoEmit;
 
@@ -74,7 +73,8 @@ public static partial class PocoEmitServices
             return null;
         if (emitConverter.Compiled && emitConverter is ICompiledConverter<TSource, TDest> compiled)
             return compiled.ConvertFunc;
-        var convertFunc = Compile<TSource, TDest>(emitConverter, Expression.Parameter(sourceType, "source"));       
+        var convertFunc = Build<TSource, TDest>(emitConverter, Expression.Parameter(sourceType, "source"))
+            .Compile();       
         var compiledConverter = new CompiledConverter<TSource, TDest>(emitConverter, convertFunc);
         poco.Set(key, compiledConverter);
         return convertFunc;
@@ -97,6 +97,16 @@ public static partial class PocoEmitServices
         return convertFunc(source);
     }
     #endregion
+    #region GetEmitConverter
+    /// <summary>
+    /// 获取Emit类型转化
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="poco"></param>
+    /// <returns></returns>
+    public static IEmitConverter GetEmitConverter<TSource, TDest>(this IPoco poco)
+        => GetEmitConverter(poco, typeof(TSource), typeof(TDest));
     /// <summary>
     /// 获取Emit类型转化
     /// </summary>
@@ -106,6 +116,7 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     public static IEmitConverter GetEmitConverter(this IPoco poco, Type sourceType, Type destType)
         => poco.GetEmitConverter(new MapTypeKey(sourceType, destType));
+    #endregion
     /// <summary>
     /// 编译转化器
     /// </summary>
@@ -114,13 +125,14 @@ public static partial class PocoEmitServices
     /// <param name="emit"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    public static CompiledConverter<TSource, TDest> CompileConverter<TSource, TDest>(this IEmitConverter emit, ParameterExpression source)
+    private static CompiledConverter<TSource, TDest> CompileConverter<TSource, TDest>(IEmitConverter emit, ParameterExpression source)
     {
-        var convertFunc = Compile<TSource, TDest>(emit, source);
+        var convertFunc = Build<TSource, TDest>(emit, source)
+            .Compile();
         var compiledConverter = new CompiledConverter<TSource, TDest>(emit, convertFunc);
         return compiledConverter;
     }
-    #region Compile
+    #region Build
     /// <summary>
     /// 编译转换委托
     /// </summary>
@@ -129,11 +141,10 @@ public static partial class PocoEmitServices
     /// <param name="emit"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    public static Func<TSource, TDest> Compile<TSource, TDest>(this IEmitConverter emit, ParameterExpression source)
+    private static Expression<Func<TSource, TDest>> Build<TSource, TDest>(IEmitConverter emit, ParameterExpression source)
     {
         var body = emit.Convert(source);
-        var lambda = Expression.Lambda<Func<TSource, TDest>>(body, source);
-        return lambda.Compile();
+        return Expression.Lambda<Func<TSource, TDest>>(body, source);
     }
     /// <summary>
     /// 编译转换委托
@@ -142,8 +153,8 @@ public static partial class PocoEmitServices
     /// <typeparam name="TDest"></typeparam>
     /// <param name="emit"></param>
     /// <returns></returns>
-    public static Func<TSource, TDest> Compile<TSource, TDest>(this IEmitConverter emit)
-        => Compile<TSource, TDest>(emit, Expression.Parameter(typeof(TSource), "source"));
+    public static Expression<Func<TSource, TDest>> Build<TSource, TDest>(this IEmitConverter emit)
+        => Build<TSource, TDest>(emit, Expression.Parameter(typeof(TSource), "source"));
     #endregion
     /// <summary>
     /// 内部延迟初始化

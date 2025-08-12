@@ -3,7 +3,6 @@ using PocoEmit.Members;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 
 namespace PocoEmit;
@@ -191,58 +190,43 @@ public static class ReflectionHelper
         return null;
     }
     #endregion
+    /// <summary>
+    /// 筛选属性
+    /// </summary>
+    /// <param name="declaringType"></param>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    public static PropertyInfo GetPropery(Type declaringType, Func<PropertyInfo, bool> filter)
+    {
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        var properties = declaringType.GetTypeInfo().DeclaredProperties;
+#else
+        var properties = declaringType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+#endif
+        foreach (var propery in properties)
+        {
+            if (filter(propery))
+                return propery;
+        }
+        return null;
+    }
     #region Properties
     /// <summary>
     /// 获取所有属性
     /// </summary>
     /// <returns></returns>
-    public static IEnumerable<PropertyInfo> GetProperties(Type type)
+    public static IEnumerable<PropertyInfo> GetProperties(Type declaringType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => GetProperties(type.GetTypeInfo());
+        => GetProperties(declaringType.GetTypeInfo());
     /// <summary>
     /// 获取属性信息
     /// </summary>
-    /// <param name="typeInfo"></param>
+    /// <param name="declaringTypeInfo"></param>
     /// <returns></returns>
-    public static IEnumerable<PropertyInfo> GetProperties(TypeInfo typeInfo)
-        => typeInfo.DeclaredProperties;
+    public static IEnumerable<PropertyInfo> GetProperties(TypeInfo declaringTypeInfo)
+        => declaringTypeInfo.DeclaredProperties;
 #else
-        => type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-#endif
-    /// <summary>
-    /// 获取所有可读属性
-    /// </summary>
-    /// <returns></returns>
-    public static IEnumerable<PropertyInfo> GetReadProperties(Type type)
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => GetReadProperties(type.GetTypeInfo());
-    /// <summary>
-    /// 获取属性信息
-    /// </summary>
-    /// <param name="typeInfo"></param>
-    /// <returns></returns>
-    public static IEnumerable<PropertyInfo> GetReadProperties(TypeInfo typeInfo)
-        => typeInfo.DeclaredProperties.Where(property => property.CanRead);
-#else
-        => type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
-#endif
-    /// <summary>
-    /// 获取所有可读属性
-    /// </summary>
-    /// <param name="declaringType"></param>
-    /// <returns></returns>
-    public static IEnumerable<PropertyInfo> GetWriteProperties(Type declaringType)
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => GetWriteProperties(declaringType.GetTypeInfo());
-    /// <summary>
-    /// 获取所有属性
-    /// </summary>
-    /// <param name="typeInfo"></param>
-    /// <returns></returns>
-    public static IEnumerable<PropertyInfo> GetWriteProperties(TypeInfo typeInfo)
-        => typeInfo.DeclaredProperties.Where(property => property.CanWrite);
-#else
-        => declaringType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty);
+        => declaringType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
 #endif
     #endregion
     #region GetFields
@@ -303,55 +287,113 @@ public static class ReflectionHelper
         return toType.IsAssignableFrom(fromType);
     }
     #endregion
-    #region CheckMethodCallInstance
-    /// <summary>
-    /// 检查调用委托目标
-    /// </summary>
-    /// <param name="delegate"></param>
-    /// <returns></returns>
-    public static Expression CheckMethodCallInstance(Delegate @delegate)
-        => CheckMethodCallInstance(@delegate.Target);
-    /// <summary>
-    /// 检查调用对象
-    /// </summary>
-    /// <param name="instance"></param>
-    /// <returns></returns>
-    public static Expression CheckMethodCallInstance(object instance)
-    {
-        if (instance is null)
-            return null;
-        return Expression.Constant(instance);
-    }
-    #endregion
-    #region Is
+    #region IsNullable
     /// <summary>
     /// 是否可空类型
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
     public static bool IsNullable(Type type)
-        => IsGenericTypeDefinition(type, typeof(Nullable<>));
+        => IsGenericType(type, typeof(Nullable<>));
+    #endregion
+    #region IsGenericType
     /// <summary>
     /// 是否泛型定义
     /// </summary>
     /// <param name="type"></param>
     /// <param name="genericType">泛型</param>
     /// <returns></returns>
-    public static bool IsGenericTypeDefinition(Type type, Type genericType)
+    public static bool IsGenericType(Type type, Type genericType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => IsGenericTypeDefinition(type.GetTypeInfo(), genericType);
+        => IsGenericType(type.GetTypeInfo(), genericType);
     /// <summary>
     /// 是否泛型定义
     /// </summary>
     /// <param name="typeInfo"></param>
     /// <param name="genericType"></param>
     /// <returns></returns>
-    public static bool IsGenericTypeDefinition(TypeInfo typeInfo, Type genericType)
+    public static bool IsGenericType(TypeInfo typeInfo, Type genericType)
         => typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == genericType;
 #else
         => type.IsGenericType && type.GetGenericTypeDefinition() == genericType;
 #endif
     #endregion
+    #region HasGenericType
+    /// <summary>
+    /// 判断是否包含泛型定义
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="genericType"></param>
+    /// <returns></returns>
+    public static bool HasGenericType(Type type, Type genericType)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        => HasGenericType(type.GetTypeInfo(), genericType);
+    /// <summary>
+    /// 判断是否包含泛型定义
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="genericType"></param>
+    /// <returns></returns>
+    public static bool HasGenericType(TypeInfo type, Type genericType)
+#endif
+    {
+        if (IsGenericType(type, genericType))
+            return true;
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        var interfaces = type.ImplementedInterfaces;
+#else
+        var interfaces = type.GetInterfaces();
+#endif
+        foreach ( var subType in interfaces)
+        {
+            if(IsGenericType(subType, genericType))
+                return true;
+        }
+        return false;
+    }
+    #endregion
+    /// <summary>
+    /// 获取子元素类型
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static Type GetElementType(Type type)
+    {
+        if (type.IsArray)
+            return type.GetElementType();
+        var arguments = GetGenericArguments(type);
+        var count = arguments.Length;
+        if (count == 0)
+            return null;
+        if (HasGenericType(type, typeof(IDictionary<,>)))
+        {
+            if (count == 2)
+                return arguments[1];
+        }
+        else if (HasGenericType(type, typeof(IEnumerable<>)))
+        {
+            if (count == 1)
+                return arguments[0];
+        }
+        return null;
+    }
+    /// <summary>
+    /// 获取泛型参数
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static Type[] GetGenericArguments(Type type)
+    {
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        var typeInfo = type.GetTypeInfo();
+        if (typeInfo.IsGenericType)
+            return typeInfo.GenericTypeParameters;
+#else
+        if (type.IsGenericType)
+            return type.GetGenericArguments();
+#endif
+        return [];
+    }
     #region ConstructorInfo
     /// <summary>
     /// 获取构造函数
@@ -402,8 +444,8 @@ public static class ReflectionHelper
 #else
         => declaringType.GetConstructors();
 #endif
-    #endregion
-    #region MethodInfo
+#endregion
+#region MethodInfo
     /// <summary>
     /// 获取函数
     /// </summary>
@@ -430,5 +472,5 @@ public static class ReflectionHelper
 #else
         => declaringType.GetMethods();
 #endif
-    #endregion
+#endregion
 }

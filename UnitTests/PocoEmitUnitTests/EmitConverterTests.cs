@@ -1,6 +1,5 @@
 using PocoEmit;
 using PocoEmit.Converters;
-using System;
 
 namespace PocoEmitUnitTests;
 
@@ -964,7 +963,7 @@ public class EmitConverterTests
         Assert.Throws<InvalidOperationException>(Compile<ulong, DateTime>);
     }
     #endregion
-    #region ulong
+    #region string
     [Fact]
     public void Compile_string2string()
     {
@@ -1058,6 +1057,8 @@ public class EmitConverterTests
     private static Func<TSource, TDest> Compile<TSource, TDest>()
     {
         EmitConverter converter = new(typeof(TDest));
-        return converter.Compile<TSource, TDest>();
+        var expression = converter.Build<TSource, TDest>();
+        //Console.WriteLine(expression.ToString());
+        return expression.Compile();
     }
 }

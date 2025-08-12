@@ -20,41 +20,33 @@ public abstract partial class ConfigurationBase
     /// <summary>
     /// 转换器缓存
     /// </summary>
-    private IDictionary<MapTypeKey, IEmitConverter> _converters = new ConcurrentDictionary<MapTypeKey, IEmitConverter>();
+    private IDictionary<MapTypeKey, IEmitConverter> _converters;
     /// <summary>
     /// 转换器配置
     /// </summary>
-    private IDictionary<MapTypeKey, IEmitConverter> _convertConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitConverter>();
+    private IDictionary<MapTypeKey, IEmitConverter> _convertConfiguration;
     /// <summary>
     /// 成员缓存
     /// </summary>
-    private IDictionary<Type, MemberBundle> _memberBundles = new ConcurrentDictionary<Type, MemberBundle>();
+    private IDictionary<Type, MemberBundle> _memberBundles;
 #else
     /// <summary>
     /// 转换器缓存
     /// </summary>
-    private readonly ConcurrentDictionary<MapTypeKey, IEmitConverter> _converters = new();
+    private readonly ConcurrentDictionary<MapTypeKey, IEmitConverter> _converters;
         /// <summary>
     /// 转换器配置
     /// </summary>
-    private readonly ConcurrentDictionary<MapTypeKey, IEmitConverter> _convertConfiguration = new();
+    private readonly ConcurrentDictionary<MapTypeKey, IEmitConverter> _convertConfiguration;
     /// <summary>
     /// 成员缓存
     /// </summary>
-    private readonly ConcurrentDictionary<Type, MemberBundle> _memberBundles = new();
+    private readonly ConcurrentDictionary<Type, MemberBundle> _memberBundles;
 #endif
     #endregion
     #region IConfigure<MapTypeKey, IEmitConverter>
     void IConfigure<MapTypeKey, IEmitConverter>.Configure(MapTypeKey key, IEmitConverter value)
         => _convertConfiguration[key] = value;
-    /// <summary>
-    /// 获取转化配置
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    internal virtual bool TryRead(MapTypeKey key, out IEmitConverter value)
-        => _convertConfiguration.TryGetValue(key, out value);
     #endregion
     #region ISettings<MapTypeKey, IEmitTypeConverter>
     /// <inheritdoc />
@@ -65,7 +57,7 @@ public abstract partial class ConfigurationBase
         => _converters[key] = value;
     /// <inheritdoc />
     bool ICacher<MapTypeKey, IEmitConverter>.TryGetValue(MapTypeKey key, out IEmitConverter value)
-        => _converters.TryGetValue(key, out value) || TryRead(key, out value);
+        => _converters.TryGetValue(key, out value) || _convertConfiguration.TryGetValue(key, out value);
     #endregion
     #region ISettings<Type, MemberBundle>
     /// <inheritdoc />

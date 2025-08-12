@@ -81,13 +81,5 @@ public class MemberNameMatcher(INameMatch nameMatch)
     /// <summary>
     /// 默认实例
     /// </summary>
-    public static MemberNameMatcher Default
-        => Inner.Instance;
-    /// <summary>
-    /// 内部延迟初始化
-    /// </summary>
-    class Inner
-    {
-        public static readonly MemberNameMatcher Instance = new();
-    }
+    public static readonly MemberNameMatcher Default = new();
 }

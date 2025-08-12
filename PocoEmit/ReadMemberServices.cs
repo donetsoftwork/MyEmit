@@ -60,7 +60,8 @@ public static partial class PocoEmitServices
         {
             if (emitReader.Compiled && emitReader is ICompiledReader<TInstance, TValue> compiledReader)
                 return compiledReader.ReadFunc;
-            var readFunc = Compile<TInstance, TValue>(emitReader, instance);
+            var readFunc = Build<TInstance, TValue>(emitReader, instance)
+                .Compile();
             MemberContainer.Instance.MemberReaderCacher.Set(emitReader.Info, new CompiledReader<TInstance, TValue>(emitReader, readFunc));
             return readFunc;
         }
@@ -68,7 +69,7 @@ public static partial class PocoEmitServices
         {
             return null;
         }
-        return Compile<TInstance, TValue>(emitReader, instance);
+        return Build<TInstance, TValue>(emitReader, instance).Compile();
     }
     #endregion
     #region GetMemberReader
@@ -119,7 +120,7 @@ public static partial class PocoEmitServices
         {
             if (emitReader.Compiled && emitReader is ICompiledReader<TInstance, TValue> compiledReader)
                 return compiledReader;
-            compiledReader = new CompiledReader<TInstance, TValue>(emitReader, Compile<TInstance, TValue>(emitReader));
+            compiledReader = new CompiledReader<TInstance, TValue>(emitReader, Build<TInstance, TValue>(emitReader).Compile());
             MemberContainer.Instance.MemberReaderCacher.Set(emitReader.Info, compiledReader);
             return compiledReader;
         }
@@ -128,7 +129,7 @@ public static partial class PocoEmitServices
             return null;
         }
         var instance = Expression.Parameter(instanceType, "instance");
-        return new CompiledReader<TInstance, TValue>(emitReader, Compile<TInstance, TValue>(emitReader, instance));
+        return new CompiledReader<TInstance, TValue>(emitReader, Build<TInstance, TValue>(emitReader, instance).Compile());
     }
     #endregion
     #region CheckType
@@ -140,7 +141,7 @@ public static partial class PocoEmitServices
     /// <param name="instanceType"></param>
     /// <param name="valueType"></param>
     /// <returns></returns>
-    public static bool CheckType(this IPoco poco, ref IEmitMemberReader emitReader, Type instanceType, Type valueType)
+    internal static bool CheckType(this IPoco poco, ref IEmitMemberReader emitReader, Type instanceType, Type valueType)
     {
         bool noConvert = true;
         if (CheckInstanceType(poco, ref emitReader, instanceType))
@@ -160,7 +161,7 @@ public static partial class PocoEmitServices
     /// <param name="emitReader"></param>
     /// <param name="instanceType"></param>
     /// <returns></returns>
-    public static bool CheckInstanceType(this IPoco poco, ref IEmitMemberReader emitReader, Type instanceType)
+    internal static bool CheckInstanceType(this IPoco poco, ref IEmitMemberReader emitReader, Type instanceType)
     {
         var instanceType0 = emitReader.InstanceType;
         if (ReflectionHelper.CheckValueType(instanceType, instanceType0))
@@ -179,7 +180,7 @@ public static partial class PocoEmitServices
     /// <param name="emitReader"></param>
     /// <param name="valueType"></param>
     /// <returns></returns>
-    public static bool CheckValueType(this IPoco poco, ref IEmitMemberReader emitReader, Type valueType)
+    internal static bool CheckValueType(this IPoco poco, ref IEmitMemberReader emitReader, Type valueType)
     {
         var valueType0 = emitReader.ValueType;
         if (ReflectionHelper.CheckValueType(valueType0, valueType))
@@ -192,29 +193,25 @@ public static partial class PocoEmitServices
         return true;
     }
     #endregion
-    #region Compile
+    #region Build
     /// <summary>
-    /// 编译转换委托
+    /// 转换委托
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     /// <param name="emit"></param>
     /// <param name="instance"></param>
     /// <returns></returns>
-    public static Func<TInstance, TValue> Compile<TInstance, TValue>(this IEmitMemberReader emit, ParameterExpression instance)
-    {
-        var body = emit.Read(instance);
-        var lambda = Expression.Lambda<Func<TInstance, TValue>>(body, instance);
-        return lambda.Compile();
-    }
+    public static Expression<Func<TInstance, TValue>> Build<TInstance, TValue>(this IEmitMemberReader emit, ParameterExpression instance)
+        => Expression.Lambda<Func<TInstance, TValue>>(emit.Read(instance), instance);
     /// <summary>
-    /// 编译转换委托
+    /// 转换委托
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     /// <param name="emit"></param>
     /// <returns></returns>
-    public static Func<TInstance, TValue> Compile<TInstance, TValue>(this IEmitMemberReader emit)
-        => Compile<TInstance, TValue>(emit, Expression.Parameter(typeof(TInstance), "instance"));
+    public static Expression<Func<TInstance, TValue>> Build<TInstance, TValue>(this IEmitMemberReader emit)
+        => Build<TInstance, TValue>(emit, Expression.Parameter(typeof(TInstance), "instance"));
     #endregion
 }
