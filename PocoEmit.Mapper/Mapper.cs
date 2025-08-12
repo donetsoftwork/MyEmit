@@ -130,7 +130,6 @@ public sealed class Mapper : MapperConfigurationBase
     /// 全局配置
     /// </summary>
     sealed class GlobalOptions()
-        : MapperConfigurationBase(DefaultReflectionMember, DefaultReflectConstructor, MemberNameMatcher.Default, new Recognizer(MemberNameMatcher.Default.NameMatch))
     {
         /// <summary>
         /// Emit全局配置
