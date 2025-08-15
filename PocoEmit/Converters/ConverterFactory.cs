@@ -58,19 +58,19 @@ public sealed class ConverterFactory(IPocoOptions options)
         }
         if (isNullable)
         {
-            var originalKey = new MapTypeKey(sourceType, destType);
+            var originalKey = new PairTypeKey(sourceType, rightType);
             IEmitConverter original = Get(originalKey);
             if (original is null)
                 return null;
             // 可空类型
-            return builder.BuildForNullable(original, sourceType, key.DestType);
+            return builder.BuildForNullable(original, leftType, key.RightType);
         }
-        var constructor = ReflectionHelper.GetConstructorByParameterType(destType, sourceType);
+        var constructor = ReflectionHelper.GetConstructorByParameterType(destType, leftType);
         // 其他类型
         if (constructor is null)
             return builder.Build(sourceType, destType);
         // 构造函数
-        return builder.BuildByConstructor(constructor, sourceType);
+        return builder.BuildByConstructor(constructor, leftType);
     }
     #endregion
 }
