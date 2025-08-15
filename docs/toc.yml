@@ -2,6 +2,8 @@
   href: ./poco/index.md
 - name: 映射
   href: ./mapper/index.md
+- name: 集合扩展
+  href: ./collection/index.md
 - name: DI
   href: ./di/index.md
 - name: API

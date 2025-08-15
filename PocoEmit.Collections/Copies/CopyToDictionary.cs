@@ -25,8 +25,8 @@ public class CopyToDictionary(IMapperOptions options)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public IEmitCopier ToDictionary(MapTypeKey key)
-        => Create(key.SourceType, key.DestType, true);
+    public IEmitCopier ToDictionary(PairTypeKey key)
+        => Create(key.LeftType, key.RightType, true);
     /// <summary>
     /// 构造复制器
     /// </summary>

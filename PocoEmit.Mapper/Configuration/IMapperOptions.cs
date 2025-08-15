@@ -15,7 +15,7 @@ namespace PocoEmit.Configuration;
 public interface IMapperOptions
     : IPocoOptions
     , IMapper
-    , ICacher<MapTypeKey, IEmitCopier>
+    , ICacher<PairTypeKey, IEmitCopier>
     , ICacher<Type, bool>
     , IReflectionConstructor
 {
@@ -32,7 +32,7 @@ public interface IMapperOptions
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    IEmitActivator GetEmitActivator(MapTypeKey key);
+    IEmitActivator GetEmitActivator(PairTypeKey key);
     /// <summary>
     /// 是否基础类型
     /// </summary>
@@ -45,12 +45,4 @@ public interface IMapperOptions
     /// <param name="destType"></param>
     /// <returns></returns>
     Expression CreateDefault(Type destType);
-    ///// <summary>
-    ///// 构造复制器
-    ///// </summary>
-    ///// <param name="sourcetype"></param>
-    ///// <param name="destType"></param>
-    ///// <param name="clear"></param>
-    ///// <returns></returns>
-    //IEmitCopier CreateCollectionCopier(Type sourcetype, Type destType, bool clear = true);
 }

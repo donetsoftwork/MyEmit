@@ -1,5 +1,5 @@
-using PocoEmit.Collections;
 using PocoEmit.Collections.Converters;
+using PocoEmit.Collections.Counters;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using System;
@@ -31,10 +31,13 @@ public class ConvertToCollection(IMapperOptions options)
     /// <returns></returns>
     public IEmitConverter ToCollection(Type sourceType, Type destType, bool isInterface)
     {
+        var sourceElementType = ReflectionHelper.GetElementType(sourceType);
+        if (sourceElementType == null)
+            return null;
         var destElementType = ReflectionHelper.GetElementType(destType);
         if (destType == null)
             return null;
-        IEmitCounter sourceCount = CollectionContainer.Instance.GetCounter(sourceType);
+        IEmitCounter sourceCount = CollectionContainer.Instance.CountCacher.Get(sourceType, sourceElementType);
         if (isInterface)
         {
             if (ReflectionHelper.HasGenericType(destType, typeof(IList<>)))

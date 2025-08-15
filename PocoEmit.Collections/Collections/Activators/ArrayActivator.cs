@@ -1,4 +1,5 @@
 using PocoEmit.Activators;
+using PocoEmit.Collections.Counters;
 using System;
 using System.Linq.Expressions;
 

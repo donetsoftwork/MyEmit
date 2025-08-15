@@ -16,13 +16,13 @@
 
 #### 1.1 按实际类型读取
 ```csharp
-Func<Test, int> readFunc = Poco.Global.GetReadFunc<User, int>("Id");
+Func<Test, int> readFunc = Poco.Default.GetReadFunc<User, int>("Id");
 int id = readFunc(user);
 ```
 #### 1.2 按object类型读取
 ```csharp
 // 按实际类型读取
-Func<Test, object> readFunc = Poco.Global.GetReadFunc<User, object>("Id");
+Func<Test, object> readFunc = Poco.Default.GetReadFunc<User, object>("Id");
 object id = reader(user);
 ```
 
@@ -30,7 +30,7 @@ object id = reader(user);
 >调用GetMemberReader方法
 
 ```csharp
-IMemberReader<User, string> reader = Poco.Global.GetMemberReader<User, string>("Name");
+IMemberReader<User, string> reader = Poco.Default.GetMemberReader<User, string>("Name");
 string name = reader.Read(user);
 ```
 
@@ -39,14 +39,14 @@ string name = reader.Read(user);
 
 ## 1.1 按实际类型写入
 ```csharp
-Action<Test, int> writeAction = Poco.Global.GetWriteAction<User, int>("Id");
+Action<Test, int> writeAction = Poco.Default.GetWriteAction<User, int>("Id");
 int id = 1;
 writeAction(user, id);
 ```
 ## 2.2 按object类型写入
 ```csharp
 // 按实际类型写入
-Action<Test, object> writeAction = Poco.Global.GetWriteAction<User, object>("Id");
+Action<Test, object> writeAction = Poco.Default.GetWriteAction<User, object>("Id");
 string name = "Jxj";
 writeAction(user, name);
 ```
@@ -55,6 +55,6 @@ writeAction(user, name);
 >调用GetMemberWriter方法
 
 ```csharp
-IMemberWriter<User, string> writer = Poco.Global.GetMemberWriter<User, string>("Name");
+IMemberWriter<User, string> writer = Poco.Default.GetMemberWriter<User, string>("Name");
 writer.Write(user, name);
 ```

@@ -13,7 +13,7 @@ namespace PocoEmit.Dictionaries;
 /// <param name="elementType"></param>
 public class DictionaryValuesVisitor(Type dictionaryType, Type elementType)
     : EmitCollectionBase(dictionaryType, elementType)
-    , ICollectionVisitor
+    , IEmitElementVisitor
 {
     #region 配置
     private readonly EnumerableVisitor _valuesVisitor = new(elementType);

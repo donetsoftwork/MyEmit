@@ -1,4 +1,5 @@
 using PocoEmit.Collections.Activators;
+using PocoEmit.Collections.Counters;
 using PocoEmit.Converters;
 using PocoEmit.Copies;
 using System;

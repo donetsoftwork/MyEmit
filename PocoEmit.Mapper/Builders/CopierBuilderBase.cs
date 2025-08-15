@@ -30,9 +30,9 @@ public abstract class CopierBuilderBase(IMapperOptions options)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual IEmitCopier Build(MapTypeKey key)
+    public virtual IEmitCopier Build(PairTypeKey key)
     {
-        var destType = key.DestType;
+        var destType = key.RightType;
         TypeMemberCacher memberCacher = _options.MemberCacher;
         var destMembers = memberCacher.Get(destType)?.EmitWriters.Values;
         if (destMembers is null || destMembers.Count == 0)
@@ -55,7 +55,7 @@ public abstract class CopierBuilderBase(IMapperOptions options)
     /// <param name="key"></param>
     /// <param name="destMembers"></param>
     /// <param name="converters"></param>
-    public virtual void CheckMembers(MapTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
+    public virtual void CheckMembers(PairTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
     {
     }
     /// <summary>
@@ -65,10 +65,10 @@ public abstract class CopierBuilderBase(IMapperOptions options)
     /// <param name="block"></param>
     /// <param name="members"></param>
     /// <returns></returns>
-    private ComplexTypeCopier New(MapTypeKey key, EventWaitHandle block, IEnumerable<IMemberConverter> members)
+    private ComplexTypeCopier New(PairTypeKey key, EventWaitHandle block, IEnumerable<IMemberConverter> members)
     {
         ComplexTypeCopier copier = new(Wait(block, members));
-        ICacher<MapTypeKey, IEmitCopier> cacher = _options;
+        ICacher<PairTypeKey, IEmitCopier> cacher = _options;
         // 提前设置复制器,避免重复构建
         cacher.TryCache(key, copier);
         return copier;

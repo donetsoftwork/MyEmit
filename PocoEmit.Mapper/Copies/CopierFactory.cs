@@ -10,7 +10,7 @@ namespace PocoEmit.Copies;
 /// </summary>
 /// <param name="options"></param>
 public class CopierFactory(IMapperOptions options)
-    : CacheBase<MapTypeKey, IEmitCopier>(options)
+    : CacheBase<PairTypeKey, IEmitCopier>(options)
 {
     #region 配置
     private readonly IMapperOptions _options = options;
@@ -22,15 +22,15 @@ public class CopierFactory(IMapperOptions options)
     #endregion
     #region CacheBase
     /// <inheritdoc />
-    protected override IEmitCopier CreateNew(MapTypeKey key)
+    protected override IEmitCopier CreateNew(PairTypeKey key)
     {
-        var destType = key.DestType;
+        var destType = key.RightType;
         // 数组不支持复制
         if (destType.IsArray)
             return _options.CopierBuilder.ToArray(key);
         if (CheckPrimitive(destType))
             return null;
-        var sourceType = key.SourceType;
+        var sourceType = key.LeftType;
         // 同类型
         if (sourceType == destType)
             return _options.CopierBuilder.ToSelf(key);
@@ -50,12 +50,12 @@ public class CopierFactory(IMapperOptions options)
         }
         if (isNullable)
         {
-            var originalKey = new MapTypeKey(sourceType, destType);
+            var originalKey = new PairTypeKey(sourceType, destType);
             IEmitCopier original = Get(originalKey);
             if (original is null)
                 return null;
             // 可空类型
-            return _options.CopierBuilder.ForNullable(original, sourceType, key.DestType);
+            return _options.CopierBuilder.ForNullable(original, sourceType, key.RightType);
         }
         if (ReflectionHelper.HasGenericType(destType, typeof(IDictionary<,>)))
             return _options.CopierBuilder.ToDictionary(key);

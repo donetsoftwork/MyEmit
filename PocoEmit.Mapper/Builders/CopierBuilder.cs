@@ -32,7 +32,7 @@ public class CopierBuilder(IMapperOptions options)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual IEmitCopier ToSelf(MapTypeKey key)
+    public virtual IEmitCopier ToSelf(PairTypeKey key)
         => _forSelf.Build(key);
     /// <summary>
     /// 为可空类型构建复制器
@@ -48,28 +48,28 @@ public class CopierBuilder(IMapperOptions options)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual IEmitCopier ToArray(MapTypeKey key)
+    public virtual IEmitCopier ToArray(PairTypeKey key)
         => null;
     /// <summary>
     /// 不支持字典(预留扩展)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual IEmitCopier ToDictionary(MapTypeKey key)
+    public virtual IEmitCopier ToDictionary(PairTypeKey key)
         => null;
     /// <summary>
     /// 不支持集合(预留扩展)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual IEmitCopier ToCollection(MapTypeKey key)
+    public virtual IEmitCopier ToCollection(PairTypeKey key)
        => null;
     #endregion
     /// <inheritdoc />
-    public override void CheckMembers(MapTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
+    public override void CheckMembers(PairTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
     {
         TypeMemberCacher memberCacher = _options.MemberCacher;
-        var sourceMembers = memberCacher.Get(key.SourceType)?.EmitReaders.Values;
+        var sourceMembers = memberCacher.Get(key.LeftType)?.EmitReaders.Values;
         if (sourceMembers is null || sourceMembers.Count == 0)
             return;
         IMemberMatch match = _options.GetMemberMatch(key);

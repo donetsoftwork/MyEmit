@@ -12,7 +12,7 @@ namespace PocoEmit.Collections.Visitors;
 /// </summary>
 public class EnumerableVisitor
     : EmitCollectionBase
-    , ICollectionVisitor
+    , IEmitElementVisitor
 {
     /// <summary>
     /// 迭代器访问者

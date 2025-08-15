@@ -3,7 +3,7 @@
 >* 已经生成的缓存修改相关配置不会生效
 
 ## 一、配置类型转化器
->* 通过[IMapper](xref:PocoEmit.Configuration.IMapper)配置(IMapper继承[IPoco](xref:PocoEmit.Configuration.IPoco))
+>* 通过[IMapper](xref:PocoEmit.IMapper)配置(IMapper继承[IPoco](xref:PocoEmit.IPoco))
 >* SetConvertFunc
 >* AddStaticConverter
 >* AddConverter
@@ -95,7 +95,7 @@ mapper.Set(key, matcher);
 ```
 
 ### 3. 配置默认匹配规则
->* 通过[IMapper](xref:PocoEmit.Configuration.IMapper)的属性DefaultMatch
+>* 通过[IMapper](xref:PocoEmit.IMapper)的属性DefaultMatch
 >* 通过[Mapper](xref:PocoEmit.Mapper)构造函数参数defaultMatch
 >* Mapper默认Global的属性DefaultMatch
 >* 未按源类型和目标类型配置匹配规则时,按默认匹配规则

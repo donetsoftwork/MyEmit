@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Members;
 using System;
@@ -55,14 +56,11 @@ public static partial class PocoEmitServices
         var instanceType = typeof(TInstance);
         var valueType = typeof(TValue);
         var noConvert = CheckType(poco, ref emitWriter, instanceType, valueType);
-        var instance = Expression.Parameter(instanceType, "instance");
-        var value = Expression.Parameter(valueType, "value");
         if (noConvert)
         {
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> typeWriter)
                 return typeWriter.WriteAction;
-            var writeAction = Build<TInstance, TValue>(emitWriter, instance, value)
-                .Compile();
+            var writeAction = Compiler.Compile<TInstance, TValue>(emitWriter);
             MemberContainer.Instance.MemberWriterCacher.Set(emitWriter.Info, new CompiledWriter<TInstance, TValue>(emitWriter, writeAction));
             return writeAction;
         }
@@ -70,7 +68,7 @@ public static partial class PocoEmitServices
         {
             return null;
         }
-        return Build<TInstance, TValue>(emitWriter, instance, value).Compile();
+        return Compiler.Compile<TInstance, TValue>(emitWriter);
     }
     #endregion
     #region GetMemberWriter
@@ -117,13 +115,11 @@ public static partial class PocoEmitServices
         var instanceType = typeof(TInstance);
         var valueType = typeof(TValue);
         var noConvert = CheckType(poco, ref emitWriter, instanceType, valueType);
-        var instance = Expression.Parameter(instanceType, "instance");
-        var value = Expression.Parameter(valueType, "value");
         if (noConvert)
         {
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> compiledWriter)
                 return compiledWriter;
-            compiledWriter = new CompiledWriter<TInstance, TValue>(emitWriter, Build<TInstance, TValue>(emitWriter, instance, value).Compile());
+            compiledWriter = new CompiledWriter<TInstance, TValue>(emitWriter, Compiler.Compile<TInstance, TValue>(emitWriter));
             MemberContainer.Instance.MemberWriterCacher.Set(emitWriter.Info, compiledWriter);
             return compiledWriter;
         }
@@ -131,7 +127,7 @@ public static partial class PocoEmitServices
         {
             return null;
         }
-        return new CompiledWriter<TInstance, TValue>(emitWriter, Build<TInstance, TValue>(emitWriter, instance, value).Compile());
+        return new CompiledWriter<TInstance, TValue>(emitWriter, Compiler.Compile<TInstance, TValue>(emitWriter));
     }
     #endregion
     #region Check
@@ -202,19 +198,12 @@ public static partial class PocoEmitServices
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     /// <param name="emit"></param>
-    /// <param name="instance"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    public static Expression<Action<TInstance, TValue>> Build<TInstance, TValue>(this IEmitMemberWriter emit, ParameterExpression instance, ParameterExpression value)
-        => Expression.Lambda<Action<TInstance, TValue>>(emit.Write(instance, value), instance, value);
-    /// <summary>
-    /// 写入委托
-    /// </summary>
-    /// <typeparam name="TInstance"></typeparam>
-    /// <typeparam name="TValue"></typeparam>
-    /// <param name="emit"></param>
     /// <returns></returns>
     public static Expression<Action<TInstance, TValue>> Build<TInstance, TValue>(this IEmitMemberWriter emit)
-        => Build<TInstance, TValue>(emit, Expression.Parameter(typeof(TInstance), "instance"), Expression.Parameter(typeof(TValue), "value"));
+    {
+        var instance = Expression.Parameter(typeof(TInstance), "instance");
+        var value = Expression.Parameter(typeof(TValue), "value");
+        return Expression.Lambda<Action<TInstance, TValue>>(emit.Write(instance, value), instance, value);
+    }
     #endregion
 }

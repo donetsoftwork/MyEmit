@@ -12,11 +12,11 @@ namespace PocoEmit;
 /// </summary>
 public interface IMapper
     : IPoco
-    , IConfigure<MapTypeKey, IMemberMatch>
-    , IConfigure<MapTypeKey, IEmitCopier>
-    , IStore<MapTypeKey, IEmitCopier>
+    , IConfigure<PairTypeKey, IMemberMatch>
+    , IConfigure<PairTypeKey, IEmitCopier>
+    , IStore<PairTypeKey, IEmitCopier>
     , IConfigure<Type, IEmitActivator>
-    , IConfigure<MapTypeKey, IEmitActivator>
+    , IConfigure<PairTypeKey, IEmitActivator>
     , IConfigure<Type, bool>
     , IConfigure<Type, object>
 {
@@ -25,7 +25,7 @@ public interface IMapper
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    IMemberMatch GetMemberMatch(MapTypeKey key);
+    IMemberMatch GetMemberMatch(PairTypeKey key);
     /// <summary>
     /// 识别器
     /// </summary>
@@ -36,6 +36,6 @@ public interface IMapper
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    IEmitCopier GetEmitCopier(MapTypeKey key);
+    IEmitCopier GetEmitCopier(PairTypeKey key);
     #endregion
 }

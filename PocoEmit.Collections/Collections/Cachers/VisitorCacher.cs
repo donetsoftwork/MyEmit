@@ -9,11 +9,11 @@ namespace PocoEmit.Collections.Cachers;
 /// 集合访问者缓存
 /// </summary>
 /// <param name="cacher"></param>
-internal class VisitorCacher(ICacher<Type, ICollectionVisitor> cacher)
-    : CacheBase<Type, ICollectionVisitor>(cacher)
+internal class VisitorCacher(ICacher<Type, IEmitElementVisitor> cacher)
+    : CacheBase<Type, IEmitElementVisitor>(cacher)
 {
     /// <inheritdoc />
-    protected override ICollectionVisitor CreateNew(Type key)
+    protected override IEmitElementVisitor CreateNew(Type key)
     {
         if (key.IsArray)
             return new ArrayVisitor(key);

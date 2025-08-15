@@ -1,8 +1,8 @@
 using PocoEmit.Builders;
 using PocoEmit.Collections.Activators;
+using PocoEmit.Collections.Counters;
 using PocoEmit.Converters;
 using PocoEmit.Indexs;
-using PocoEmit.Members;
 using System;
 using System.Linq.Expressions;
 
@@ -16,7 +16,7 @@ namespace PocoEmit.Collections.Converters;
 /// <param name="length"></param>
 /// <param name="indexReader"></param>
 /// <param name="elementConverter"></param>
-public class IndexArrayConverter(Type elementType, Type collectionType, IEmitCollectionCounter length, IEmitIndexMemberReader indexReader, IEmitConverter elementConverter)
+public class IndexArrayConverter(Type elementType, Type collectionType, IEmitElementCounter length, IEmitIndexMemberReader indexReader, IEmitConverter elementConverter)
     : ArrayActivator(elementType, collectionType, length)
     , IEmitConverter
 {

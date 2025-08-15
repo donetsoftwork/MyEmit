@@ -8,13 +8,13 @@
 
 #### 1.1 按实际类型读取
 ```csharp
-Func<Test, int> readFunc = Poco.Global.GetReadFunc<User, int>("Id");
+Func<Test, int> readFunc = Poco.Default.GetReadFunc<User, int>("Id");
 int id = readFunc(user);
 ```
 #### 1.2 按object类型读取
 ```csharp
 // 按实际类型读取
-Func<Test, object> readFunc = Poco.Global.GetReadFunc<User, object>("Id");
+Func<Test, object> readFunc = Poco.Default.GetReadFunc<User, object>("Id");
 object id = reader(user);
 ```
 
@@ -22,7 +22,7 @@ object id = reader(user);
 >调用GetMemberReader方法
 
 ```csharp
-IMemberReader<User, string> reader = Poco.Global.GetMemberReader<User, string>("Name");
+IMemberReader<User, string> reader = Poco.Default.GetMemberReader<User, string>("Name");
 string name = reader.Read(user);
 ```
 
@@ -31,14 +31,14 @@ string name = reader.Read(user);
 
 ## 1.1 按实际类型写入
 ```csharp
-Action<Test, int> writeAction = Poco.Global.GetWriteAction<User, int>("Id");
+Action<Test, int> writeAction = Poco.Default.GetWriteAction<User, int>("Id");
 int id = 1;
 writeAction(user, id);
 ```
 ## 2.2 按object类型写入
 ```csharp
 // 按实际类型写入
-Action<Test, object> writeAction = Poco.Global.GetWriteAction<User, object>("Id");
+Action<Test, object> writeAction = Poco.Default.GetWriteAction<User, object>("Id");
 string name = "Jxj";
 writeAction(user, name);
 ```
@@ -47,7 +47,7 @@ writeAction(user, name);
 >调用GetMemberWriter方法
 
 ```csharp
-IMemberWriter<User, string> writer = Poco.Global.GetMemberWriter<User, string>("Name");
+IMemberWriter<User, string> writer = Poco.Default.GetMemberWriter<User, string>("Name");
 writer.Write(user, name);
 ```
 
@@ -59,7 +59,7 @@ writer.Write(user, name);
 var user = new User { Id = 1, Name = "Jxj" };
 var dto = new UserDTO();
 // 复制属性
-Mapper.Global.Copy(user, dto);
+Mapper.Default.Copy(user, dto);
 // dto.Id = 1, dto.Name = "Jxj"
 ```
 
@@ -69,7 +69,7 @@ Mapper.Global.Copy(user, dto);
 ```csharp
 var user = new User { Id = 1, Name = "Jxj" };
 var dto = new UserDTO();
-Action<User, UserDTO> copyAction = Mapper.Global.GetCopyAction<User, UserDTO>();
+Action<User, UserDTO> copyAction = Mapper.Default.GetCopyAction<User, UserDTO>();
 // 复制属性
 copyAction(user, dto);
 // dto.Id = 1, dto.Name = "Jxj"
@@ -81,7 +81,7 @@ copyAction(user, dto);
 ```csharp
 var user = new User { Id = 1, Name = "Jxj" };
 var dto = new UserDTO();
-IPocoCopier<User, UserDTO> copier = Mapper.Global.GetCopier<User, UserDTO>();
+IPocoCopier<User, UserDTO> copier = Mapper.Default.GetCopier<User, UserDTO>();
 // 复制属性
 copier.Copy(user, dto);
 // dto.Id = 1, dto.Name = "Jxj"
@@ -94,7 +94,7 @@ copier.Copy(user, dto);
 ```csharp
 var user = new User { Id = 1, Name = "Jxj" };
 // 转化
-var dto = Mapper.Global.Convert<User, UserDTO>(user);
+var dto = Mapper.Default.Convert<User, UserDTO>(user);
 // dto.Id = 1, dto.Name = "Jxj"
 ```
 
@@ -104,7 +104,7 @@ var dto = Mapper.Global.Convert<User, UserDTO>(user);
 ```csharp
 var user = new User { Id = 1, Name = "Jxj" };
 var dto = new UserDTO();
-Func<User, UserDTO> convertFunc = Mapper.Global.GetConvertFunc<User, UserDTO>();
+Func<User, UserDTO> convertFunc = Mapper.Default.GetConvertFunc<User, UserDTO>();
 // 转化
 var dto = convertFunc(user);
 // dto.Id = 1, dto.Name = "Jxj"
@@ -115,7 +115,7 @@ var dto = convertFunc(user);
 
 ```csharp
 var user = new User { Id = 1, Name = "Jxj" };
-IPocoConverter<User, UserDTO> converter = Mapper.Global.GetConverter<User, UserDTO>();
+IPocoConverter<User, UserDTO> converter = Mapper.Default.GetConverter<User, UserDTO>();
 // 转化
 var dto = converter.Convert(user);
 // dto.Id = 1, dto.Name = "Jxj"
@@ -123,7 +123,7 @@ var dto = converter.Convert(user);
 
 ## 五、容器注册转化器
 ## 1. 默认注册
->通过容器中默认的IMapper对象或Mapper.Global构造转化器
+>通过容器中默认的IMapper对象或Mapper.Default构造转化器
 
 ~~~csharp
 services.UseConverter();
@@ -131,10 +131,10 @@ services.UseConverter();
 
 ## 2. 指定IPoco对象注册
 ~~~csharp
-services.UseConverter(PocoEmit.Mapper.Global);
+services.UseConverter(PocoEmit.Mapper.Default);
 ~~~
 
->注: PocoEmit.Mapper.Global继承IPoco接口
+>注: PocoEmit.Mapper.Default继承IPoco接口
 
 ## 3. 隔离注册
 >指定IPoco和serviceKey注册
@@ -156,7 +156,7 @@ public sealed class Mapper(IPocoConverter<User, UserListDTO> converter)
 
 ## 六、容器注册复制器
 ## 1. 默认注册
->通过容器中默认的IMapper对象或Mapper.Global构造复制器
+>通过容器中默认的IMapper对象或Mapper.Default构造复制器
 
 ~~~csharp
 services.UseCopier();
@@ -164,10 +164,10 @@ services.UseCopier();
 
 ## 2. 指定IMapper对象注册
 ~~~csharp
-services.UseCopier(PocoEmit.Mapper.Global);
+services.UseCopier(PocoEmit.Mapper.Default);
 ~~~
 
->注: PocoEmit.Mapper.Global继承IMapper接口
+>注: PocoEmit.Mapper.Default继承IMapper接口
 
 ## 3. 隔离注册
 >指定IPoco和serviceKey注册

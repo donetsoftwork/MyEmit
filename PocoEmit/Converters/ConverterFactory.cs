@@ -8,7 +8,7 @@ namespace PocoEmit.Converters;
 /// 转化器工厂
 /// </summary>
 public sealed class ConverterFactory(IPocoOptions options)
-    : CacheBase<MapTypeKey, IEmitConverter>(options)
+    : CacheBase<PairTypeKey, IEmitConverter>(options)
 {
     #region 配置
     private readonly IPocoOptions _options = options;
@@ -18,21 +18,13 @@ public sealed class ConverterFactory(IPocoOptions options)
     public IPocoOptions Options
         => _options;
     #endregion
-    /// <summary>
-    /// 获取转化器
-    /// </summary>
-    /// <param name="sourceType"></param>
-    /// <param name="destType"></param>
-    /// <returns></returns>
-    public IEmitConverter Get(Type sourceType, Type destType)
-        => Get(new MapTypeKey(sourceType, destType));
     #region CacheBase
     /// <inheritdoc />
-    protected override IEmitConverter CreateNew(MapTypeKey key)
+    protected override IEmitConverter CreateNew(PairTypeKey key)
     {
         var builder = _options.ConvertBuilder;
-        var sourceType = key.SourceType;
-        var destType = key.DestType;
+        var sourceType = key.LeftType;
+        var destType = key.RightType;
         // 同类型
         if (sourceType == destType)
             return builder.BuildForSelf(destType);
@@ -58,19 +50,19 @@ public sealed class ConverterFactory(IPocoOptions options)
         }
         if (isNullable)
         {
-            var originalKey = new PairTypeKey(sourceType, rightType);
+            var originalKey = new PairTypeKey(sourceType, destType);
             IEmitConverter original = Get(originalKey);
             if (original is null)
                 return null;
             // 可空类型
-            return builder.BuildForNullable(original, leftType, key.RightType);
+            return builder.BuildForNullable(original, sourceType, key.RightType);
         }
-        var constructor = ReflectionHelper.GetConstructorByParameterType(destType, leftType);
+        var constructor = ReflectionHelper.GetConstructorByParameterType(destType, sourceType);
         // 其他类型
         if (constructor is null)
             return builder.Build(sourceType, destType);
         // 构造函数
-        return builder.BuildByConstructor(constructor, leftType);
+        return builder.BuildByConstructor(constructor, sourceType);
     }
     #endregion
 }

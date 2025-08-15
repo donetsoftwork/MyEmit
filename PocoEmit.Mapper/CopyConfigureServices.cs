@@ -1,3 +1,4 @@
+using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using System;
@@ -23,7 +24,7 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IPoco UseCopyAction<TSource, TDest>(this IMapper mapper, Action<TSource, TDest> copyAction)
     {
-        var key = new MapTypeKey(typeof(TSource), typeof(TDest));
+        var key = new PairTypeKey(typeof(TSource), typeof(TDest));
         mapper.Configure(key, new DelegateCopier<TSource, TDest>(copyAction));
         return mapper;
     }
@@ -54,7 +55,7 @@ public static partial class MapperServices
             if (method.DeclaringType == converterType && method.IsStatic && method.ReturnType == typeof(void) && parameters.Length == 2)
             {
                 MethodCopier converter = new(null, method);
-                MapTypeKey key = new(parameters[0].ParameterType, parameters[1].ParameterType);
+                PairTypeKey key = new(parameters[0].ParameterType, parameters[1].ParameterType);
                 mapper.Configure(key, converter);
             }
         }
@@ -81,10 +82,46 @@ public static partial class MapperServices
             if (method.DeclaringType == converterType && !method.IsStatic && method.ReturnType == typeof(void) && parameters.Length == 2)
             {
                 MethodCopier converter = new(target, method);
-                MapTypeKey key = new(parameters[0].ParameterType, parameters[1].ParameterType);
+                PairTypeKey key = new(parameters[0].ParameterType, parameters[1].ParameterType);
                 mapper.Configure(key, converter);
             }
         }
         return mapper;
     }
+    #region SetCopy
+    /// <summary>
+    /// 设置委托来复制
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="settings"></param>
+    /// <param name="copy"></param>
+    /// <returns></returns>
+    public static DelegateCopier<TSource, TDest> SetCopy<TSource, TDest>(this ICacher<PairTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
+        where TDest : class
+    {
+        var key = new PairTypeKey(typeof(TSource), typeof(TDest));
+        var copier = new DelegateCopier<TSource, TDest>(copy);
+        settings.Set(key, copier);
+        return copier;
+    }
+    /// <summary>
+    /// 尝试设置委托来复制不覆盖
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="settings"></param>
+    /// <param name="copy"></param>
+    /// <returns></returns>
+    public static IEmitCopier TrySetCopy<TSource, TDest>(this ICacher<PairTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
+        where TDest : class
+    {
+        var key = new PairTypeKey(typeof(TSource), typeof(TDest));
+        if (settings.TryGetValue(key, out var value0) && value0 is not null)
+            return value0;
+        var copier = new DelegateCopier<TSource, TDest>(copy);
+        settings.Set(key, copier);
+        return copier;
+    }
+    #endregion
 }

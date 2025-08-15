@@ -23,8 +23,8 @@ public abstract partial class ConfigurationBase
     {
         // 初始化配置
         var concurrencyLevel = options.ConcurrencyLevel;
-        _converters = new ConcurrentDictionary<MapTypeKey, IEmitConverter>(concurrencyLevel, options.ConverterCapacity);
-        _convertConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitConverter>(concurrencyLevel, options.ConverterConfigurationCapacity);
+        _converters = new ConcurrentDictionary<PairTypeKey, IEmitConverter>(concurrencyLevel, options.ConverterCapacity);
+        _convertConfiguration = new ConcurrentDictionary<PairTypeKey, IEmitConverter>(concurrencyLevel, options.ConverterConfigurationCapacity);
         _memberBundles = new ConcurrentDictionary<Type, MemberBundle>(concurrencyLevel, options.MemberBundleCapacity);
         _reflectionMember = DefaultReflectionMember.Default;
         _convertBuilder = ConvertBuilder.Default;
@@ -87,7 +87,7 @@ public abstract partial class ConfigurationBase
     public Action<object, object> GetWriteAction(MemberInfo member)
         => (_writerActionCacher ??= new WriteActionCacher(this)).Get(member);
     /// <inheritdoc />
-    public IEmitConverter GetEmitConverter(MapTypeKey key)
+    public IEmitConverter GetEmitConverter(PairTypeKey key)
         => _converterFactory.Get(key);
     #endregion
 }

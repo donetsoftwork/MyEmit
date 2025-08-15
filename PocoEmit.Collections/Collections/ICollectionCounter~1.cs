@@ -4,7 +4,7 @@ namespace PocoEmit.Collections;
 /// 获取集合元素数量
 /// </summary>
 /// <typeparam name="TCollection"></typeparam>
-public interface ICollectionCounter<TCollection>
+public interface ICounter<TCollection>
 {
     /// <summary>
     /// 获取集合元素数量

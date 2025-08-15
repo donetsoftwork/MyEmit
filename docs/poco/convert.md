@@ -1,5 +1,5 @@
 # 类型转化
->* 调用[IPoco](xref:PocoEmit.Configuration.IPoco)的方法来转化
+>* 调用[IPoco](xref:PocoEmit.IPoco)的方法来转化
 >* 一般使用[Poco](xref:PocoEmit.Poco)的实例或Poco.Global
 
 ## 一、转化方式

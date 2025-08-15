@@ -2,7 +2,7 @@
 
 ## 一、容器注册转化器
 ### 1. 默认注册
->通过容器中默认的IMapper对象或Mapper.Global构造转化器
+>通过容器中默认的IMapper对象或Mapper.Default构造转化器
 
 ~~~csharp
 services.UseConverter();
@@ -10,10 +10,10 @@ services.UseConverter();
 
 ### 2. 指定IPocoOptions对象注册
 ~~~csharp
-services.UseConverter(PocoEmit.Mapper.Global);
+services.UseConverter(PocoEmit.Mapper.Default);
 ~~~
 
->注: PocoEmit.Mapper.Global继承IPocoOptions接口
+>注: PocoEmit.Mapper.Default继承IPocoOptions接口
 
 ### 3. 隔离注册
 >指定IPocoOptions和serviceKey注册
@@ -35,7 +35,7 @@ public sealed class Mapper(IPocoConverter<User, UserListDTO> converter)
 
 ## 二、容器注册复制器
 ### 1. 默认注册
->通过容器中默认的IMapper对象或Mapper.Global构造复制器
+>通过容器中默认的IMapper对象或Mapper.Default构造复制器
 
 ~~~csharp
 services.UseCopier();
@@ -43,10 +43,10 @@ services.UseCopier();
 
 ### 2. 指定IMapper对象注册
 ~~~csharp
-services.UseCopier(PocoEmit.Mapper.Global);
+services.UseCopier(PocoEmit.Mapper.Default);
 ~~~
 
->注: PocoEmit.Mapper.Global继承IMapper接口
+>注: PocoEmit.Mapper.Default继承IMapper接口
 
 ### 3. 隔离注册
 >指定IPocoOptions和serviceKey注册

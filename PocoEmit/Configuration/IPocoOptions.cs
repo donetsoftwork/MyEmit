@@ -12,7 +12,7 @@ namespace PocoEmit.Configuration;
 /// </summary>
 public interface IPocoOptions
     : IPoco
-    , ICacher<MapTypeKey, IEmitConverter>
+    , ICacher<PairTypeKey, IEmitConverter>
     , ICacher<Type, MemberBundle>
 {
     /// <summary>

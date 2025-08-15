@@ -1,4 +1,5 @@
 using PocoEmit.Activators;
+using PocoEmit.Collections.Counters;
 using PocoEmit.Members;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace PocoEmit.Collections.Activators;
 /// </summary>
 /// <param name="elementType"></param>
 /// <param name="sourceCount"></param>
-public class ListActivator(Type elementType, IEmitCollectionCounter sourceCount)
+public class ListActivator(Type elementType, IEmitElementCounter sourceCount)
     : CollectionActivator(elementType, typeof(List<>).MakeGenericType(elementType), sourceCount)
     , IEmitActivator
 {

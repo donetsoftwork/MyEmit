@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Members;
 using System;
@@ -60,8 +61,7 @@ public static partial class PocoEmitServices
         {
             if (emitReader.Compiled && emitReader is ICompiledReader<TInstance, TValue> compiledReader)
                 return compiledReader.ReadFunc;
-            var readFunc = Build<TInstance, TValue>(emitReader, instance)
-                .Compile();
+            var readFunc = Compiler.Compile<TInstance, TValue>(emitReader);
             MemberContainer.Instance.MemberReaderCacher.Set(emitReader.Info, new CompiledReader<TInstance, TValue>(emitReader, readFunc));
             return readFunc;
         }
@@ -69,7 +69,7 @@ public static partial class PocoEmitServices
         {
             return null;
         }
-        return Build<TInstance, TValue>(emitReader, instance).Compile();
+        return Compiler.Compile<TInstance, TValue>(emitReader);
     }
     #endregion
     #region GetMemberReader
@@ -120,7 +120,7 @@ public static partial class PocoEmitServices
         {
             if (emitReader.Compiled && emitReader is ICompiledReader<TInstance, TValue> compiledReader)
                 return compiledReader;
-            compiledReader = new CompiledReader<TInstance, TValue>(emitReader, Build<TInstance, TValue>(emitReader).Compile());
+            compiledReader = new CompiledReader<TInstance, TValue>(emitReader, Compiler.Compile<TInstance, TValue>(emitReader));
             MemberContainer.Instance.MemberReaderCacher.Set(emitReader.Info, compiledReader);
             return compiledReader;
         }
@@ -129,7 +129,7 @@ public static partial class PocoEmitServices
             return null;
         }
         var instance = Expression.Parameter(instanceType, "instance");
-        return new CompiledReader<TInstance, TValue>(emitReader, Build<TInstance, TValue>(emitReader, instance).Compile());
+        return new CompiledReader<TInstance, TValue>(emitReader, Compiler.Compile<TInstance, TValue>(emitReader));
     }
     #endregion
     #region CheckType
@@ -200,18 +200,11 @@ public static partial class PocoEmitServices
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     /// <param name="emit"></param>
-    /// <param name="instance"></param>
-    /// <returns></returns>
-    public static Expression<Func<TInstance, TValue>> Build<TInstance, TValue>(this IEmitMemberReader emit, ParameterExpression instance)
-        => Expression.Lambda<Func<TInstance, TValue>>(emit.Read(instance), instance);
-    /// <summary>
-    /// 转换委托
-    /// </summary>
-    /// <typeparam name="TInstance"></typeparam>
-    /// <typeparam name="TValue"></typeparam>
-    /// <param name="emit"></param>
     /// <returns></returns>
     public static Expression<Func<TInstance, TValue>> Build<TInstance, TValue>(this IEmitMemberReader emit)
-        => Build<TInstance, TValue>(emit, Expression.Parameter(typeof(TInstance), "instance"));
+    {
+        var instance = Expression.Parameter(typeof(TInstance), "instance");
+        return Expression.Lambda<Func<TInstance, TValue>>(emit.Read(instance), instance);
+    }
     #endregion
 }

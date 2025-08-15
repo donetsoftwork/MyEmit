@@ -1,9 +1,7 @@
 # 类型转化
->* 调用[IMapper](xref:PocoEmit.Configuration.IMapper)的方法来转化
->* IMapper继承[IPoco](xref:PocoEmit.Configuration.IPoco)
+>* 调用[IMapper](xref:PocoEmit.IMapper)的方法来转化
+>* IMapper继承[IPoco](xref:PocoEmit.IPoco)
 >* 一般使用[Mapper](xref:PocoEmit.Mapper)的实例或Mapper.Global
-
-
 
 ## 一、转化方式
 >* 调用Convert方法直接转化
@@ -34,7 +32,7 @@ var source = new MyMapperId(22);
 var result = _mapper.Convert<MyMapperId, int>(source);
 ```
 
-### 5. 成员复制器转化
+### 5. 复制成员转化
 >* 通过两个类型的复制器来转化成员
 
 ```csharp

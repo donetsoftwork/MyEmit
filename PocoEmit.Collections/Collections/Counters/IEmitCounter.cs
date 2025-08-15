@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace PocoEmit.Collections;
+namespace PocoEmit.Collections.Counters;
 
 /// <summary>
 /// 元素数量获取器

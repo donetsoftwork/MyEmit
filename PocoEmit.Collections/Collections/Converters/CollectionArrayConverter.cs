@@ -1,4 +1,5 @@
 using PocoEmit.Collections.Activators;
+using PocoEmit.Collections.Counters;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Converters;
 using System;
@@ -14,17 +15,17 @@ namespace PocoEmit.Collections.Converters;
 /// <param name="length"></param>
 /// <param name="visitor"></param>
 /// <param name="elementConverter"></param>
-public class CollectionArrayConverter(Type elementType, Type collectionType, IEmitCollectionCounter length, ICollectionVisitor visitor, IEmitConverter elementConverter)
+public class CollectionArrayConverter(Type elementType, Type collectionType, IEmitElementCounter length, IEmitElementVisitor visitor, IEmitConverter elementConverter)
     : ArrayActivator(elementType, collectionType, length)
     , IEmitConverter
 {
     #region 配置
-    private readonly ICollectionVisitor _visitor = visitor;
+    private readonly IEmitElementVisitor _visitor = visitor;
     private readonly IEmitConverter _elementConverter = elementConverter;
     /// <summary>
     /// 集合访问者
     /// </summary>
-    public ICollectionVisitor Visitor
+    public IEmitElementVisitor Visitor
         => _visitor;
     /// <summary>
     /// 子元素转化

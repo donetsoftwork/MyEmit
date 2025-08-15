@@ -1,10 +1,12 @@
 using PocoEmit.Collections;
 using PocoEmit.Collections.Cachers;
+using PocoEmit.Collections.Counters;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Configuration;
 using PocoEmit.Indexs;
 using System;
 using System.Collections.Concurrent;
+using PocoEmit.Collections.Saves;
 
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Generic;
@@ -17,10 +19,11 @@ namespace PocoEmit;
 /// 集合容器
 /// </summary>
 public sealed class CollectionContainer
-    : ICacher<Type, IEmitCollectionCounter>
-    , ICacher<Type, ICollectionVisitor>
+    : ICacher<PairTypeKey, IEmitElementCounter>
+    , ICacher<Type, IEmitElementVisitor>
     , ICacher<Type, IEmitIndexMemberReader>
     , ICacher<Type, IElementIndexVisitor>
+    , ICacher<PairTypeKey, IEmitElementSaver>
 {
     /// <summary>
     /// 集合容器
@@ -28,29 +31,32 @@ public sealed class CollectionContainer
     private CollectionContainer(CollectionContainerOptions options)
     {
         var concurrencyLevel = options.ConcurrencyLevel;
-        _counters = new ConcurrentDictionary<Type, IEmitCollectionCounter>(concurrencyLevel, options.CounterCapacity);
-        _visitors = new ConcurrentDictionary<Type, ICollectionVisitor>(concurrencyLevel, options.VisitorCapacity);
+        _counters = new ConcurrentDictionary<PairTypeKey, IEmitElementCounter>(concurrencyLevel, options.CounterCapacity);
+        _visitors = new ConcurrentDictionary<Type, IEmitElementVisitor>(concurrencyLevel, options.VisitorCapacity);
         _readIndexs = new ConcurrentDictionary<Type, IEmitIndexMemberReader>(concurrencyLevel, options.ReadIndexCapacity);
         _indexVisitors = new ConcurrentDictionary<Type, IElementIndexVisitor>(concurrencyLevel, options.ReadIndexCapacity);
+        _savers = new ConcurrentDictionary<PairTypeKey, IEmitElementSaver>(concurrencyLevel, options.SaverCapacity);
         _countCacher = new(this);
         _visitorCacher = new(this);
         _readIndexCacher = new(this);
         _indexVisitorCacher = new(this);
+        _saveCacher = new(this);
     }
     #region 配置
     private readonly CountCacher _countCacher;
     private readonly VisitorCacher _visitorCacher;
     private readonly ReadIndexCacher _readIndexCacher;
     private readonly IndexVisitorCacher _indexVisitorCacher;
+    private readonly SaveCacher _saveCacher;
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 集合数量缓存
     /// </summary>
-    private IDictionary<Type, IEmitCollectionCounter> _counters;
+    private IDictionary<PairTypeKey, IEmitElementCounter> _counters;
     /// <summary>
     /// 集合访问者缓存
     /// </summary>
-    private IDictionary<Type, ICollectionVisitor> _visitors;
+    private IDictionary<Type, IEmitElementVisitor> _visitors;
     /// <summary>
     /// 索引读取器缓存
     /// </summary>
@@ -59,45 +65,53 @@ public sealed class CollectionContainer
     /// 索引访问者缓存(主要用于字典遍历)
     /// </summary>
     private IDictionary<Type, IElementIndexVisitor> _indexVisitors;
+    /// <summary>
+    /// 元素保存器
+    /// </summary>
+    private IDictionary<PairTypeKey, IEmitElementSaver> _savers;
 #else
     /// <summary>
     /// 集合数量缓存
     /// </summary>
-    private ConcurrentDictionary<Type, IEmitCollectionCounter> _counters;
+    private readonly ConcurrentDictionary<PairTypeKey, IEmitElementCounter> _counters;
     /// <summary>
     /// 集合访问者缓存
     /// </summary>
-    private ConcurrentDictionary<Type, ICollectionVisitor> _visitors;
+    private readonly ConcurrentDictionary<Type, IEmitElementVisitor> _visitors;
     /// <summary>
     /// 索引读取器缓存
     /// </summary>
-    private ConcurrentDictionary<Type, IEmitIndexMemberReader> _readIndexs;
+    private readonly ConcurrentDictionary<Type, IEmitIndexMemberReader> _readIndexs;
         /// <summary>
     /// 索引访问者缓存(主要用于字典遍历)
     /// </summary>
-    private ConcurrentDictionary<Type, IElementIndexVisitor> _indexVisitors;
+    private readonly ConcurrentDictionary<Type, IElementIndexVisitor> _indexVisitors;
+        /// <summary>
+    /// 元素保存器
+    /// </summary>
+    private readonly ConcurrentDictionary<PairTypeKey, IEmitElementSaver> _savers;
 #endif
     #endregion
-    #region ICacher<Type, IEmitCollectionCounter>
+    #region ICacher<Type, IEmitElementCounter>
     /// <inheritdoc />
-    bool ICacher<Type, IEmitCollectionCounter>.ContainsKey(Type key)
+    bool ICacher<PairTypeKey, IEmitElementCounter>.ContainsKey(PairTypeKey key)
         => _counters.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, IEmitCollectionCounter>.TryGetValue(Type key, out IEmitCollectionCounter value)
+    bool ICacher<PairTypeKey, IEmitElementCounter>.TryGetValue(PairTypeKey key, out IEmitElementCounter value)
         => _counters.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, IEmitCollectionCounter>.Set(Type key, IEmitCollectionCounter value)
+    void IStore<PairTypeKey, IEmitElementCounter>.Set(PairTypeKey key, IEmitElementCounter value)
         => _counters[key] = value;
     #endregion
     #region ICacher<Type, ICollectionVisitor>
     /// <inheritdoc />
-    bool ICacher<Type, ICollectionVisitor>.ContainsKey(Type key)
+    bool ICacher<Type, IEmitElementVisitor>.ContainsKey(Type key)
         => _visitors.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, ICollectionVisitor>.TryGetValue(Type key, out ICollectionVisitor value)
+    bool ICacher<Type, IEmitElementVisitor>.TryGetValue(Type key, out IEmitElementVisitor value)
         => _visitors.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, ICollectionVisitor>.Set(Type key, ICollectionVisitor value)
+    void IStore<Type, IEmitElementVisitor>.Set(Type key, IEmitElementVisitor value)
         => _visitors[key] = value;
     #endregion
     #region ICacher<Type, IEmitIndexMemberReader>
@@ -122,19 +136,23 @@ public sealed class CollectionContainer
     void IStore<Type, IElementIndexVisitor>.Set(Type key, IElementIndexVisitor value)
         => _indexVisitors[key] = value;
     #endregion
-    /// <summary>
-    /// 获取集合数量
-    /// </summary>
-    /// <param name="collectionType"></param>
-    /// <returns></returns>
-    public IEmitCollectionCounter GetCounter(Type collectionType)
-        => _countCacher.Get(collectionType);
+    #region ICacher<Type, IEmitElementSaver>
+    /// <inheritdoc />
+    bool ICacher<PairTypeKey, IEmitElementSaver>.ContainsKey(PairTypeKey key)
+        => _savers.ContainsKey(key);
+    /// <inheritdoc />
+    bool ICacher<PairTypeKey, IEmitElementSaver>.TryGetValue(PairTypeKey key, out IEmitElementSaver value)
+        => _savers.TryGetValue(key, out value);
+    /// <inheritdoc />
+    void IStore<PairTypeKey, IEmitElementSaver>.Set(PairTypeKey key, IEmitElementSaver value)
+        => _savers[key] = value;
+    #endregion
     /// <summary>
     /// 获取集合访问者
     /// </summary>
     /// <param name="collectionType"></param>
     /// <returns></returns>
-    public ICollectionVisitor GetVisitor(Type collectionType)
+    public IEmitElementVisitor GetVisitor(Type collectionType)
         => _visitorCacher.Get(collectionType);
     /// <summary>
     /// 获取索引读取器
@@ -151,6 +169,16 @@ public sealed class CollectionContainer
     public IElementIndexVisitor GetIndexVisitor(Type collectionType)
         => _indexVisitorCacher.Get(collectionType);
     /// <summary>
+    /// 获取集合数量缓存
+    /// </summary>
+    public CacheBase<PairTypeKey, IEmitElementCounter> CountCacher 
+        => _countCacher;
+    /// <summary>
+    /// 获取集合元素保持器缓存
+    /// </summary>
+    public CacheBase<PairTypeKey, IEmitElementSaver> SaveCacher 
+        => _saveCacher;
+    /// <summary>
     /// 实例
     /// </summary>
     public static CollectionContainer Instance
@@ -165,6 +193,7 @@ public sealed class CollectionContainer
         _visitors = _visitors.ToFrozenDictionary();
         _readIndexs = _readIndexs.ToFrozenDictionary();
         _indexVisitors = _indexVisitors.ToFrozenDictionary();
+        _savers = _savers.ToFrozenDictionary();
     }
 #endif
     #region 配置
@@ -172,8 +201,8 @@ public sealed class CollectionContainer
     /// 全局启用集合功能(转化和复制)
     /// </summary>
     /// <returns></returns>
-    public static void GlobalUseCollections()
-        => Mapper.GlobalConfigure(mapper => mapper.UseCollections());
+    public static void GlobalUseCollection()
+        => Mapper.GlobalConfigure(mapper => mapper.UseCollection());
     /// <summary>
     /// 配置
     /// </summary>
@@ -192,10 +221,14 @@ public sealed class CollectionContainer
             _options += options;
     }
     #endregion
-
-
+    /// <summary>
+    /// 内部延迟加载
+    /// </summary>
     sealed class Inner
     {
+        /// <summary>
+        /// 集合容器
+        /// </summary>
         internal static readonly CollectionContainer Instance = Create();
         /// <summary>
         /// 构造

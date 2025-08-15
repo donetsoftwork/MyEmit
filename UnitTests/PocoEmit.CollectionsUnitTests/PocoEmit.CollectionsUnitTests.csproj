@@ -24,16 +24,4 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Copies\ToCollection\" />
-    <Folder Include="Copies\ToIList\" />
-    <Folder Include="Copies\ToList\" />
-    <Folder Include="Copies\ToQueue\" />
-    <Folder Include="Copies\ToStack\" />
-    <Folder Include="Copies\ToBlockingCollection\" />
-    <Folder Include="Copies\ToConcurrentQueue\" />
-    <Folder Include="Copies\ToConcurrentStack\" />
-    <Folder Include="Copies\ToIProducerConsumerCollection\" />
-  </ItemGroup>
-
 </Project>

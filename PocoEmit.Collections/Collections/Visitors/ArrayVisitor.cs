@@ -11,8 +11,8 @@ namespace PocoEmit.Collections.Visitors;
 /// <param name="arrayType"></param>
 /// <param name="elementType"></param>
 public class ArrayVisitor(Type arrayType, Type elementType)
-    : ArrayCounter(arrayType)
-    , ICollectionVisitor
+    : ArrayCounter(arrayType, elementType)
+    , IEmitElementVisitor
     , IElementIndexVisitor
 {
     /// <summary>
@@ -24,10 +24,6 @@ public class ArrayVisitor(Type arrayType, Type elementType)
     {
     }
     #region 配置
-    private readonly Type _elementType = elementType;
-    /// <inheritdoc />
-    public Type ElementType
-        => _elementType;
     /// <inheritdoc />
     Type IElementIndexVisitor.KeyType
         => typeof(int);
@@ -36,7 +32,7 @@ public class ArrayVisitor(Type arrayType, Type elementType)
     Expression IIndexVisitor.Travel(Expression collection, Func<Expression, IndexExpression, Expression> callback)
         => Travel(collection, callback);
     /// <inheritdoc />
-    Expression ICollectionVisitor.Travel(Expression collection, Func<Expression, Expression> callback)
+    Expression IEmitElementVisitor.Travel(Expression collection, Func<Expression, Expression> callback)
         => Travel(collection, (_, item) => callback(item));
     #region Travel
     /// <summary>

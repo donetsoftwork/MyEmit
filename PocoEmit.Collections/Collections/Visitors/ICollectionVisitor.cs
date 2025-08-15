@@ -4,9 +4,9 @@ using System.Linq.Expressions;
 namespace PocoEmit.Collections.Visitors;
 
 /// <summary>
-/// 集合访问者
+/// 集合元素访问者
 /// </summary>
-public interface ICollectionVisitor
+public interface IEmitElementVisitor : IEmitCollection
 {
     /// <summary>
     /// 集合遍历

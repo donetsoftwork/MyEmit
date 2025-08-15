@@ -13,7 +13,7 @@ namespace PocoEmit.Collections.Counters;
 /// <param name="countProperty"></param>
 public class PropertyCounter(Type collectionType, Type elementType, PropertyInfo countProperty)
     : EmitCollectionBase(collectionType, elementType)
-    , IEmitCollectionCounter
+    , IEmitElementCounter
 {
     /// <summary>
     /// 按属性获取集合数量

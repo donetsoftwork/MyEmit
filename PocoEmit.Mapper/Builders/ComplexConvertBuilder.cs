@@ -52,7 +52,7 @@ public class ComplexConvertBuilder(IMapperOptions options)
             return converter;
         if (_options.CheckPrimitive(destType))
             return null;
-        var key = new MapTypeKey(sourceType, destType);
+        var key = new PairTypeKey(sourceType, destType);
         var activator = _options.GetEmitActivator(key) ?? CreateDefaultActivator(destType);
         if (activator is null)
             return null;

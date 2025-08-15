@@ -10,8 +10,8 @@ namespace PocoEmit;
 /// 简单对象处理接口
 /// </summary>
 public interface IPoco 
-    : IStore<MapTypeKey, IEmitConverter>
-    , IConfigure<MapTypeKey, IEmitConverter>
+    : IStore<PairTypeKey, IEmitConverter>
+    , IConfigure<PairTypeKey, IEmitConverter>
 {
     #region MemberInfo
     /// <summary>
@@ -37,6 +37,6 @@ public interface IPoco
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    IEmitConverter GetEmitConverter(MapTypeKey key);
+    IEmitConverter GetEmitConverter(PairTypeKey key);
     #endregion
 }

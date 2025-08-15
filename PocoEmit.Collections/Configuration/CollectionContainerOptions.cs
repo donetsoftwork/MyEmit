@@ -27,4 +27,8 @@ public class CollectionContainerOptions
     /// 索引访问者数量
     /// </summary>
     public int IndexVisitorCapacity = 31;
+    /// <summary>
+    /// 元素保存器数量
+    /// </summary>
+    public int SaverCapacity = 31;
 }

@@ -14,7 +14,7 @@ namespace PocoEmit.Collections.Visitors;
 /// <param name="elementType"></param>
 public class ListVisitor(Type listType, Type elementType)
     : PropertyCounter(listType, elementType)
-    , ICollectionVisitor
+    , IEmitElementVisitor
     , IElementIndexVisitor
 {
     /// <summary>

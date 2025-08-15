@@ -1,4 +1,3 @@
-using PocoEmit.Builders;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,7 +13,7 @@ namespace PocoEmit.Collections.Counters;
 /// <param name="countMethod"></param>
 public class MethodCounter(Type collectionType, Type elementType, Expression target, MethodInfo countMethod)
     : EmitCollectionBase(collectionType, elementType)
-    , IEmitCollectionCounter
+    , IEmitElementCounter
 {
     #region 配置
     private readonly Expression _target = target;

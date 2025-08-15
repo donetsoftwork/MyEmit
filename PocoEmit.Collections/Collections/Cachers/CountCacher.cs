@@ -1,7 +1,11 @@
 using PocoEmit.Collections.Counters;
+using PocoEmit.Configuration;
 using PocoEmit.Dictionaries;
 using System;
 using System.Collections.Generic;
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+using System.Reflection;
+#endif
 
 namespace PocoEmit.Collections.Cachers;
 
@@ -9,42 +13,65 @@ namespace PocoEmit.Collections.Cachers;
 /// 获取集合数量缓存
 /// </summary>
 /// <param name="cacher"></param>
-internal class CountCacher(ICacher<Type, IEmitCollectionCounter> cacher)
-    : CacheBase<Type, IEmitCollectionCounter>(cacher)
+internal class CountCacher(ICacher<PairTypeKey, IEmitElementCounter> cacher)
+    : CacheBase<PairTypeKey, IEmitElementCounter>(cacher)
 {
     /// <inheritdoc />
-    protected override IEmitCollectionCounter CreateNew(Type key)
+    protected override IEmitElementCounter CreateNew(PairTypeKey key)
     {
-        if (key.IsArray)
-            return new ArrayCounter(key);
-        if(ReflectionHelper.HasGenericType(key, typeof(IDictionary<,>)))
-            return CreateByDictionary(key);
-        var elementType = ReflectionHelper.GetElementType(key);
-        if (elementType == null)
+        var collectionType = key.LeftType;
+        var elementType = key.RightType;
+        if (collectionType.IsArray)
+        {
+            if(collectionType.GetArrayRank() == 1)
+                return new ArrayCounter(collectionType, elementType);
+        }
+        var counter = CreateByProperty(collectionType, elementType);
+        if(counter == null)
+        {
+            if (ReflectionHelper.HasGenericType(collectionType, typeof(IDictionary<,>)))
+                return CreateByDictionary(collectionType, elementType);
+            if (ReflectionHelper.HasGenericType(collectionType, typeof(ICollection<>)))
+                return CreateByProperty(typeof(ICollection<>).MakeGenericType(elementType), elementType);
+            else if (ReflectionHelper.HasGenericType(collectionType, typeof(IEnumerable<>)))
+                return new EnumerableCounter(typeof(IEnumerable<>).MakeGenericType(elementType), elementType);
+        }
+        return counter;
+    }
+    /// <summary>
+    /// 按属性获取数量
+    /// </summary>
+    /// <param name="collectionType"></param>
+    /// <param name="elementType"></param>
+    /// <returns></returns>
+    private static PropertyCounter CreateByProperty(Type collectionType, Type elementType)
+    {
+        var countProperty = PropertyCounter.GetCountProperty(collectionType);
+        if(countProperty is null)
             return null;
-        var countProperty = PropertyCounter.GetCountProperty(key);
-        if (countProperty is not null)
-            return new PropertyCounter(key, elementType, countProperty);
-        if (ReflectionHelper.HasGenericType(key, typeof(ICollection<>)))
-            return Get(typeof(ICollection<>).MakeGenericType(elementType));
-        else if (ReflectionHelper.HasGenericType(key, typeof(IEnumerable<>)))
-            return new EnumerableCounter(key, elementType);
-        return null;
+        return new PropertyCounter(collectionType, elementType, countProperty);
     }
     /// <summary>
     /// 获取字典数量
     /// </summary>
-    /// <param name="dctionaryType"></param>
+    /// <param name="dictionaryType"></param>
+    /// <param name="elementType"></param>
     /// <returns></returns>
-    private IEmitCollectionCounter CreateByDictionary(Type dctionaryType)
+    private static PropertyCounter CreateByDictionary(Type dictionaryType, Type elementType)
     {
-        var arguments = ReflectionHelper.GetGenericArguments(dctionaryType);
-        if(arguments.Length != 2)
+        var keys = EmitDictionaryBase.GetKeysProperty(dictionaryType);
+        if (keys is null)
             return null;
-        var countProperty = PropertyCounter.GetCountProperty(dctionaryType);
-        if (countProperty is not null)
-            return new PropertyCounter(dctionaryType, arguments[1], countProperty);
-        var collectionType = typeof(ICollection<>).MakeGenericType(EmitDictionaryBase.MakePairType(arguments));
-        return Get(collectionType);
+        var keyType = ReflectionHelper.GetElementType(keys.PropertyType);
+        if (keyType is null)
+            return null;
+        var collectionType = typeof(ICollection<>).MakeGenericType(EmitDictionaryBase.MakePairType(keyType, elementType));
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        if (collectionType.GetTypeInfo().IsAssignableFrom(dictionaryType.GetTypeInfo()))
+#else
+        if (collectionType.IsAssignableFrom(dictionaryType))
+#endif
+            return CreateByProperty(collectionType, elementType);
+        return null;
     }
 }

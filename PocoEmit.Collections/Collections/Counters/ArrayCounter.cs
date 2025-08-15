@@ -7,10 +7,19 @@ namespace PocoEmit.Collections.Counters;
 /// 数组长度获取
 /// </summary>
 /// <param name="arrayType"></param>
-public class ArrayCounter(Type arrayType)
+/// <param name="elementType"></param>
+public class ArrayCounter(Type arrayType, Type elementType)
     : ArrayLength
-    , IEmitCollectionCounter
+    , IEmitElementCounter
 {
+    /// <summary>
+    /// 数组长度获取
+    /// </summary>
+    /// <param name="arrayType"></param>
+    public ArrayCounter(Type arrayType)
+        : this(arrayType, arrayType.GetElementType())
+    {
+    }
     #region 配置
     private readonly Type _arrayType = arrayType;
     /// <summary>
@@ -18,8 +27,12 @@ public class ArrayCounter(Type arrayType)
     /// </summary>
     public Type ArrayType
         => _arrayType;
-
-    Type IEmitCollectionCounter.CollectionType
+    private readonly Type _elementType = elementType;
+    /// <inheritdoc />
+    public Type ElementType
+        => _elementType;
+    /// <inheritdoc />
+    Type IEmitCollection.CollectionType
         => _arrayType;
     bool ICompileInfo.Compiled
         => false;

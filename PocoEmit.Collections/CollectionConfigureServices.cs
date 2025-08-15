@@ -1,22 +1,19 @@
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
-using PocoEmit.Copies;
-using System;
-using System.Collections.Generic;
 
 namespace PocoEmit;
 
 /// <summary>
 /// 集合配置扩展方法
 /// </summary>
-public static partial class PocoEmitCollectionServices
+public static partial class CollectionConfigureServices
 {
     /// <summary>
     /// 启用集合功能(转化和复制)
     /// </summary>
     /// <param name="mapper"></param>
     /// <returns></returns>
-    public static IMapper UseCollections(this IMapper mapper)
+    public static IMapper UseCollection(this IMapper mapper)
     {
         if (mapper is not MapperConfigurationBase configuration)
             return mapper;

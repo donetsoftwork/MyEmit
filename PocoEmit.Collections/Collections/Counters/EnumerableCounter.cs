@@ -9,7 +9,7 @@ namespace PocoEmit.Collections.Counters;
 /// </summary>
 public class EnumerableCounter(Type collectionType, Type elementType)
     : MethodCounter(collectionType, elementType, null, EnumerableCountMethod.MakeGenericMethod(elementType)) 
-    , IEmitCollectionCounter
+    , IEmitElementCounter
 {
     /// <summary>
     /// Count扩展方法

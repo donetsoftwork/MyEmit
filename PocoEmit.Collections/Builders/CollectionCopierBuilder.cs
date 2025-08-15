@@ -24,9 +24,9 @@ public class CollectionCopierBuilder(IMapperOptions options)
         => _dictionaryCopier;
     #endregion
     /// <inheritdoc />
-    public override IEmitCopier ToCollection(MapTypeKey key)
+    public override IEmitCopier ToCollection(PairTypeKey key)
         => _collectionCopier.ToCollection(key);
     /// <inheritdoc />
-    public override IEmitCopier ToDictionary(MapTypeKey key)
+    public override IEmitCopier ToDictionary(PairTypeKey key)
         => _dictionaryCopier.ToDictionary(key);
 }

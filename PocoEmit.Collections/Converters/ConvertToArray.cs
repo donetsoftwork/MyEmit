@@ -28,6 +28,9 @@ public class ConvertToArray(IMapperOptions options)
     /// <returns></returns>
     public IEmitConverter ToArray(Type sourceType, Type destType)
     {
+        //不支持多维数组
+        if (destType.GetArrayRank() > 1)
+            return null;
         var destElementType = ReflectionHelper.GetElementType(destType);
         var sourceElementType = ReflectionHelper.GetElementType(sourceType);
         if (sourceElementType == null)
@@ -36,13 +39,19 @@ public class ConvertToArray(IMapperOptions options)
         if (elementConverter is null)
             return null;
         if (sourceType.IsArray)
+        {
+            //不支持多维数组
+            if (sourceType.GetArrayRank() > 1)
+                return null;
             return ArrayToArray(destType, destElementType, elementConverter);
+        }
+            
         if (ReflectionHelper.HasGenericType(sourceType, typeof(IList<>)))
-            return ListToArray(sourceType, destType, destElementType, elementConverter);
+            return ListToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
         if (ReflectionHelper.HasGenericType(sourceType, typeof(IDictionary<,>)))
-            return DictionaryToArray(sourceType, destType, destElementType, elementConverter);
+            return DictionaryToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
         if (ReflectionHelper.HasGenericType(sourceType, typeof(IEnumerable<>)))
-            return EnumerableToArray(sourceType, destType, destElementType, elementConverter);
+            return EnumerableToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
         return null;
     }
     /// <summary>
@@ -58,14 +67,15 @@ public class ConvertToArray(IMapperOptions options)
     /// 列表转数组
     /// </summary>
     /// <param name="sourceType"></param>
+    /// <param name="sourceElementType"></param>
     /// <param name="destType"></param>
     /// <param name="destElementType"></param>
     /// <param name="elementConverter"></param>
     /// <returns></returns>
-    public static IndexArrayConverter ListToArray(Type sourceType, Type destType, Type destElementType, IEmitConverter elementConverter)
+    public static IndexArrayConverter ListToArray(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
     {
         var container = CollectionContainer.Instance;
-        var length = container.GetCounter(sourceType);
+        var length = container.CountCacher.Get(sourceType, sourceElementType);
         var indexReader = container.GetIndexReader(sourceType);
         return new(destType, destElementType, length, indexReader, elementConverter);
     }
@@ -73,14 +83,15 @@ public class ConvertToArray(IMapperOptions options)
     /// 迭代转数组
     /// </summary>
     /// <param name="sourceType"></param>
+    /// <param name="sourceElementType"></param>
     /// <param name="destType"></param>
     /// <param name="destElementType"></param>
     /// <param name="elementConverter"></param>
     /// <returns></returns>
-    public static CollectionArrayConverter EnumerableToArray(Type sourceType, Type destType, Type destElementType, IEmitConverter elementConverter)
+    public static CollectionArrayConverter EnumerableToArray(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
     {
         var container = CollectionContainer.Instance;
-        var length = container.GetCounter(sourceType);
+        var length = container.CountCacher.Get(sourceType, sourceElementType);
         if (length is null)
             return null;
         var visitor = container.GetVisitor(sourceType);
@@ -92,6 +103,6 @@ public class ConvertToArray(IMapperOptions options)
     /// 字典转数组
     /// </summary>
     /// <returns></returns>
-    public static IEmitConverter DictionaryToArray(Type sourceType, Type destType, Type destElementType, IEmitConverter elementConverter)
-        => EnumerableToArray(sourceType, destType, destElementType, elementConverter);
+    public static IEmitConverter DictionaryToArray(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
+        => EnumerableToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
 }

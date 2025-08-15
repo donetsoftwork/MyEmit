@@ -3,11 +3,13 @@ using PocoEmit.Collections;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
 using System;
-using System.Collections.Concurrent;
+
 
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Generic;
 using System.Collections.Frozen;
+#else
+using System.Collections.Concurrent;
 #endif
 
 namespace PocoEmit.Configuration;
@@ -24,83 +26,83 @@ public abstract partial class MapperConfigurationBase
     /// <summary>
     /// 复制器缓存
     /// </summary>
-    private IDictionary<MapTypeKey, IEmitCopier> _copiers = new ConcurrentDictionary<MapTypeKey, IEmitCopier>();
+    private IDictionary<PairTypeKey, IEmitCopier> _copiers;
     /// <summary>
     /// 复制器配置
     /// </summary>
-    private IDictionary<MapTypeKey, IEmitCopier> _copyConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitCopier>();
+    private IDictionary<PairTypeKey, IEmitCopier> _copyConfiguration;
     /// <summary>
     /// 激活器配置
     /// </summary>
-    private IDictionary<Type, IEmitActivator> _activeConfiguration = new ConcurrentDictionary<Type, IEmitActivator>();
+    private IDictionary<Type, IEmitActivator> _activeConfiguration;
     /// <summary>
     /// 带参激活器配置
     /// </summary>
-    private IDictionary<MapTypeKey, IEmitActivator> _argumentActiveConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitActivator>();
+    private IDictionary<PairTypeKey, IEmitActivator> _argumentActiveConfiguration;
     /// <summary>
     /// 成员匹配配置
     /// </summary>
-    private IDictionary<MapTypeKey, IMemberMatch> _matchConfiguration = new ConcurrentDictionary<MapTypeKey, IMemberMatch>();
+    private IDictionary<PairTypeKey, IMemberMatch> _matchConfiguration;
     /// <summary>
     /// 基础类型配置
     /// </summary>
-    private IDictionary<Type, bool> _primitiveTypes = new ConcurrentDictionary<Type, bool>();
+    private IDictionary<Type, bool> _primitiveTypes;
     /// <summary>
     /// 默认值配置
     /// </summary>
-    private IDictionary<Type, object> _defaultValueConfiguration = new ConcurrentDictionary<Type, object>();
+    private IDictionary<Type, object> _defaultValueConfiguration;
 #else
     /// <summary>
     /// 复制器缓存
     /// </summary>
-    private ConcurrentDictionary<MapTypeKey, IEmitCopier> _copiers = new();
+    private readonly ConcurrentDictionary<PairTypeKey, IEmitCopier> _copiers;
     /// <summary>
     /// 复制器配置
     /// </summary>
-    private ConcurrentDictionary<MapTypeKey, IEmitCopier> _copyConfiguration= new();
+    private readonly ConcurrentDictionary<PairTypeKey, IEmitCopier> _copyConfiguration;
     /// <summary>
     /// 激活器配置
     /// </summary>
-    private ConcurrentDictionary<Type, IEmitActivator> _activeConfiguration = new();
+    private readonly ConcurrentDictionary<Type, IEmitActivator> _activeConfiguration;
     /// <summary>
     /// 带参激活器配置
     /// </summary>
-    private ConcurrentDictionary<MapTypeKey, IEmitActivator> _argumentActiveConfiguration = new();
+    private readonly ConcurrentDictionary<PairTypeKey, IEmitActivator> _argumentActiveConfiguration;
     /// <summary>
     /// 成员匹配配置
     /// </summary>
-    private ConcurrentDictionary<MapTypeKey, IMemberMatch> _matchConfiguration = new();
+    private readonly ConcurrentDictionary<PairTypeKey, IMemberMatch> _matchConfiguration;
     /// <summary>
     /// 基础类型配置
     /// </summary>
-    private ConcurrentDictionary<Type, bool> _primitiveTypes = new();
+    private readonly ConcurrentDictionary<Type, bool> _primitiveTypes;
     /// <summary>
     /// 默认值配置
     /// </summary>
-    private ConcurrentDictionary<Type, object> _defaultValueConfiguration = new();
+    private readonly ConcurrentDictionary<Type, object> _defaultValueConfiguration;
 #endif
     #endregion
     #region IMapperOptions
     /// <inheritdoc />
-    public IMemberMatch GetMemberMatch(MapTypeKey key)
+    public IMemberMatch GetMemberMatch(PairTypeKey key)
     {
         _matchConfiguration.TryGetValue(key, out IMemberMatch matcher);
         return matcher ?? _defaultMatcher;
     }
-    #region IConfigure<MapTypeKey, IEmitCopier>
+    #region IConfigure<PairTypeKey, IEmitCopier>
     /// <inheritdoc />
-    void IConfigure<MapTypeKey, IEmitCopier>.Configure(MapTypeKey key, IEmitCopier value)
+    void IConfigure<PairTypeKey, IEmitCopier>.Configure(PairTypeKey key, IEmitCopier value)
         => _copyConfiguration[key] = value;
     #endregion
-    #region ISettings<MapTypeKey, IEmitCopier>
+    #region ISettings<PairTypeKey, IEmitCopier>
     /// <inheritdoc />
-    bool ICacher<MapTypeKey, IEmitCopier>.ContainsKey(MapTypeKey key)
+    bool ICacher<PairTypeKey, IEmitCopier>.ContainsKey(PairTypeKey key)
         => _copiers.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<MapTypeKey, IEmitCopier>.TryGetValue(MapTypeKey key, out IEmitCopier value)
+    bool ICacher<PairTypeKey, IEmitCopier>.TryGetValue(PairTypeKey key, out IEmitCopier value)
         => _copiers.TryGetValue(key, out value) || _copyConfiguration.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<MapTypeKey, IEmitCopier>.Set(MapTypeKey key, IEmitCopier value)
+    void IStore<PairTypeKey, IEmitCopier>.Set(PairTypeKey key, IEmitCopier value)
         => _copiers[key] = value;
     #endregion
     #region IConfigure<Type, IEmitActivator>
@@ -108,14 +110,14 @@ public abstract partial class MapperConfigurationBase
     void IConfigure<Type, IEmitActivator>.Configure(Type key, IEmitActivator value)
         => _activeConfiguration[key] = value;
     #endregion
-    #region IConfigure<MapTypeKey, IEmitActivator>
+    #region IConfigure<PairTypeKey, IEmitActivator>
     /// <inheritdoc />
-    void IConfigure<MapTypeKey, IEmitActivator>.Configure(MapTypeKey key, IEmitActivator value)
+    void IConfigure<PairTypeKey, IEmitActivator>.Configure(PairTypeKey key, IEmitActivator value)
         => _argumentActiveConfiguration[key] = value;
     #endregion
-    #region IConfigure<MapTypeKey, IMemberMatch>
+    #region IConfigure<PairTypeKey, IMemberMatch>
     /// <inheritdoc />
-    void IConfigure<MapTypeKey, IMemberMatch>.Configure(MapTypeKey key, IMemberMatch value)
+    void IConfigure<PairTypeKey, IMemberMatch>.Configure(PairTypeKey key, IMemberMatch value)
         => _matchConfiguration[key] = value;
     #endregion
     #region ISettings<Type, bool>

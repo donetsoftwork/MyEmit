@@ -23,7 +23,7 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     public static IPoco UseConvertFunc<TSource, TDest>(this IPoco poco, Func<TSource, TDest> convertFunc)
     {
-        var key = new MapTypeKey(typeof(TSource), typeof(TDest));
+        var key = new PairTypeKey(typeof(TSource), typeof(TDest));
         poco.Configure(key, new DelegateConverter<TSource, TDest>(convertFunc));
         return poco;
     }
@@ -57,7 +57,7 @@ public static partial class PocoEmitServices
             if (method.DeclaringType == converterType && method.IsStatic && returnType != typeof(void) && parameters.Length == 1)
             {
                 MethodConverter converter = new(null, method);
-                MapTypeKey key = new(parameters[0].ParameterType, returnType);
+                PairTypeKey key = new(parameters[0].ParameterType, returnType);
                 configuration.Configure(key, converter);
             }
         }
@@ -86,7 +86,7 @@ public static partial class PocoEmitServices
             if (method.DeclaringType == converterType && !method.IsStatic && returnType != typeof(void) && parameters.Length == 1)
             {
                 MethodConverter converter = new(EmitHelper.CheckMethodCallInstance(instance), method);
-                MapTypeKey key = new(parameters[0].ParameterType, returnType);
+                PairTypeKey key = new(parameters[0].ParameterType, returnType);
                 configuration.Configure(key, converter);
             }
         }

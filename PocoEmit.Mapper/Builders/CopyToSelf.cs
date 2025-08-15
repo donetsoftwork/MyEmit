@@ -14,7 +14,7 @@ public class CopyToSelf(IMapperOptions options)
     : CopierBuilderBase(options)
 {
     /// <inheritdoc />
-    public override void CheckMembers(MapTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
+    public override void CheckMembers(PairTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
     {
         var readerCacher = MemberContainer.Instance.MemberReaderCacher;
         foreach (var writer in destMembers)

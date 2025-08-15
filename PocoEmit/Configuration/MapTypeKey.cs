@@ -3,33 +3,33 @@ using System;
 namespace PocoEmit.Configuration;
 #if NET7_0_OR_GREATER
 /// <summary>
-/// 映射类型关联键
+/// 类型关联键
 /// </summary>
-/// <param name="SourceType"></param>
-/// <param name="DestType"></param>
-public record  MapTypeKey(Type SourceType, Type DestType);
+/// <param name="LeftType"></param>
+/// <param name="RightType"></param>
+public record PairTypeKey(Type LeftType, Type RightType);
 #else
 /// <summary>
-/// 映射类型关联键
+/// 类型关联键
 /// </summary>
-/// <param name="sourceType"></param>
-/// <param name="destType"></param>
-public class MapTypeKey(Type sourceType,Type destType)
-     : IEquatable<MapTypeKey>
+/// <param name="leftType"></param>
+/// <param name="rightType"></param>
+public class PairTypeKey(Type leftType,Type rightType)
+     : IEquatable<PairTypeKey>
 {
     #region 配置
-    private readonly Type _sourceType = sourceType;
-    private readonly Type _destType = destType;
+    private readonly Type _leftType = leftType;
+    private readonly Type _rightType = rightType;
     /// <summary>
     /// 映射源类型
     /// </summary>
-    public Type SourceType 
-        => _sourceType;
+    public Type LeftType 
+        => _leftType;
     /// <summary>
     /// 映射目标类型
     /// </summary>
-    public Type DestType
-        => _destType;
+    public Type RightType
+        => _rightType;
     #endregion
     /// <summary>
     /// HashCode
@@ -37,9 +37,9 @@ public class MapTypeKey(Type sourceType,Type destType)
     /// <returns></returns>
     public override int GetHashCode()
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6 || NET45)
-        => _sourceType.GetHashCode() ^ _destType.GetHashCode();
+        => _leftType.GetHashCode() ^ _rightType.GetHashCode();
 #else
-        => HashCode.Combine(_sourceType, _destType);
+        => HashCode.Combine(_leftType, _rightType);
 #endif
 #region IEquatable
     /// <summary>
@@ -47,15 +47,15 @@ public class MapTypeKey(Type sourceType,Type destType)
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    public bool Equals(MapTypeKey other)
-        => _sourceType.Equals(other._sourceType) && _destType.Equals(other._destType);
+    public bool Equals(PairTypeKey other)
+        => _leftType.Equals(other._leftType) && _rightType.Equals(other._rightType);
     /// <summary>
     /// 判同
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
     public override bool Equals(object other)
-        => other is MapTypeKey key && Equals(key);
+        => other is PairTypeKey key && Equals(key);
     #endregion
 }
 #endif

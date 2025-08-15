@@ -5,7 +5,7 @@ public class CollectionTestBase
     protected readonly IMapper _mapper;
     public CollectionTestBase()
     {
-        CollectionContainer.GlobalUseCollections();
+        CollectionContainer.GlobalUseCollection();
         _mapper = Mapper.Default;
     }
 

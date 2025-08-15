@@ -25,11 +25,11 @@ public abstract partial class MapperConfigurationBase
     {
         // 初始化配置
         var concurrencyLevel = options.ConcurrencyLevel;
-        _copiers = new ConcurrentDictionary<MapTypeKey, IEmitCopier>(concurrencyLevel, options.CopierCapacity);
-        _copyConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitCopier>(concurrencyLevel, options.CopierConfigurationCapacity);
+        _copiers = new ConcurrentDictionary<PairTypeKey, IEmitCopier>(concurrencyLevel, options.CopierCapacity);
+        _copyConfiguration = new ConcurrentDictionary<PairTypeKey, IEmitCopier>(concurrencyLevel, options.CopierConfigurationCapacity);
         _activeConfiguration = new ConcurrentDictionary<Type, IEmitActivator>(concurrencyLevel, options.ActivatorConfigurationCapacity);
-        _argumentActiveConfiguration = new ConcurrentDictionary<MapTypeKey, IEmitActivator>(concurrencyLevel, options.ArgumentActivatorConfigurationCapacity);
-        _matchConfiguration = new ConcurrentDictionary<MapTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
+        _argumentActiveConfiguration = new ConcurrentDictionary<PairTypeKey, IEmitActivator>(concurrencyLevel, options.ArgumentActivatorConfigurationCapacity);
+        _matchConfiguration = new ConcurrentDictionary<PairTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
         _primitiveTypes = new ConcurrentDictionary<Type, bool>(concurrencyLevel, options.PrimitiveCapacity);
         _defaultValueConfiguration = new ConcurrentDictionary<Type, object>(concurrencyLevel, options.DefaultValueCapacity);
         _reflectionConstructor = DefaultReflectionConstructor.Default;
@@ -68,7 +68,6 @@ public abstract partial class MapperConfigurationBase
         internal set => _reflectionConstructor = value;
     }
     #endregion
-
     #region IMapperOptions
     /// <inheritdoc />
     public IMemberMatch DefaultMatcher
@@ -92,7 +91,7 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual IEmitCopier GetEmitCopier(MapTypeKey key)
+    public virtual IEmitCopier GetEmitCopier(PairTypeKey key)
         => _copierFactory.Get(key);
     /// <summary>
     /// 是否基础类型
@@ -105,9 +104,9 @@ public abstract partial class MapperConfigurationBase
     public virtual ConstructorInfo GetConstructor(Type instanceType)
         => _reflectionConstructor.GetConstructor(instanceType);
     /// <inheritdoc />
-    public IEmitActivator GetEmitActivator(MapTypeKey key)
+    public IEmitActivator GetEmitActivator(PairTypeKey key)
     {
-        if (_argumentActiveConfiguration.TryGetValue(key, out IEmitActivator activator) || _activeConfiguration.TryGetValue(key.DestType, out activator))
+        if (_argumentActiveConfiguration.TryGetValue(key, out IEmitActivator activator) || _activeConfiguration.TryGetValue(key.RightType, out activator))
             return activator;
         return activator;
     }

@@ -20,11 +20,11 @@ public abstract partial class ConfigurationBase
     /// <summary>
     /// 转换器缓存
     /// </summary>
-    private IDictionary<MapTypeKey, IEmitConverter> _converters;
+    private IDictionary<PairTypeKey, IEmitConverter> _converters;
     /// <summary>
     /// 转换器配置
     /// </summary>
-    private IDictionary<MapTypeKey, IEmitConverter> _convertConfiguration;
+    private IDictionary<PairTypeKey, IEmitConverter> _convertConfiguration;
     /// <summary>
     /// 成员缓存
     /// </summary>
@@ -33,30 +33,30 @@ public abstract partial class ConfigurationBase
     /// <summary>
     /// 转换器缓存
     /// </summary>
-    private readonly ConcurrentDictionary<MapTypeKey, IEmitConverter> _converters;
+    private readonly ConcurrentDictionary<PairTypeKey, IEmitConverter> _converters;
         /// <summary>
     /// 转换器配置
     /// </summary>
-    private readonly ConcurrentDictionary<MapTypeKey, IEmitConverter> _convertConfiguration;
+    private readonly ConcurrentDictionary<PairTypeKey, IEmitConverter> _convertConfiguration;
     /// <summary>
     /// 成员缓存
     /// </summary>
     private readonly ConcurrentDictionary<Type, MemberBundle> _memberBundles;
 #endif
     #endregion
-    #region IConfigure<MapTypeKey, IEmitConverter>
-    void IConfigure<MapTypeKey, IEmitConverter>.Configure(MapTypeKey key, IEmitConverter value)
+    #region IConfigure<PairTypeKey, IEmitConverter>
+    void IConfigure<PairTypeKey, IEmitConverter>.Configure(PairTypeKey key, IEmitConverter value)
         => _convertConfiguration[key] = value;
     #endregion
-    #region ISettings<MapTypeKey, IEmitTypeConverter>
+    #region ISettings<PairTypeKey, IEmitTypeConverter>
     /// <inheritdoc />
-    bool ICacher<MapTypeKey, IEmitConverter>.ContainsKey(MapTypeKey key)
+    bool ICacher<PairTypeKey, IEmitConverter>.ContainsKey(PairTypeKey key)
         => _converters.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<MapTypeKey, IEmitConverter>.Set(MapTypeKey key, IEmitConverter value)
+    void IStore<PairTypeKey, IEmitConverter>.Set(PairTypeKey key, IEmitConverter value)
         => _converters[key] = value;
     /// <inheritdoc />
-    bool ICacher<MapTypeKey, IEmitConverter>.TryGetValue(MapTypeKey key, out IEmitConverter value)
+    bool ICacher<PairTypeKey, IEmitConverter>.TryGetValue(PairTypeKey key, out IEmitConverter value)
         => _converters.TryGetValue(key, out value) || _convertConfiguration.TryGetValue(key, out value);
     #endregion
     #region ISettings<Type, MemberBundle>

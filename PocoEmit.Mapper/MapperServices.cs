@@ -36,7 +36,7 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Func<TSource, TDest> activatorFunc)
     {
-        var key = new MapTypeKey(typeof(TSource), typeof(TDest));
+        var key = new PairTypeKey(typeof(TSource), typeof(TDest));
         mapper.Configure(key, new ArgumentDelegateActivator<TSource, TDest>(activatorFunc));
         return mapper;
     }
@@ -50,7 +50,7 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Func<TDest> activatorFunc)
     {
-        var key = new MapTypeKey(typeof(TSource), typeof(TDest));
+        var key = new PairTypeKey(typeof(TSource), typeof(TDest));
         var activator = new DelegateActivator<TDest>(activatorFunc);
         mapper.Configure(key, activator);
         return mapper;
@@ -101,7 +101,7 @@ public static partial class MapperServices
     /// <param name="destType"></param>
     /// <returns></returns>
     public static IMemberMatch GetMemberMatch(this IMapper mapper, Type sourceType, Type destType)
-        => mapper.GetMemberMatch(new MapTypeKey(sourceType, destType));
+        => mapper.GetMemberMatch(new PairTypeKey(sourceType, destType));
     /// <summary>
     /// 配置类型映射
     /// </summary>

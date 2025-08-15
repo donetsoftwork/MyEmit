@@ -1,4 +1,4 @@
-using PocoEmit.Collections;
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using System;
@@ -26,13 +26,13 @@ public static partial class MapperServices
     {
         var sourceType = typeof(TSource);
         var destType = typeof(TDest);
-        var key = new MapTypeKey(sourceType, destType);
+        var key = new PairTypeKey(sourceType, destType);
         var emitCopier = mapper.GetEmitCopier(key);
         if (emitCopier is null)
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled;
-        var compiledCopier = emitCopier.CompileCopier<TSource, TDest>(Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest"));
+        var compiledCopier = new CompiledCopier<TSource, TDest>(emitCopier, Compile<TSource, TDest>(emitCopier));
         mapper.Set(key, compiledCopier);
         return compiledCopier;
     }
@@ -47,14 +47,13 @@ public static partial class MapperServices
     /// <returns></returns>
     public static object GetObjectCopier(this IMapper mapper, Type sourceType, Type destType)
     {
-        var key = new MapTypeKey(sourceType, destType);
+        var key = new PairTypeKey(sourceType, destType);
         var copier = mapper.GetEmitCopier(key);
         if (copier is null)
             return null;
         if (copier.Compiled)
             return copier;
-        var compileConverter = Inner.CompileCopierMethod.MakeGenericMethod(sourceType, destType);
-        var compiled = compileConverter.Invoke(null, [copier, Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest")]) as IEmitCopier;
+        var compiled = Inner.Compile(sourceType, destType, copier) as IEmitCopier;
         if (compiled != null)
             mapper.Set(key, compiled);
         return compiled;
@@ -73,18 +72,18 @@ public static partial class MapperServices
     {
         var sourceType = typeof(TSource);
         var destType = typeof(TDest);
-        var key = new MapTypeKey(sourceType, destType);
+        var key = new PairTypeKey(sourceType, destType);
         var emitCopier = mapper.GetEmitCopier(key);
         if (emitCopier is null)
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled.CopyAction;
-        var copyAction = emitCopier.Build<TSource, TDest>(Expression.Parameter(sourceType, "source"), Expression.Parameter(destType, "dest"))
-            .Compile();
+        var copyAction = Compile<TSource, TDest>(emitCopier);
         mapper.Set(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
         return copyAction;
     }
     #endregion
+    #region GetEmitCopier
     /// <summary>
     /// 获取Emit类型复制器
     /// </summary>
@@ -94,6 +93,7 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IEmitCopier GetEmitCopier(this IMapper mapper, Type sourceType, Type destType)
         => mapper.GetEmitCopier(new(sourceType, destType));
+    #endregion
     #region Copy
     /// <summary>
     /// 复制
@@ -112,38 +112,7 @@ public static partial class MapperServices
         copyAction(source, dest);
     }
     #endregion
-    /// <summary>
-    /// 编译复制器
-    /// </summary>
-    /// <typeparam name="TSource"></typeparam>
-    /// <typeparam name="TDest"></typeparam>
-    /// <param name="emit"></param>
-    /// <param name="source"></param>
-    /// <param name="dest"></param>
-    /// <returns></returns>
-    public static CompiledCopier<TSource, TDest> CompileCopier<TSource, TDest>(this IEmitCopier emit, ParameterExpression source, ParameterExpression dest)
-        where TDest : class
-    {
-        var copyFunc = Build<TSource, TDest>(emit, source, dest)
-            .Compile();
-        var compiledCopier = new CompiledCopier<TSource, TDest>(emit, copyFunc);
-        return compiledCopier;
-    }
     #region Build
-    /// <summary>
-    /// 转换委托
-    /// </summary>
-    /// <param name="emit"></param>
-    /// <param name="source"></param>
-    /// <param name="dest"></param>
-    /// <returns></returns>
-    public static Expression<Action<TSource, TDest>> Build<TSource, TDest>(this IEmitCopier emit, ParameterExpression source, ParameterExpression dest)
-        where TDest : class
-    {
-        var list = emit.Copy(source, dest).ToArray();
-        var body = list.Length == 1 ? list[0] : Expression.Block(list);
-        return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
-    }
     /// <summary>
     /// 转换委托
     /// </summary>
@@ -153,44 +122,24 @@ public static partial class MapperServices
     /// <returns></returns>
     public static Expression<Action<TSource, TDest>> Build<TSource, TDest>(this IEmitCopier emit)
         where TDest : class
-        => Build<TSource, TDest>(emit, Expression.Parameter(typeof(TSource), "source"), Expression.Parameter(typeof(TDest), "dest"));
+    {
+        var source = Expression.Parameter(typeof(TSource), "source");
+        var dest = Expression.Parameter(typeof(TDest), "dest");
+        var list = emit.Copy(source, dest).ToArray();
+        var body = list.Length == 1 ? list[0] : Expression.Block(list);
+        return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
+    }
     #endregion
-    #region Copier
     /// <summary>
-    /// 设置委托来复制
+    /// 编译复制器
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="settings"></param>
-    /// <param name="copy"></param>
+    /// <param name="copier"></param>
     /// <returns></returns>
-    public static DelegateCopier<TSource, TDest> SetCopy<TSource, TDest>(this ICacher<MapTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
+    public static Action<TSource, TDest> Compile<TSource, TDest>(IEmitCopier copier)
         where TDest : class
-    {
-        var key = new MapTypeKey(typeof(TSource), typeof(TDest));
-        var copier = new DelegateCopier<TSource, TDest>(copy);
-        settings.Set(key, copier);
-        return copier;
-    }
-    /// <summary>
-    /// 尝试设置委托来复制不覆盖
-    /// </summary>
-    /// <typeparam name="TSource"></typeparam>
-    /// <typeparam name="TDest"></typeparam>
-    /// <param name="settings"></param>
-    /// <param name="copy"></param>
-    /// <returns></returns>
-    public static IEmitCopier TrySetCopy<TSource, TDest>(this ICacher<MapTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
-        where TDest : class
-    {
-        var key = new MapTypeKey(typeof(TSource), typeof(TDest));
-        if (settings.TryGetValue(key, out var value0) && value0 is not null)
-            return value0;
-        var copier = new DelegateCopier<TSource, TDest>(copy);
-        settings.Set(key, copier);
-        return copier;
-    }
-    #endregion
+        => Compiler._instance.CompileAction(copier.Build<TSource, TDest>());
     /// <summary>
     /// 内部延迟初始化
     /// </summary>
@@ -199,6 +148,18 @@ public static partial class MapperServices
         /// <summary>
         /// GetConverter
         /// </summary>
-        public static readonly MethodInfo CompileCopierMethod = ReflectionHelper.GetMethod(typeof(MapperServices), m => m.Name == "CompileCopier");
+        private static readonly MethodInfo CompileMethod = ReflectionHelper.GetMethod(typeof(MapperServices), m => m.Name == "Compile");
+        /// <summary>
+        /// 反射调用编译方法
+        /// </summary>
+        /// <param name="sourceType"></param>
+        /// <param name="destType"></param>
+        /// <param name="copier"></param>
+        /// <returns></returns>
+        internal static object Compile(Type sourceType, Type destType, IEmitCopier copier)
+        {
+            return CompileMethod.MakeGenericMethod(sourceType, destType)
+                .Invoke(null, [copier]);
+        }
     }
 }

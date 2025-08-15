@@ -17,6 +17,19 @@ public class FromIListTests : CollectionTestBase
         Assert.Equal(sourceItem.Name, resultItem.Name);
     }
     [Fact]
+    public void GetConvertFunc_IListUser2DTO()
+    {
+        IList<User> source = [new User { Id = 1, Name = "Jxj" }, new User { Id = 2, Name = "张三" }];
+        var converter = _mapper.GetConvertFunc<IList<User>, UserDTO[]>();
+        UserDTO[] result = converter(source);
+        Assert.NotNull(result);
+        Assert.Equal(source.Count, result.Length);
+        var sourceItem = source[0];
+        var resultItem = result[0];
+        Assert.Equal(sourceItem.Id, resultItem.Id);
+        Assert.Equal(sourceItem.Name, resultItem.Name);
+    }
+    [Fact]
     public void Convert_IListUserArray2DTO()
     {
         IList<User> sourceItems = [new User { Id = 1, Name = "Jxj" }, new User { Id = 2, Name = "张三" }];

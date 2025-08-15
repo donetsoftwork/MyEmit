@@ -1,4 +1,6 @@
 using PocoEmit.Collections;
+using PocoEmit.Configuration;
+using System;
 
 namespace PocoEmit;
 
@@ -16,11 +18,21 @@ public static partial class PocoEmitServices
     /// <param name="settings"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    public static TValue Get<TKey, TValue>(this ICacher<TKey, TValue> settings, TKey key)
+    internal static TValue GetCache<TKey, TValue>(this ICacher<TKey, TValue> settings, TKey key)
     {
         settings.TryGetValue(key, out var value);
         return value;
     }
+    /// <summary>
+    /// 获取
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="settings"></param>
+    /// <param name="left"></param>
+    /// <param name="right"></param>
+    /// <returns></returns>
+    internal static TValue Get<TValue>(this CacheBase<PairTypeKey, TValue> settings, Type left, Type right)
+        => settings.Get(new PairTypeKey(left, right));
     /// <summary>
     /// 尝试设置缓存不覆盖
     /// </summary>
@@ -33,7 +45,7 @@ public static partial class PocoEmitServices
     internal static TValue TryCache<TKey, TValue>(this ICacher<TKey, TValue> cacher, TKey key, TValue value)
     {
         // 如果值不为null，则不覆盖
-        if (cacher.ContainsKey(key) && cacher.Get(key) is TValue value0)
+        if (cacher.ContainsKey(key) && cacher.GetCache(key) is TValue value0)
             return value0;
         cacher.Set(key, value);
         return value;

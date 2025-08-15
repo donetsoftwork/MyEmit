@@ -50,7 +50,7 @@ public partial class MapHelper<TSource, TDest>
     private readonly IgnoreRecognizer _sourceRecognizer;
     private readonly IgnoreRecognizer _destRecognizer;
     private readonly IMemberMatch _matcher;
-    private readonly MapTypeKey _key;
+    private readonly PairTypeKey _key;
     #region 功能
     #region Member
     /// <summary>
