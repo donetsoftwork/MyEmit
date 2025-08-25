@@ -26,13 +26,10 @@ public class DictionaryConverter(Type dictionaryType, Type keyType, Type element
     public Expression Convert(Expression source)
     {
         var dest = Expression.Variable(_collectionType, "dest");
-        var destTarget = Expression.Label(_collectionType, "returndest");
-
         var assign = Expression.Assign(dest, New(source));
         var list = new List<Expression>() { assign };
         list.AddRange(_copier.Copy(source, dest));
-        //list.Add(Expression.Return(destTarget, dest));
-        list.Add(Expression.Label(destTarget, dest));
+        list.Add(dest);
         return Expression.Block([dest], list);
     }
 

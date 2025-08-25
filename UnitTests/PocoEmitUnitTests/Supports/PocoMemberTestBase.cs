@@ -12,6 +12,6 @@ public abstract class PocoMemberTestBase
     public PocoMemberTestBase()
     {
         // 加载System.Convert
-        Poco.Default.UseSystemConvert();
+        //Poco.Default.UseSystemConvert();
     }
 }

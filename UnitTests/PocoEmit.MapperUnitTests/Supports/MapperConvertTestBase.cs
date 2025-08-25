@@ -11,7 +11,7 @@ public abstract class MapperConvertTestBase
     public MapperConvertTestBase()
     {
         // 继承Global配置,能被EmitOptions对象引用
-        Mapper.Default.UseSystemConvert();
+        //Mapper.Default.UseSystemConvert();
         // 多态,覆盖Global配置
         _mapper.UseConverter(_timeConverter);
     }

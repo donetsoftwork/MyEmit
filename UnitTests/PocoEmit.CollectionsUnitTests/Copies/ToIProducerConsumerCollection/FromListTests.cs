@@ -29,7 +29,7 @@ public class FromListTests : CollectionTestBase
     {
         IMapper mapper = Mapper.Create();
         // Emit默认不支持字符串转int,需要扩展
-        mapper.UseSystemConvert();
+        // mapper.UseSystemConvert();
         mapper.ConfigureMap<AutoUserDTO, User>();
         AutoUserDTO[] source = [new AutoUserDTO { UserId = "222", UserName = "Jxj" }, new AutoUserDTO { UserId = "333", UserName = "李四" }];
         IProducerConsumerCollection<User> result = new ConcurrentBag<User>();

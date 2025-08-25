@@ -1,6 +1,8 @@
 using PocoEmit.Builders;
+using PocoEmit.Configuration;
 using System;
-using System.Reflection;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace PocoEmit.Copies;
 
@@ -10,31 +12,14 @@ namespace PocoEmit.Copies;
 /// <typeparam name="TSource"></typeparam>
 /// <typeparam name="TDest"></typeparam>
 /// <param name="copyAction"></param>
-/// <param name="method"></param>
-public class DelegateCopier<TSource, TDest>(Action<TSource, TDest> copyAction, MethodInfo method)
-    : MethodCopier(EmitHelper.CheckMethodCallInstance(copyAction), method), ICompiledCopier<TSource, TDest>
+public class DelegateCopier<TSource, TDest>(Expression<Action<TSource, TDest>> copyAction)
+    : ActionCallBuilder<TSource, TDest>(copyAction)
+    , IEmitCopier
 {
-    /// <summary>
-    /// 委托复制器
-    /// </summary>
-    /// <param name="copyAction"></param>
-    public DelegateCopier(Action<TSource, TDest> copyAction)
-        : this(copyAction, copyAction.GetMethodInfo())
-    {
-    }
-    #region 配置
-    private readonly Action<TSource, TDest> _copyAction = copyAction;
     /// <inheritdoc />
-    public Action<TSource, TDest> CopyAction
-        => _copyAction;
+    bool ICompileInfo.Compiled
+        => false;
     /// <inheritdoc />
-    public override bool Compiled 
-        => true;
-    #endregion
-    /// <inheritdoc />
-    void IPocoCopier<TSource, TDest>.Copy(TSource from, TDest to)
-        => _copyAction(from, to);
-    /// <inheritdoc />
-    void IObjectCopier.CopyObject(object from, object to)
-        => _copyAction((TSource)from, (TDest)to);
+    public IEnumerable<Expression> Copy(Expression source, Expression dest)
+        => [Call(source, dest)];
 }

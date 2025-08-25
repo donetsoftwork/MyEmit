@@ -1,9 +1,10 @@
 using PocoEmit.Activators;
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Helpers;
 using PocoEmit.Maping;
 using System;
-using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace PocoEmit;
 
@@ -20,7 +21,7 @@ public static partial class MapperServices
     /// <param name="mapper"></param>
     /// <param name="activatorFunc"></param>
     /// <returns></returns>
-    public static IMapper UseActivator<TInstance>(this IMapper mapper, Func<TInstance> activatorFunc)
+    public static IMapper UseActivator<TInstance>(this IMapper mapper, Expression<Func<TInstance>> activatorFunc)
     {
         var key = typeof(TInstance);
         mapper.Configure(key, new DelegateActivator<TInstance>(activatorFunc));
@@ -34,10 +35,10 @@ public static partial class MapperServices
     /// <param name="mapper"></param>
     /// <param name="activatorFunc"></param>
     /// <returns></returns>
-    public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Func<TSource, TDest> activatorFunc)
+    public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Expression<Func<TSource, TDest>> activatorFunc)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        mapper.Configure(key, new ArgumentDelegateActivator<TSource, TDest>(activatorFunc));
+        mapper.Configure(key, new DelegateActivator<TSource, TDest>(activatorFunc));
         return mapper;
     }
     /// <summary>
@@ -48,7 +49,7 @@ public static partial class MapperServices
     /// <param name="mapper"></param>
     /// <param name="activatorFunc"></param>
     /// <returns></returns>
-    public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Func<TDest> activatorFunc)
+    public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Expression<Func<TDest>> activatorFunc)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
         var activator = new DelegateActivator<TDest>(activatorFunc);
@@ -76,7 +77,8 @@ public static partial class MapperServices
     public static IMapper UseDefault<TValue>(this IMapper mapper, TValue value)
     {
         object defaultValue = value;
-        mapper.Configure(typeof(TValue), defaultValue);
+        var type = typeof(TValue);
+        mapper.Configure(type, ConstantBuilder.Use(value, type));
         return mapper;
     }
     /// <summary>
@@ -86,10 +88,10 @@ public static partial class MapperServices
     /// <param name="mapper"></param>
     /// <param name="valueFunc"></param>
     /// <returns></returns>
-    public static IMapper UseDefault<TValue>(this IMapper mapper, Func<TValue> valueFunc)
+    public static IMapper UseDefault<TValue>(this IMapper mapper, Expression<Func<TValue>> valueFunc)
     {
         object defaultValue = valueFunc;
-        mapper.Configure(typeof(TValue), defaultValue);
+        mapper.Configure(typeof(TValue), new FuncBuilder<TValue>(valueFunc));
         return mapper;
     }
     #endregion

@@ -34,11 +34,23 @@ public interface IMapperOptions
     /// <returns></returns>
     IEmitActivator GetEmitActivator(PairTypeKey key);
     /// <summary>
+    /// 获取转化后成员检查配置
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    Delegate GetCheckMembers(PairTypeKey key);
+    /// <summary>
     /// 是否基础类型
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
     bool CheckPrimitive(Type type);
+    /// <summary>
+    /// 获取默认值构建器
+    /// </summary>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    IEmitBuilder GetDefaultValueBuilder(Type destType);
     /// <summary>
     /// 构造默认值
     /// </summary>

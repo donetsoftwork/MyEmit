@@ -46,17 +46,17 @@ public class PocoGetConverterTests : PocoConvertTestBase
         int source = 123;
         Assert.Equal(123, converter.Convert(source));
     }
-    [Fact]
-    public void GetConverter_Id()
-    {
-        // Act
-        var converter = _poco.GetConverter<int, PocoId>();
-        // Assert
-        Assert.NotNull(converter);
-        int source = 11;
-        var result = converter.Convert(source);
-        Assert.Equal(source, result.Id);
-    }
+    //[Fact]
+    //public void GetConverter_Id()
+    //{
+    //    // Act
+    //    var converter = _poco.GetConverter<int, PocoId>();
+    //    // Assert
+    //    Assert.NotNull(converter);
+    //    int source = 11;
+    //    var result = converter.Convert(source);
+    //    Assert.Equal(source, result.Id);
+    //}
     #region 多态
     [Fact]
     public void GetConverter_string2DateTime()

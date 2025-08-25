@@ -36,6 +36,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmit.Collections", "Poc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocoEmit.CollectionsUnitTests", "UnitTests\PocoEmit.CollectionsUnitTests\PocoEmit.CollectionsUnitTests.csproj", "{8AC239C1-965B-45F8-BF55-D73780A7741F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapperBench", "Benchmarks\MapperBench\MapperBench.csproj", "{9909B776-4493-4A34-88B3-3096C448343D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +80,10 @@ Global
 		{8AC239C1-965B-45F8-BF55-D73780A7741F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AC239C1-965B-45F8-BF55-D73780A7741F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AC239C1-965B-45F8-BF55-D73780A7741F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9909B776-4493-4A34-88B3-3096C448343D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9909B776-4493-4A34-88B3-3096C448343D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9909B776-4493-4A34-88B3-3096C448343D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9909B776-4493-4A34-88B3-3096C448343D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,6 +94,7 @@ Global
 		{81C13555-6F09-4DD9-A7A9-96CCEC17FBB3} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{0BE79962-4015-4814-BA29-041370BDDDF9} = {EF90F585-E57E-4A79-B915-ADB67D2662A5}
 		{8AC239C1-965B-45F8-BF55-D73780A7741F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{9909B776-4493-4A34-88B3-3096C448343D} = {C5F5D5EF-56EC-4284-A472-C83DF49B2106}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AD9CBBF6-66AD-48B2-A888-432E0BA9CDB8}

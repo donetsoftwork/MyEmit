@@ -15,12 +15,12 @@ public abstract class CopierBuilderBase(IMapperOptions options)
 {
     #region 配置
     /// <summary>
-    /// Emit配置
+    /// 映射配置
     /// </summary>
     protected readonly IMapperOptions _options = options;
 
     /// <summary>
-    /// Emit配置
+    /// 映射配置
     /// </summary>
     public IMapperOptions Options
         => _options;
@@ -67,7 +67,7 @@ public abstract class CopierBuilderBase(IMapperOptions options)
     /// <returns></returns>
     private ComplexTypeCopier New(PairTypeKey key, EventWaitHandle block, IEnumerable<IMemberConverter> members)
     {
-        ComplexTypeCopier copier = new(Wait(block, members));
+        ComplexTypeCopier copier = new(_options, Wait(block, members));
         ICacher<PairTypeKey, IEmitCopier> cacher = _options;
         // 提前设置复制器,避免重复构建
         cacher.TryCache(key, copier);

@@ -22,7 +22,7 @@ public static partial class MapperServices
     /// <param name="mapper"></param>
     /// <param name="copyAction"></param>
     /// <returns></returns>
-    public static IPoco UseCopyAction<TSource, TDest>(this IMapper mapper, Action<TSource, TDest> copyAction)
+    public static IPoco UseCopyAction<TSource, TDest>(this IMapper mapper, Expression<Action<TSource, TDest>> copyAction)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
         mapper.Configure(key, new DelegateCopier<TSource, TDest>(copyAction));
@@ -97,7 +97,7 @@ public static partial class MapperServices
     /// <param name="settings"></param>
     /// <param name="copy"></param>
     /// <returns></returns>
-    public static DelegateCopier<TSource, TDest> SetCopy<TSource, TDest>(this ICacher<PairTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
+    public static DelegateCopier<TSource, TDest> SetCopy<TSource, TDest>(this ICacher<PairTypeKey, IEmitCopier> settings, Expression<Action<TSource, TDest>> copy)
         where TDest : class
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
@@ -113,7 +113,7 @@ public static partial class MapperServices
     /// <param name="settings"></param>
     /// <param name="copy"></param>
     /// <returns></returns>
-    public static IEmitCopier TrySetCopy<TSource, TDest>(this ICacher<PairTypeKey, IEmitCopier> settings, Action<TSource, TDest> copy)
+    public static IEmitCopier TrySetCopy<TSource, TDest>(this ICacher<PairTypeKey, IEmitCopier> settings, Expression<Action<TSource, TDest>> copy)
         where TDest : class
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));

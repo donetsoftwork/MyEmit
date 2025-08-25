@@ -14,9 +14,13 @@ public class MemberContainerOptions
     /// <summary>
     /// 字段数量
     /// </summary>
-    public int FieldCapacity = 1024;
+    public int FieldCapacity = 997;
     /// <summary>
     /// 属性数量
     /// </summary>
-    public int PropertyCapacity = 1024;
+    public int PropertyCapacity = 997;
+    /// <summary>
+    /// 枚举数量
+    /// </summary>
+    public int EnumBundleCapacity = 7;
 }

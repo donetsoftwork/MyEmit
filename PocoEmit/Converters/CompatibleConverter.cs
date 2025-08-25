@@ -11,12 +11,11 @@ namespace PocoEmit.Converters;
 /// <param name="originalSourceType"></param>
 /// <param name="destType"></param>
 public sealed class CompatibleConverter(IEmitConverter original, Type originalSourceType, Type destType)
-    : IEmitConverter
+    : EmitConverter(destType), IEmitConverter
 {
     #region 配置
     private readonly IEmitConverter _original = original;
     private readonly Type _originalSourceType = originalSourceType;
-    private readonly Type _destType = destType;
     /// <summary>
     /// 源转换器
     /// </summary>
@@ -27,21 +26,46 @@ public sealed class CompatibleConverter(IEmitConverter original, Type originalSo
     /// </summary>
     public Type OriginalSourceType
         => _originalSourceType;
-    /// <summary>
-    /// 映射目标类型
-    /// </summary>
-    public Type DestType
-        => _destType;
     /// <inheritdoc />
     bool ICompileInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />
-    public Expression Convert(Expression value)
-    {
-        if (_originalSourceType != value.Type)
-            value = Expression.Convert(value, _originalSourceType);
-        var convert = _original.Convert(value);
-        return _destType == convert.Type ? convert : Expression.Convert(convert, _destType);
-    }
+    protected override Expression ConvertCore(Expression value, Type destType)
+        => ConvertDestCore(_original.Convert(ConvertOriginalSourceCore(value, _originalSourceType)), _destType);
+    //=> ConvertDest(ConvertOriginal(value));
+    #region ConvertOriginal
+    /// <summary>
+    /// 源转化
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    private Expression ConvertOriginalSource(Expression value)
+        => Convert(value, _originalSourceType, ConvertOriginalSourceCore);
+    /// <summary>
+    /// 源核心转化
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="originalSourceType"></param>
+    /// <returns></returns>
+    private Expression ConvertOriginalSourceCore(Expression value, Type originalSourceType)
+        => originalSourceType == value.Type ? value : Expression.Convert(value, originalSourceType);
+    #endregion
+    #region ConvertDest
+    /// <summary>
+    /// 最终转化
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    private Expression ConvertDest(Expression value)
+        => Convert(value, _destType, ConvertDestCore);
+    /// <summary>
+    /// 最终核心转化
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    private Expression ConvertDestCore(Expression value, Type destType)
+        => destType == value.Type ? value : Expression.Convert(value, destType);
+    #endregion
 }

@@ -30,7 +30,6 @@ public class CollectionConvertBuilder(IMapperOptions options)
     public ConvertToDictionary DictionaryConverter 
         => _dictionaryConverter;
     #endregion
-
     /// <inheritdoc />
     protected override IEmitConverter ToArray(Type sourceType, Type destType)
         => _arrayConverter.ToArray(sourceType, destType);

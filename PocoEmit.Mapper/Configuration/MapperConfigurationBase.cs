@@ -2,6 +2,7 @@ using PocoEmit.Activators;
 using PocoEmit.Builders;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
+using PocoEmit.Members;
 using PocoEmit.Reflection;
 using System;
 using System.Collections.Concurrent;
@@ -29,9 +30,10 @@ public abstract partial class MapperConfigurationBase
         _copyConfiguration = new ConcurrentDictionary<PairTypeKey, IEmitCopier>(concurrencyLevel, options.CopierConfigurationCapacity);
         _activeConfiguration = new ConcurrentDictionary<Type, IEmitActivator>(concurrencyLevel, options.ActivatorConfigurationCapacity);
         _argumentActiveConfiguration = new ConcurrentDictionary<PairTypeKey, IEmitActivator>(concurrencyLevel, options.ArgumentActivatorConfigurationCapacity);
+        _checkMembers = new ConcurrentDictionary<PairTypeKey, Delegate>();
         _matchConfiguration = new ConcurrentDictionary<PairTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
         _primitiveTypes = new ConcurrentDictionary<Type, bool>(concurrencyLevel, options.PrimitiveCapacity);
-        _defaultValueConfiguration = new ConcurrentDictionary<Type, object>(concurrencyLevel, options.DefaultValueCapacity);
+        _defaultValueConfiguration = new ConcurrentDictionary<Type, IEmitBuilder>(concurrencyLevel, options.DefaultValueCapacity);
         _reflectionConstructor = DefaultReflectionConstructor.Default;
         _defaultMatcher = MemberNameMatcher.Default;
         _recognizer = new Recognizer(_defaultMatcher.NameMatch);
@@ -110,29 +112,37 @@ public abstract partial class MapperConfigurationBase
             return activator;
         return activator;
     }
+    /// <summary>
+    /// 获取默认值构建器
+    /// </summary>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    public IEmitBuilder GetDefaultValueBuilder(Type destType)
+    {
+        _defaultValueConfiguration.TryGetValue(destType, out IEmitBuilder builder);
+        return builder;
+    }
     /// <inheritdoc />
     public Expression CreateDefault(Type destType)
     {
-        if (_defaultValueConfiguration.TryGetValue(destType, out object defaultValue))
-        {
-            if (defaultValue is Delegate func)
-            {
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-                var call = Expression.Call(EmitHelper.CheckMethodCallInstance(func), func.GetMethodInfo());
-#else
-                var call = Expression.Call(EmitHelper.CheckMethodCallInstance(func), func.Method);
-#endif
-                return Expression.Convert(call, destType);
-            }
-            else
-            {
-                return Expression.Constant(defaultValue);
-            }
-        }
-        else
-        {
-            return Expression.Default(destType);
-        }
+        if (_defaultValueConfiguration.TryGetValue(destType, out IEmitBuilder builder))
+            return builder.Build();
+        //        {
+        //            if (defaultValue is Delegate func)
+        //            {
+        //#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        //                var call = Expression.Call(EmitHelper.CheckMethodCallInstance((object)func), func.GetMethodInfo());
+        //#else
+        //                var call = Expression.Call(EmitHelper.CheckMethodCallInstance((object)func), func.Method);
+        //#endif
+        //                return Expression.Convert(call, destType);
+        //            }
+        //            else
+        //            {
+        //                return Expression.Constant(defaultValue);
+        //            }
+        //        }
+        return null;
     }
     #endregion
 }

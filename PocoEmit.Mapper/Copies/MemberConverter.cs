@@ -1,4 +1,3 @@
-using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Members;
 using System.Linq.Expressions;
@@ -38,24 +37,40 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
         => _destWriter;
     #endregion
     /// <summary>
-    /// 转化
+    /// 
     /// </summary>
     /// <param name="source"></param>
+    /// <returns></returns>
+    public Expression GetSourceMember(Expression source)
+        => _sourceReader.Read(source);
+    /// <summary>
+    /// 转化成员
+    /// </summary>
+    /// <param name="sourceMember"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    public Expression Convert(Expression source, Expression dest)
+    public Expression ConvertMember(Expression sourceMember, Expression dest)
     {
-        var getter = _sourceReader.Read(source);
-        var getterType = getter.Type;
+        var memberType = sourceMember.Type;
+        var defaultValue = _options.CreateDefault(memberType);
+        if (defaultValue is null)
+        {
+            // 基础类型直接赋值(忽略null判断)
+            if (_options.CheckPrimitive(memberType))
+                return _destWriter.Write(dest, sourceMember);
+            return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, sourceMember));
+        }
+        else
+        {
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        var isValueType = getterType.GetTypeInfo().IsValueType;
+            var isValueType = memberType.GetTypeInfo().IsValueType;
 #else
-        var isValueType = getterType.IsValueType;
+            var isValueType = memberType.IsValueType;
 #endif
-        if (isValueType)
-            return _destWriter.Write(dest, getter);
-        var test = Expression.Equal(getter, Expression.Constant(null));
-        var defaultValue = _options.CreateDefault(getterType);
-        return Expression.IfThenElse(test, defaultValue, _destWriter.Write(dest, getter));
+            // 值类型直接赋值(忽略null判断和默认值)
+            if (isValueType)
+                return _destWriter.Write(dest, sourceMember);
+            return Expression.IfThenElse(Expression.Equal(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, defaultValue), _destWriter.Write(dest, sourceMember));
+        }
     }
 }

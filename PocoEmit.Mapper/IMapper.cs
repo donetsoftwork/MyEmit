@@ -1,4 +1,5 @@
 using PocoEmit.Activators;
+using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
@@ -17,8 +18,9 @@ public interface IMapper
     , IStore<PairTypeKey, IEmitCopier>
     , IConfigure<Type, IEmitActivator>
     , IConfigure<PairTypeKey, IEmitActivator>
+    , IConfigure<PairTypeKey, Delegate>
     , IConfigure<Type, bool>
-    , IConfigure<Type, object>
+    , IConfigure<Type, IEmitBuilder>
 {
     /// <summary>
     /// 获取成员匹配

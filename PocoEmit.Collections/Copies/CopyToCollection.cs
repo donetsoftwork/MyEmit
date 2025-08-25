@@ -34,7 +34,7 @@ public class CopyToCollection(IMapperOptions options)
     /// <param name="destType"></param>
     /// <param name="clear"></param>
     /// <returns></returns>
-    public IEmitCopier Create(Type sourceType, Type destType,  bool clear = true)
+    public IEmitCopier Create(Type sourceType, Type destType, bool clear = true)
     {
         var destElementType = ReflectionHelper.GetElementType(destType);
         if (destElementType == null)
@@ -52,6 +52,6 @@ public class CopyToCollection(IMapperOptions options)
         var sourceVisitor = container.GetVisitor(sourceType);
         if (sourceVisitor is null)
             return null;
-        return new CollectionCopier(destType, destElementType, saver, sourceVisitor, elementConverter, clear);
+        return new CollectionCopier(sourceType, sourceElementType, destType, destElementType, saver, sourceVisitor, elementConverter, clear);
     }    
 }

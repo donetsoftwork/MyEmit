@@ -146,9 +146,10 @@ public static partial class MapperServices
     class Inner
     {
         /// <summary>
-        /// GetConverter
+        /// 反射Compile方法
         /// </summary>
-        private static readonly MethodInfo CompileMethod = ReflectionHelper.GetMethod(typeof(MapperServices), m => m.Name == "Compile");
+        private static readonly MethodInfo CompileMethod = EmitHelper.GetActionMethodInfo<IEmitCopier>(emit => Compile<long, object>(emit))
+            .GetGenericMethodDefinition();
         /// <summary>
         /// 反射调用编译方法
         /// </summary>

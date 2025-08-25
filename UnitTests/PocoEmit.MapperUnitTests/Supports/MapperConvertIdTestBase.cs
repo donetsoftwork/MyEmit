@@ -7,7 +7,7 @@ public abstract class MapperConvertIdTestBase
     public MapperConvertIdTestBase()
     {
         // 继承Global配置,能被EmitOptions对象引用
-        Mapper.Default.UseSystemConvert();
+        //Mapper.Default.UseSystemConvert();
     }
     #region Supports
     internal class MyMapperId(int id)

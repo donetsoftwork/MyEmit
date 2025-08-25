@@ -18,17 +18,19 @@ public class CollectionCopier : EmitCollectionBase
     /// <summary>
     /// 集合复制器
     /// </summary>
-    /// <param name="collectionType"></param>
-    /// <param name="elementType"></param>
+    /// <param name="sourceType"></param>
+    /// <param name="sourceElementType"></param>
+    /// <param name="destType"></param>
+    /// <param name="destElementType"></param>
     /// <param name="saver"></param>
     /// <param name="sourceVisitor"></param>
     /// <param name="elementConverter"></param>
     /// <param name="clear"></param>
-    /// <exception cref="ArgumentException"></exception>
-    public CollectionCopier(Type collectionType, Type elementType, IEmitElementSaver saver, IEmitElementVisitor sourceVisitor, IEmitConverter elementConverter, bool clear = true)
-        : base(collectionType, elementType)
+    public CollectionCopier(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitElementSaver saver, IEmitElementVisitor sourceVisitor, IEmitConverter elementConverter, bool clear = true)
+        : base(destType, destElementType)
     {
-        
+        _sourceType = sourceType;
+        _sourceElementType = sourceElementType;
         _sourceVisitor = sourceVisitor;
         _elementConverter = elementConverter;
         _saver = saver;
@@ -36,6 +38,8 @@ public class CollectionCopier : EmitCollectionBase
             _clearMethod = GetClearMethod();
     }
     #region 配置
+    private readonly Type _sourceType;
+    private readonly Type _sourceElementType;
     private readonly IEmitElementVisitor _sourceVisitor;
     private readonly IEmitConverter _elementConverter;
     //private readonly bool _clear = clear;
@@ -83,21 +87,22 @@ public class CollectionCopier : EmitCollectionBase
     /// <param name="item"></param>
     /// <returns></returns>
     public Expression CopyElement(Expression dest, Expression item)
-        => _saver.Add(dest, _elementConverter.Convert(item));
+    {
+        var sourceItem = Expression.Parameter(_sourceElementType, "sourceItem");
+        var destItem = Expression.Parameter(_elementType, "destItem");
+        return Expression.Block(
+            [sourceItem, destItem],
+            Expression.Assign(sourceItem, item),
+            Expression.Assign(destItem, _elementConverter.Convert(sourceItem)),
+            _saver.Add(dest, destItem)
+            );
+    }
     #region MethodInfo
     /// <summary>
     /// 获取清空方法
     /// </summary>
     /// <returns></returns>
     protected virtual MethodInfo GetClearMethod()
-        => GetClearMethod(_collectionType);
-    /// <summary>
-    /// 获取清空方法
-    /// </summary>
-    /// <param name="collectionType"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static MethodInfo GetClearMethod(Type collectionType)
-        => ReflectionHelper.GetMethod(collectionType, method => method.Name == "Clear" && method.GetParameters().Length == 0);
+        => ReflectionHelper.GetMethod(_collectionType, "Clear");
     #endregion
 }

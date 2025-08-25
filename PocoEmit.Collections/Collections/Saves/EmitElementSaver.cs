@@ -56,23 +56,7 @@ public class EmitElementSaver
     /// <param name="methodName"></param>
     /// <returns></returns>
     public static MethodInfo GetAddMethod(Type collectionType, Type elementType, string methodName = "Add")
-        => ReflectionHelper.GetMethod(collectionType, method => CheckAddMethod(method, elementType, methodName));
-    /// <summary>
-    /// 筛选添加方法
-    /// </summary>
-    /// <param name="method"></param>
-    /// <param name="elementType"></param>
-    /// <param name="methodName"></param>
-    /// <returns></returns>
-    private static bool CheckAddMethod(MethodInfo method, Type elementType, string methodName)
-    {
-        if (method.Name == methodName)
-        {
-            var parameters = method.GetParameters();
-            return parameters.Length == 1 && parameters[0].ParameterType == elementType;
-        }
-        return false;
-    }
+        => ReflectionHelper.GetMethod(collectionType, methodName, [elementType]);
     #endregion
     /// <inheritdoc />
     public Expression Add(Expression instance, Expression value)

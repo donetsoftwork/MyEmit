@@ -1,40 +1,26 @@
 using PocoEmit.Builders;
+using PocoEmit.Configuration;
 using System;
-using System.Reflection;
+using System.Linq.Expressions;
 
 namespace PocoEmit.Converters;
 
 /// <summary>
-/// 委托类型转化
+/// 委托表达式类型转化
 /// </summary>
 /// <typeparam name="TSource"></typeparam>
 /// <typeparam name="TDest"></typeparam>
 /// <param name="convertFunc"></param>
-/// <param name="method"></param>
-public sealed class DelegateConverter<TSource, TDest>(Func<TSource, TDest> convertFunc, MethodInfo method)
-    : MethodConverter(EmitHelper.CheckMethodCallInstance(convertFunc), method, typeof(TSource)), ICompiledConverter<TSource, TDest>
+public sealed class DelegateConverter<TSource, TDest>(Expression<Func<TSource, TDest>> convertFunc)
+    : FuncCallBuilder<TSource, TDest>(convertFunc)
+    , IEmitConverter
 {
-    /// <summary>
-    /// 委托类型转化
-    /// </summary>
-    /// <param name="converter"></param>
-    public DelegateConverter(Func<TSource, TDest> converter)
-        : this(converter, converter.GetMethodInfo())
-    {
-    }
     #region 配置
-    private readonly Func<TSource, TDest> _convertFunc = convertFunc;
     /// <inheritdoc />
-    public Func<TSource, TDest> ConvertFunc
-        => _convertFunc;
-    /// <inheritdoc />
-    public override bool Compiled
-        => true;
+    bool ICompileInfo.Compiled
+        => false;
     #endregion
     /// <inheritdoc />
-    TDest IPocoConverter<TSource, TDest>.Convert(TSource source)
-        => _convertFunc(source);
-    /// <inheritdoc />
-    object IObjectConverter.ConvertObject(object source)
-        => _convertFunc((TSource)source);
+    public Expression Convert(Expression source)
+        => Call(source);
 }

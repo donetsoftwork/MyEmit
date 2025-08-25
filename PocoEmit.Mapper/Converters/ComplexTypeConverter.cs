@@ -1,4 +1,5 @@
 using PocoEmit.Activators;
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using System.Collections.Generic;
@@ -34,15 +35,45 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
     /// <inheritdoc />
     public Expression Convert(Expression source)
     {
-        var destype = _destActivator.ReturnType;
-        var destTarget = Expression.Label(destype, "returndest");
-        var dest = Expression.Variable(destype, "dest");
+        List<ParameterExpression> variables = [];
+        var sourceType = source.Type;
+        var destType = _destActivator.ReturnType;
+        var dest = Expression.Variable(destType, "dest");
+        variables.Add(dest);
+        if(PairTypeKey.CheckNullCondition(sourceType))
+        {
+            var list = new List<Expression>();
+            if (EmitHelper.CheckComplex(source.NodeType))
+            {
+                var source2 = Expression.Variable(sourceType, "source");
+                variables.Add(source2);
+                list.Add(Expression.Assign(source2, source));
+                source = source2;
+            }
+            list.Add(Expression.Condition(
+                    Expression.Equal(source, Expression.Constant(null, sourceType)),
+                    Expression.Default(destType),
+                    Expression.Block(ConvertCore(source, dest))
+                )
+            );
+
+            return Expression.Block(variables, list);
+        }
+        return Expression.Block(variables, ConvertCore(source, dest));
+    }
+    /// <summary>
+    /// 转化核心方法
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="dest"></param>
+    /// <returns></returns>
+    private IEnumerable<Expression> ConvertCore(Expression source, ParameterExpression dest)
+    {
         var assign = Expression.Assign(dest, _destActivator.New(source));
         var list = new List<Expression>() { assign };
-         if(_copier is not null)
+        if (_copier is not null)
             list.AddRange(_copier.Copy(source, dest));
-        //list.Add(Expression.Return(destTarget, dest));     
-        list.Add(Expression.Label(destTarget, dest));
-        return Expression.Block([dest], list);
+        list.Add(dest);
+        return list;
     }
 }

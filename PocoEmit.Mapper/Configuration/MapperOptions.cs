@@ -22,6 +22,10 @@ public class MapperOptions : PocoOptions
     /// </summary>
     public int ArgumentActivatorConfigurationCapacity = 31;
     /// <summary>
+    /// 转化后检查成员配置数量
+    /// </summary>
+    public int CheckMembersCapacity = 31;
+    /// <summary>
     /// 成员匹配配置数量
     /// </summary>
     public int MatchCapacity = 31;

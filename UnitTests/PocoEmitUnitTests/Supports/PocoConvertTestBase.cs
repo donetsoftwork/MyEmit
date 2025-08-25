@@ -8,12 +8,13 @@ public abstract class PocoConvertTestBase
     protected readonly TimeConverter _timeConverter = new();
     public PocoConvertTestBase()
     {
-        // Global配置
-        Poco.GlobalConfigure(poco => {
-            poco.UseSystemConvert()
-                .UseConverter(_timeConverter);
-        });
+        //// Global配置
+        //Poco.GlobalConfigure(poco => {
+        //    poco.UseSystemConvert()
+        //        .UseConverter(_timeConverter);
+        //});
         _poco = Poco.Create();
+        _poco.UseConverter(_timeConverter);
     }
 
     internal class PocoId(int id)

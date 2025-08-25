@@ -35,20 +35,9 @@ public class CopierFactory(IMapperOptions options)
         if (sourceType == destType)
             return _options.CopierBuilder.ToSelf(key);
         // 兼容类型
-        if (ReflectionHelper.CheckValueType(sourceType, destType))
+        if (PairTypeKey.CheckValueType(sourceType, destType))
             return _options.CopierBuilder.ToSelf(key);
-        bool isNullable = false;
-        if (ReflectionHelper.IsNullable(sourceType))
-        {
-            isNullable = true;
-            sourceType = sourceType.GenericTypeArguments[0];
-        }
-        if (ReflectionHelper.IsNullable(destType))
-        {
-            isNullable = true;
-            destType = destType.GenericTypeArguments[0];
-        }
-        if (isNullable)
+        if (PairTypeKey.CheckNullable(ref sourceType, ref destType))
         {
             var originalKey = new PairTypeKey(sourceType, destType);
             IEmitCopier original = Get(originalKey);
@@ -62,9 +51,22 @@ public class CopierFactory(IMapperOptions options)
         if (ReflectionHelper.HasGenericType(destType, typeof(IEnumerable<>)))
             return _options.CopierBuilder.ToCollection(key);
         // 普通类型
-        return _options.CopierBuilder.Build(key);
+        return CheckMembers(key, _options.CopierBuilder.Build(key));
     }
     #endregion
+    /// <summary>
+    /// 是否有自定义检测规则
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="original"></param>
+    /// <returns></returns>
+    private IEmitCopier CheckMembers(PairTypeKey key, IEmitCopier original)
+    {
+        var checker = _options.GetCheckMembers(key);
+        if(checker is null)
+            return original;
+        return new CheckEmitCopier(original, checker);
+    }
     private bool CheckPrimitive(Type destType)
         => _options.CheckPrimitive(destType) || destType == typeof(object);    
 }

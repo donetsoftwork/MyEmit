@@ -8,7 +8,7 @@ public class GlobalGetConvertTests
     private IMapper _global = Mapper.Default;
     public GlobalGetConvertTests()
     {
-        _global.UseSystemConvert();
+        //_global.UseSystemConvert();
     }
     [Fact]
     public void GetConvert_int2long()

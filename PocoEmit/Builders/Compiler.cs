@@ -2,7 +2,6 @@ using PocoEmit.Converters;
 using PocoEmit.Members;
 using System;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace PocoEmit.Builders;
 
@@ -74,30 +73,6 @@ public class Compiler
     {
         get => _instance;
         set => _instance = value ?? throw new ArgumentNullException(nameof(value));
-    }
-    #endregion
-    #region MethodInfo
-    /// <summary>
-    /// 按参数名获取编译器
-    /// </summary>
-    /// <param name="parameterName"></param>
-    /// <returns></returns>
-    internal static MethodInfo GetCompiler(string parameterName)
-        => ReflectionHelper.GetMethod(typeof(Compiler), method => MatchMethod(method, parameterName));
-    /// <summary>
-    /// 匹配
-    /// </summary>
-    /// <param name="method"></param>
-    /// <param name="parameterName"></param>
-    /// <returns></returns>
-    private static bool MatchMethod(MethodInfo method, string parameterName)
-    {
-        if (method.Name == "Compile")
-        {
-            var parameters = method.GetParameters();
-            return parameters.Length == 1 && parameters[0].Name == parameterName;
-        }
-        return false;
     }
     #endregion
 }

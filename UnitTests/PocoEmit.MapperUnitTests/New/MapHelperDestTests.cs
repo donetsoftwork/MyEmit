@@ -70,9 +70,8 @@ public class MapHelperDestTests : MapHelperBaseTests
             .Dest
             .AddPrefix("U");
         var source = new User { Id = 222, Name = "Jxj2" };
-        var emit = mapper.GetEmitConverter<User, UserCustomDTO>();
-        var expression = emit.Build<User, UserCustomDTO>();
-        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        var expression = mapper.BuildConverter<User, UserCustomDTO>();
+        var code = ToCSharpPrinter.ToCSharpString(expression);
         //var compiler = FastExpressionCompiler.ExpressionCompiler.TryCompile<Func<User, UserCustomDTO>>(expression);
         //Console.WriteLine(expression.ToString());
         var converter = expression.Compile();

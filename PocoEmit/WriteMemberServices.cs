@@ -1,5 +1,6 @@
 using PocoEmit.Builders;
 using PocoEmit.Collections;
+using PocoEmit.Configuration;
 using PocoEmit.Members;
 using System;
 using System.Linq.Expressions;
@@ -162,7 +163,7 @@ public static partial class PocoEmitServices
     public static bool CheckInstanceType(this IPoco poco, ref IEmitMemberWriter emitWriter, Type instanceType)
     {
         var instanceType0 = emitWriter.InstanceType;
-        if (ReflectionHelper.CheckValueType(instanceType, instanceType0))
+        if (PairTypeKey.CheckValueType(instanceType, instanceType0))
             return false;
         var emitConverter = poco.GetEmitConverter(instanceType, instanceType0);
         if (emitConverter is null)
@@ -181,7 +182,7 @@ public static partial class PocoEmitServices
     public static bool CheckValueType(this IPoco poco, ref IEmitMemberWriter emitWriter, Type valueType)
     {
         var valueType0 = emitWriter.ValueType;
-        if (ReflectionHelper.CheckValueType(valueType, valueType0))
+        if (PairTypeKey.CheckValueType(valueType, valueType0))
             return false;
         var emitConverter = poco.GetEmitConverter(valueType, valueType0);
         if (emitConverter is null)

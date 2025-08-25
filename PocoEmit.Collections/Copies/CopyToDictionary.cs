@@ -1,4 +1,3 @@
-using PocoEmit.Collections.Visitors;
 using PocoEmit.Configuration;
 using PocoEmit.Dictionaries;
 using System;

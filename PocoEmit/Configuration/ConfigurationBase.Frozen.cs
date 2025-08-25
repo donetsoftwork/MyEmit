@@ -1,10 +1,11 @@
 using PocoEmit.Converters;
-using System.Collections.Concurrent;
 using PocoEmit.Collections;
 using System;
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Generic;
 using System.Collections.Frozen;
+#else
+using System.Collections.Concurrent;
 #endif
 
 namespace PocoEmit.Configuration;
@@ -77,7 +78,6 @@ public abstract partial class ConfigurationBase
     public virtual void ToFrozen()
     {
         _converters = _converters.ToFrozenDictionary();
-        _convertConfiguration = _convertConfiguration.ToFrozenDictionary();
         _memberBundles = _memberBundles.ToFrozenDictionary();
     }
 #endif

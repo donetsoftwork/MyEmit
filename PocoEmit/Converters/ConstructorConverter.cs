@@ -24,7 +24,7 @@ public class ConstructorConverter(ConstructorInfo constructor)
     #endregion
     #region IEmitConverter
     /// <inheritdoc />
-    public Expression Convert(Expression source)
+    public virtual Expression Convert(Expression source)
       => Expression.New(_constructor, source);
     #endregion
 }

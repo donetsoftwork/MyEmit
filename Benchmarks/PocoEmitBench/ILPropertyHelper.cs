@@ -64,14 +64,14 @@ public class ILPropertyHelper
             ?? throw new ArgumentException($"Property '{property.Name}' does not have a getter method.");       
 
         var instanceType = typeof(TInstance);
-        var declaringType = property.ReflectedType!;
+        var declareType = property.ReflectedType!;
         var valueType = typeof(TValue);
         int uniqueIdentifier = Interlocked.Increment(ref _next);
         var dynamicMethod = new DynamicMethod("dynamicGet_" + uniqueIdentifier.ToString(CultureInfo.InvariantCulture), valueType, [instanceType]);
         var il = dynamicMethod.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
-        if (!CheckDeclaringType(instanceType, declaringType))
-            il.Emit(OpCodes.Castclass, declaringType);
+        if (!CheckDeclaringType(instanceType, declareType))
+            il.Emit(OpCodes.Castclass, declareType);
         if (method.IsVirtual)
             il.Emit(OpCodes.Callvirt, method);
         else
@@ -95,14 +95,14 @@ public class ILPropertyHelper
             ?? throw new ArgumentException($"Property '{property.Name}' does not have a setter method.");
         var instanceType = typeof(TInstance);
         var valueType = typeof(TValue);
-        var declaringType = property.ReflectedType!;
+        var declareType = property.ReflectedType!;
         var propertyType = property.PropertyType;
         int uniqueIdentifier = Interlocked.Increment(ref _next);
         var dynamicMethod = new DynamicMethod("dynamicSet_" + uniqueIdentifier.ToString(CultureInfo.InvariantCulture), typeof(void), [instanceType, valueType]);
         var il = dynamicMethod.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
-        if (!CheckDeclaringType(instanceType, declaringType))
-            il.Emit(OpCodes.Castclass, declaringType);
+        if (!CheckDeclaringType(instanceType, declareType))
+            il.Emit(OpCodes.Castclass, declareType);
         il.Emit(OpCodes.Ldarg_1);
         ConvertType(il, valueType, propertyType);
         if (method.IsVirtual)
@@ -150,18 +150,18 @@ public class ILPropertyHelper
     /// 判断是否兼容定义类型
     /// </summary>
     /// <param name="instanceType"></param>
-    /// <param name="declaringType"></param>
+    /// <param name="declareType"></param>
     /// <returns></returns>
-    public static bool CheckDeclaringType(Type instanceType, Type declaringType)
+    public static bool CheckDeclaringType(Type instanceType, Type declareType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => CheckDeclaringType(instanceType.GetTypeInfo(), declaringType.GetTypeInfo());
+        => CheckDeclaringType(instanceType.GetTypeInfo(), declareType.GetTypeInfo());
     /// <summary>
     /// 判断是否兼容定义类型
     /// </summary>
     /// <param name="instanceType"></param>
-    /// <param name="declaringType"></param>
+    /// <param name="declareType"></param>
     /// <returns></returns>
-    public static bool CheckDeclaringType(TypeInfo instanceType, TypeInfo declaringType)
+    public static bool CheckDeclaringType(TypeInfo instanceType, TypeInfo declareType)
 #endif
-        => instanceType == declaringType || declaringType.IsAssignableFrom(instanceType);
+        => instanceType == declareType || declareType.IsAssignableFrom(instanceType);
 }

@@ -1,3 +1,4 @@
+using PocoEmit.Members;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Copies;
@@ -8,9 +9,25 @@ namespace PocoEmit.Copies;
 public interface IMemberConverter
 {
     /// <summary>
-    /// 转化
+    /// 获取源成员
     /// </summary>
     /// <param name="source"></param>
+    /// <returns></returns>
+    Expression GetSourceMember(Expression source);
+    /// <summary>
+    /// 转化成员
+    /// </summary>
+    /// <param name="sourceMember"></param>
     /// <param name="dest"></param>
-    Expression Convert(Expression source, Expression dest);
+    /// <returns></returns>
+    Expression ConvertMember(Expression sourceMember, Expression dest);
+
+    /// <summary>
+    /// 源成员读取器
+    /// </summary>
+    IEmitReader SourceReader { get; }
+    /// <summary>
+    /// 目标成员写入器
+    /// </summary>
+    IEmitWriter DestWriter { get; }
 }

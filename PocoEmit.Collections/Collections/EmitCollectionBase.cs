@@ -41,5 +41,5 @@ public abstract class EmitCollectionBase(Type collectionType, Type elementType)
     /// <param name="instance"></param>
     /// <returns></returns>
     protected Expression CheckInstance(Expression instance)
-        => ReflectionHelper.CheckValueType(instance.Type, _collectionType) ? instance : Expression.Convert(instance, _collectionType);
+        => PairTypeKey.CheckValueType(instance.Type, _collectionType) ? instance : Expression.Convert(instance, _collectionType);
 }

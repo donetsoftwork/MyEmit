@@ -7,7 +7,7 @@ public class GlobalGetConvertFuncTests
     private IPoco _global = Poco.Default;
     public GlobalGetConvertFuncTests()
     {
-        _global.UseSystemConvert();
+        //_global.UseSystemConvert();
     }
     [Fact]
     public void GetConvert_int2long()

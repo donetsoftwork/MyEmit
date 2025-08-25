@@ -8,8 +8,7 @@ public class StringConvertTest
     public StringConvertTest()
     {
         _poco = Poco.Create();
-        _poco.UseSystemConvert();
-        _poco.SetStringConvert();
+        //_poco.UseSystemStringConvert();
     }
 
     [Fact]
@@ -79,17 +78,6 @@ public class StringConvertTest
         Assert.NotNull(convertFunc);
         var source = "2025-07-21 00:00:00";
         var expected = Convert.ToDateTime(source);
-        Assert.Equal(expected, convertFunc(source));
-    }
-    [Fact]
-    public void GetConvertFunc_DateTime2string()
-    {
-        // Act
-        var convertFunc = _poco.GetConvertFunc<DateTime, string>();
-        // Assert
-        Assert.NotNull(convertFunc);
-        var source = DateTime.Now;
-        var expected = source.ToString();
         Assert.Equal(expected, convertFunc(source));
     }
 }

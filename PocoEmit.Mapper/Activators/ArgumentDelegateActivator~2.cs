@@ -1,7 +1,6 @@
 using PocoEmit.Builders;
 using System;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace PocoEmit.Activators;
 
@@ -11,16 +10,11 @@ namespace PocoEmit.Activators;
 /// <typeparam name="TSource"></typeparam>
 /// <typeparam name="TDest"></typeparam>
 /// <param name="activator"></param>
-public class ArgumentDelegateActivator<TSource, TDest>(Func<TSource, TDest> activator)
-    : MethodActivator(EmitHelper.CheckMethodCallInstance(activator), activator.GetMethodInfo()), IEmitActivator
+public class DelegateActivator<TSource, TDest>(Expression<Func<TSource, TDest>> activator)
+    : FuncCallBuilder<TSource, TDest>(activator)
+    , IEmitActivator
 {
-    #region 配置
-    private readonly Func<TSource, TDest> _activator = activator;
     /// <inheritdoc />
-    public Func<TSource, TDest> Activator
-        => _activator;
-    #endregion
-    /// <inheritdoc />
-    public override Expression New(Expression argument)
-         => Expression.Call(_target, _method, argument);
+    public Expression New(Expression argument)
+         => Call(argument);
 }

@@ -1,4 +1,5 @@
 using PocoEmit.Collections;
+using PocoEmit.Configuration;
 using PocoEmit.Members;
 using System;
 using System.Collections.Generic;
@@ -193,15 +194,15 @@ public static class ReflectionHelper
     /// <summary>
     /// 筛选属性
     /// </summary>
-    /// <param name="declaringType"></param>
+    /// <param name="declareType"></param>
     /// <param name="filter"></param>
     /// <returns></returns>
-    public static PropertyInfo GetPropery(Type declaringType, Func<PropertyInfo, bool> filter)
+    public static PropertyInfo GetPropery(Type declareType, Func<PropertyInfo, bool> filter)
     {
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        var properties = declaringType.GetTypeInfo().DeclaredProperties;
+        var properties = declareType.GetTypeInfo().DeclaredProperties;
 #else
-        var properties = declaringType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        var properties = declareType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
 #endif
         foreach (var propery in properties)
         {
@@ -215,9 +216,9 @@ public static class ReflectionHelper
     /// 获取所有属性
     /// </summary>
     /// <returns></returns>
-    public static IEnumerable<PropertyInfo> GetProperties(Type declaringType)
+    public static IEnumerable<PropertyInfo> GetProperties(Type declareType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => GetProperties(declaringType.GetTypeInfo());
+        => GetProperties(declareType.GetTypeInfo());
     /// <summary>
     /// 获取属性信息
     /// </summary>
@@ -226,66 +227,60 @@ public static class ReflectionHelper
     public static IEnumerable<PropertyInfo> GetProperties(TypeInfo declaringTypeInfo)
         => declaringTypeInfo.DeclaredProperties;
 #else
-        => declaringType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        => declareType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
 #endif
     #endregion
     #region GetFields
     /// <summary>
-    /// 获取所有字段
+    /// 获取所有实例字段
     /// </summary>
     /// <typeparam name="TStructuralType"></typeparam>
     /// <returns></returns>
     public static IEnumerable<FieldInfo> GetFields<TStructuralType>()
         => GetFields(typeof(TStructuralType));
     /// <summary>
-    /// 获取所有字段
+    /// 获取所有实例字段
     /// </summary>
     /// <returns></returns>
-    public static IEnumerable<FieldInfo> GetFields(Type declaringType)
+    public static IEnumerable<FieldInfo> GetFields(Type declareType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => GetFields(declaringType.GetTypeInfo());
+        => GetFields(declareType.GetTypeInfo());
     /// <summary>
-    /// 获取属性信息
+    /// 获取所有实例字段
     /// </summary>
     /// <param name="declaringTypeInfo"></param>
     /// <returns></returns>
     public static IEnumerable<FieldInfo> GetFields(TypeInfo declaringTypeInfo)
         => declaringTypeInfo.DeclaredFields.Where(field => field.IsPublic && !field.IsStatic);
 #else
-        => declaringType.GetFields(BindingFlags.Instance | BindingFlags.Public);
+        => declareType.GetFields(BindingFlags.Instance | BindingFlags.Public);
 #endif
     #endregion
-    #region CheckType
+    #region GetStaticFields
     /// <summary>
-    /// 判断是否兼容值类型
+    /// 获取所有静态字段
     /// </summary>
-    /// <param name="fromType"></param>
-    /// <param name="toType"></param>
+    /// <typeparam name="TStructuralType"></typeparam>
     /// <returns></returns>
-    public static bool CheckValueType(Type fromType, Type toType)
+    public static IEnumerable<FieldInfo> GetStaticFields<TStructuralType>()
+        => GetStaticFields(typeof(TStructuralType));
+    /// <summary>
+    /// 获取所有静态字段
+    /// </summary>
+    /// <returns></returns>
+    public static IEnumerable<FieldInfo> GetStaticFields(Type declareType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => CheckValueType(fromType.GetTypeInfo(), toType.GetTypeInfo());
+        => GetStaticFields(declareType.GetTypeInfo());
     /// <summary>
-    /// 判断是否兼容值类型
+    /// 获取所有静态字段
     /// </summary>
-    /// <param name="fromType"></param>
-    /// <param name="toType"></param>
+    /// <param name="declaringTypeInfo"></param>
     /// <returns></returns>
-    public static bool CheckValueType(TypeInfo fromType, TypeInfo toType)
+    public static IEnumerable<FieldInfo> GetStaticFields(TypeInfo declaringTypeInfo)
+        => declaringTypeInfo.DeclaredFields.Where(field => field.IsPublic && field.IsStatic);
+#else
+        => declareType.GetFields(BindingFlags.Static | BindingFlags.Public);
 #endif
-    {
-        if (fromType == toType)
-            return true;
-        if (toType.IsValueType)
-        {
-            if (fromType.IsValueType && !toType.IsGenericType)
-                return toType.IsAssignableFrom(fromType);
-            return false;
-        }
-        if (fromType.IsValueType)
-            return false;
-        return toType.IsAssignableFrom(fromType);
-    }
     #endregion
     #region IsNullable
     /// <summary>
@@ -398,26 +393,26 @@ public static class ReflectionHelper
     /// <summary>
     /// 获取构造函数
     /// </summary>
-    /// <param name="declaringType"></param>
+    /// <param name="declareType"></param>
     /// <param name="parameterType"></param>
     /// <returns></returns>
-    public static ConstructorInfo GetConstructorByParameterType(Type declaringType, Type parameterType)
+    public static ConstructorInfo GetConstructorByParameterType(Type declareType, Type parameterType)
         => GetConstructor(
-            declaringType,
+            declareType,
             parameters => parameters.Length == 1
-                && CheckValueType(parameterType, parameters[0].ParameterType));
+                && PairTypeKey.CheckValueType(parameters[0].ParameterType, parameterType));
     /// <summary>
     /// 获取构造函数
     /// </summary>
-    /// <param name="declaringType"></param>
+    /// <param name="declareType"></param>
     /// <param name="filter"></param>
     /// <returns></returns>
-    public static ConstructorInfo GetConstructor(Type declaringType, Func<ParameterInfo[], bool> filter)
+    public static ConstructorInfo GetConstructor(Type declareType, Func<ParameterInfo[], bool> filter)
     {
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        var constructors = declaringType.GetTypeInfo().DeclaredConstructors;
+        var constructors = declareType.GetTypeInfo().DeclaredConstructors;
 #else
-        var constructors = declaringType.GetConstructors();
+        var constructors = declareType.GetConstructors();
 #endif
         foreach (var constructor in constructors)
         {
@@ -429,11 +424,11 @@ public static class ReflectionHelper
     /// <summary>
     /// 获取所有构造函数
     /// </summary>
-    /// <param name="declaringType"></param>
+    /// <param name="declareType"></param>
     /// <returns></returns>
-    public static IEnumerable<ConstructorInfo> GetConstructors(Type declaringType)
+    public static IEnumerable<ConstructorInfo> GetConstructors(Type declareType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-            => GetConstructors(declaringType.GetTypeInfo());
+            => GetConstructors(declareType.GetTypeInfo());
         /// <summary>
         /// 获取所有构造函数
         /// </summary>
@@ -442,26 +437,47 @@ public static class ReflectionHelper
         public static IEnumerable<ConstructorInfo> GetConstructors(TypeInfo declaringTypeInfo)
             => declaringTypeInfo.DeclaredConstructors;
 #else
-        => declaringType.GetConstructors();
+        => declareType.GetConstructors();
 #endif
 #endregion
 #region MethodInfo
     /// <summary>
-    /// 获取函数
+    /// 获取方法
     /// </summary>
-    /// <param name="type"></param>
-    /// <param name="filter"></param>
+    /// <param name="declareType"></param>
+    /// <param name="name"></param>
     /// <returns></returns>
-    public static MethodInfo GetMethod(Type type, Func<MethodInfo, bool> filter)
-     => GetMethods(type).FirstOrDefault(filter);
+    public static MethodInfo GetMethod(Type declareType, string name)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        => declareType.GetTypeInfo().GetDeclaredMethod(name);
+#else
+        => declareType.GetMethod(name);
+#endif
+    /// <summary>
+    /// 获取方法
+    /// </summary>
+    /// <param name="declareType"></param>
+    /// <param name="name"></param>
+    /// <param name="types"></param>
+    /// <returns></returns>
+    public static MethodInfo GetMethod(Type declareType, string name, Type[] types)
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+    {
+        return declareType.GetTypeInfo()
+            .GetDeclaredMethods(name)
+            .FirstOrDefault(method => MatchParameters(method.GetParameters(), types));
+    }
+#else
+        => declareType.GetMethod(name, types);
+#endif
     /// <summary>
     /// 获取所有函数
     /// </summary>
-    /// <param name="declaringType"></param>
+    /// <param name="declareType"></param>
     /// <returns></returns>
-    public static IEnumerable<MethodInfo> GetMethods(Type declaringType)
+    public static IEnumerable<MethodInfo> GetMethods(Type declareType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        => GetMethods(declaringType.GetTypeInfo());
+        => GetMethods(declareType.GetTypeInfo());
     /// <summary>
     /// 获取所有函数
     /// </summary>
@@ -470,7 +486,29 @@ public static class ReflectionHelper
     public static IEnumerable<MethodInfo> GetMethods(TypeInfo declaringTypeInfo)
         => declaringTypeInfo.DeclaredMethods;
 #else
-        => declaringType.GetMethods();
+        => declareType.GetMethods();
 #endif
-#endregion
+    #endregion
+    /// <summary>
+    /// 匹配参数
+    /// </summary>
+    /// <param name="parameters"></param>
+    /// <param name="types"></param>
+    /// <returns></returns>
+    public static bool MatchParameters(ParameterInfo[] parameters, Type[] types)
+    {
+        var count = parameters.Length;
+        if (count == types.Length)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (parameters[i].ParameterType == types[i])
+                    continue;
+                else
+                    return false;
+            }
+            return true;
+        }
+        return false;
+    }
 }

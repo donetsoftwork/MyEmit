@@ -10,7 +10,7 @@ using TestApi.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 var poco = PocoEmit.Mapper.Default;
-poco.UseSystemConvert();
+//poco.UseSystemConvert();
 IMyDeltaFactory deltaFactory = new EmitDeltaFactory();
 builder.Host.UseServiceProviderFactory(new TypedImplementationFactoryServiceProviderFactory());
 builder.Services

@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -26,22 +27,14 @@ public sealed class SelfMethodConverter(MethodInfo method)
         => false;
     #endregion
     /// <inheritdoc />
-    public Expression Convert(Expression value)
-        => Expression.Call(value, _method);
+    public Expression Convert(Expression source)
+        => Expression.Call(source, _method);
+    /// <summary>
+    /// ToString方法信息
+    /// </summary>
+    public static readonly MethodInfo ToStringMethod = EmitHelper.GetMethodInfo<object, string>(obj => obj.ToString());
     /// <summary>
     /// ToString
     /// </summary>
-    public static SelfMethodConverter ToStringConverter
-        => Inner.ToStringConverter;
-    /// <summary>
-    /// 内部延迟初始化
-    /// </summary>
-    class Inner
-    {
-        /// <summary>
-        /// ToString
-        /// </summary>
-        public static readonly SelfMethodConverter ToStringConverter = new(ReflectionHelper.GetMethod(typeof(object), m => m.Name == "ToString" && m.GetParameters().Length == 0));
-    }
+    public static readonly SelfMethodConverter ToStringConverter = new(ToStringMethod);
 }
-

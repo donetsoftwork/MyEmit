@@ -67,14 +67,6 @@ public class DictionaryCopier
     /// </summary>
     /// <returns></returns>
     protected virtual MethodInfo GetClearMethod()
-        => GetClearMethod(_collectionType);
-    /// <summary>
-    /// 获取清空方法
-    /// </summary>
-    /// <param name="collectionType"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static MethodInfo GetClearMethod(Type collectionType)
-        => ReflectionHelper.GetMethod(collectionType, method => method.Name == "Clear" && method.GetParameters().Length == 0);
+        => ReflectionHelper.GetMethod(_collectionType, "Clear");
     #endregion
 }

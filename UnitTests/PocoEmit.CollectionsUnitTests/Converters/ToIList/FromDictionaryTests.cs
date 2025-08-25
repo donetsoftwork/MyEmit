@@ -28,7 +28,7 @@ public class FromDictionaryTests : CollectionTestBase
     {
         IMapper mapper = Mapper.Create();
         // Emit默认不支持字符串转int,需要扩展
-        mapper.UseSystemConvert();
+        // mapper.UseSystemConvert();
         mapper.ConfigureMap<AutoUserDTO, User>();
         Dictionary<string, AutoUserDTO> source = new() { { "222", new AutoUserDTO { UserId = "222", UserName = "Jxj" } } };
         var converter = mapper.GetConverter<Dictionary<string, AutoUserDTO>, List<User>>();

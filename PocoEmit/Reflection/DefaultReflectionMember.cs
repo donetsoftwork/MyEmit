@@ -42,25 +42,33 @@ public class DefaultReflectionMember(StringComparer comparer, bool includeField 
     /// <inheritdoc />
     public MemberBundle GetMembers(Type instanceType)
     {
-        List<MemberInfo> readMembers = [];        
-        List<MemberInfo> writeMembers = [];
+        Dictionary<string, MemberInfo> readMembers = new(_comparer);
+        Dictionary<string, MemberInfo> writeMembers = new(_comparer);
         foreach (var property in GetProperties(instanceType))
         {
-            if (property.CanRead)
-                readMembers.Add(property);
-            if (property.CanWrite)
-                writeMembers.Add(property);
+            if(property.GetIndexParameters().Length > 0)
+                continue;
+            var name = property.Name;
+            if (property.CanRead && !readMembers.ContainsKey(name))
+                readMembers.Add(name, property);
+            if (property.CanWrite && !writeMembers.ContainsKey(name))
+                writeMembers.Add(name, property);
         }
         if(_includeField)
         {
-            var fields = GetFields(instanceType);
-            readMembers.AddRange(fields);
-            writeMembers.AddRange(fields);
+            foreach (var field in GetFields(instanceType))
+            {
+                var name = field.Name;
+                if (!readMembers.ContainsKey(name))
+                    readMembers.Add(name, field);
+                if (!writeMembers.ContainsKey(name))
+                    writeMembers.Add(name, field);
+            }
         }
         List<IEmitMemberReader> readers = [];
-        CheckReader(readers, readMembers);
+        CheckReader(readers, readMembers.Values);
         List<IEmitMemberWriter> writers = [];
-        CheckWriter(writers, writeMembers);
+        CheckWriter(writers, writeMembers.Values);
         return new MemberBundle(CheckMembers(readMembers), CheckMembers(readers), CheckMembers(writeMembers), CheckMembers(writers));
     }
     /// <summary>
@@ -98,14 +106,14 @@ public class DefaultReflectionMember(StringComparer comparer, bool includeField 
     /// <summary>
     /// 检查成员
     /// </summary>
-    /// <param name="list"></param>
+    /// <param name="dic"></param>
     /// <returns></returns>
-    protected virtual IDictionary<string, MemberInfo> CheckMembers(IEnumerable<MemberInfo> list)
+    protected virtual IDictionary<string, MemberInfo> CheckMembers(Dictionary<string, MemberInfo> dic)
     {
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-        return list.ToFrozenDictionary(m => m.Name, m => m, _comparer);
+        return dic.ToFrozenDictionary(_comparer);
 #else
-        return list.ToDictionary(m => m.Name, m => m, _comparer);
+        return dic;
 #endif
     }
     /// <summary>

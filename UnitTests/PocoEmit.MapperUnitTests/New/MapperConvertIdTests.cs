@@ -16,9 +16,9 @@ public class MapperConvertIdTests : MapperConvertIdTestBase
     {
         int source = 11;
         // todo
-        Assert.Throws<InvalidOperationException>(() => _mapper.Convert<int, MyMapperId2>(source));
-        //var result = _mapper.Convert<int, MyMapperId2>(source);
-        //Assert.Equal(source, result.Id);
+        //Assert.Throws<InvalidOperationException>(() => _mapper.Convert<int, MyMapperId2>(source));
+        var result = _mapper.Convert<int, MyMapperId2>(source);
+        Assert.Equal(source, result.Id);
     }
     [Fact]
     public void Convert_IdNullable()

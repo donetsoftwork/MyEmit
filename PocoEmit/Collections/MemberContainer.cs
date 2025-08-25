@@ -4,7 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
-
+using PocoEmit.Enums;
 
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Frozen;
@@ -20,6 +20,7 @@ public partial class MemberContainer
     , ICacher<PropertyInfo, PropertyAccessor>
     , ICacher<MemberInfo, IEmitMemberReader>
     , ICacher<MemberInfo, IEmitMemberWriter>
+    , ICacher<Type, IEnumBundle>
 {
     /// <summary>
     /// 成员容器
@@ -35,10 +36,12 @@ public partial class MemberContainer
         _fieldAccessors = new ConcurrentDictionary<FieldInfo, FieldAccessor>(concurrencyLevel, fieldCapacity);
         _memberReaders = new ConcurrentDictionary<MemberInfo, IEmitMemberReader>(concurrencyLevel, memberCapacity);
         _memberWriters = new ConcurrentDictionary<MemberInfo, IEmitMemberWriter>(concurrencyLevel, memberCapacity);
+        _IEnumBundles = new ConcurrentDictionary<Type, IEnumBundle>(concurrencyLevel, options.EnumBundleCapacity);
         _propertyCacher = new PropertyCacher(this);
         _fieldCacher = new FieldCacher(this);
         _memberReaderCacher = new MemberReaderCacher(this);
         _memberWriterCacher = new MemberWriterCacher(this);
+        _enumCacher = new EnumCacher(this);
     }
     #region 配置
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
@@ -46,16 +49,19 @@ public partial class MemberContainer
     private IDictionary<FieldInfo, FieldAccessor> _fieldAccessors;
     private IDictionary<MemberInfo, IEmitMemberReader> _memberReaders;
     private IDictionary<MemberInfo, IEmitMemberWriter> _memberWriters;
+    private IDictionary<Type, IEnumBundle> _IEnumBundles;
 #else
     private readonly ConcurrentDictionary<PropertyInfo, PropertyAccessor> _propertyAccessors;
     private readonly ConcurrentDictionary<FieldInfo, FieldAccessor> _fieldAccessors;    
     private readonly ConcurrentDictionary<MemberInfo, IEmitMemberReader> _memberReaders;
     private readonly ConcurrentDictionary<MemberInfo, IEmitMemberWriter> _memberWriters;
+    private readonly ConcurrentDictionary<Type, IEnumBundle> _IEnumBundles;
 #endif
     private readonly PropertyCacher _propertyCacher;
     private readonly FieldCacher _fieldCacher;
     private readonly MemberReaderCacher _memberReaderCacher;
     private readonly MemberWriterCacher _memberWriterCacher;
+    private readonly EnumCacher _enumCacher;
     /// <summary>
     /// 属性
     /// </summary>
@@ -66,6 +72,11 @@ public partial class MemberContainer
     /// </summary>
     internal FieldCacher Fields
         => _fieldCacher;
+    /// <summary>
+    /// 枚举
+    /// </summary>
+    public CacheBase<Type, IEnumBundle> Enums
+        => _enumCacher;
     /// <summary>
     /// 读取器
     /// </summary>
@@ -127,6 +138,17 @@ public partial class MemberContainer
     bool ICacher<MemberInfo, IEmitMemberWriter>.TryGetValue(MemberInfo key, out IEmitMemberWriter value)
         => _memberWriters.TryGetValue(key, out value);
     #endregion
+    #region ISettings<Type, IEnumBundle>
+    /// <inheritdoc />
+    bool ICacher<Type, IEnumBundle>.ContainsKey(Type key)
+        => _IEnumBundles.ContainsKey(key);
+    /// <inheritdoc />
+    void IStore<Type, IEnumBundle>.Set(Type key, IEnumBundle value)
+        => _IEnumBundles[key] = value;
+    /// <inheritdoc />
+    bool ICacher<Type, IEnumBundle>.TryGetValue(Type key, out IEnumBundle value)
+        => _IEnumBundles.TryGetValue(key, out value);
+    #endregion
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 设置为不可变
@@ -137,6 +159,7 @@ public partial class MemberContainer
         _propertyAccessors = _propertyAccessors.ToFrozenDictionary();
         _memberReaders = _memberReaders.ToFrozenDictionary();
         _memberWriters = _memberWriters.ToFrozenDictionary();
+        _IEnumBundles = _IEnumBundles.ToFrozenDictionary();
     }
 #endif
     #region 配置
@@ -168,8 +191,14 @@ public partial class MemberContainer
     /// </summary>
     class Inner
     {
+        /// <summary>
+        /// 实例
+        /// </summary>
         internal static readonly MemberContainer Instance = Create();
-
+        /// <summary>
+        /// 构造实例
+        /// </summary>
+        /// <returns></returns>
         static MemberContainer Create()
         {
             var options = new MemberContainerOptions();

@@ -1,5 +1,6 @@
 using PocoEmit;
 using PocoEmit.Converters;
+using PocoEmitUnitTests.Supports;
 
 namespace PocoEmitUnitTests;
 
@@ -9,6 +10,10 @@ public class EmitConverterTests
     [Fact]
     public void Compile_bool2bool()
     {
+        var type = typeof(Color);
+        var fields = ReflectionHelper.GetStaticFields(type);
+        //var type2 = typeof(List<int>);
+        //var methods = ReflectionHelper.GetMethods(type2).ToArray();
         var func = Compile<bool,bool>();
         Assert.NotNull(func);
         var source = true;

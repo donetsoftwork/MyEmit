@@ -95,7 +95,7 @@ public class CopierBuilder(IMapperOptions options)
         {
             var sourceType = reader.ValueType;
             var destType = writer.ValueType;
-            if (sourceType == destType || ReflectionHelper.CheckValueType(sourceType, destType))
+            if (sourceType == destType || PairTypeKey.CheckValueType(sourceType, destType))
                 return new MemberConverter(options, reader, writer);
             var converter = options.GetEmitConverter(sourceType, destType);
             if (converter is null)

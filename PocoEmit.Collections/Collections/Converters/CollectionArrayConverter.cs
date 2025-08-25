@@ -10,18 +10,32 @@ namespace PocoEmit.Collections.Converters;
 /// <summary>
 /// 集合转数组
 /// </summary>
-/// <param name="elementType"></param>
-/// <param name="collectionType"></param>
+/// <param name="sourceType"></param>
+/// <param name="sourceElementType"></param>
+/// <param name="destType"></param>
+/// <param name="destElementType"></param>
 /// <param name="length"></param>
 /// <param name="visitor"></param>
 /// <param name="elementConverter"></param>
-public class CollectionArrayConverter(Type elementType, Type collectionType, IEmitElementCounter length, IEmitElementVisitor visitor, IEmitConverter elementConverter)
-    : ArrayActivator(elementType, collectionType, length)
+public class CollectionArrayConverter(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitElementCounter length, IEmitElementVisitor visitor, IEmitConverter elementConverter)
+    : ArrayActivator(destType, destElementType,  length)
     , IEmitConverter
 {
     #region 配置
+    private readonly Type _sourceType = sourceType;
+    private readonly Type _sourceElementType = sourceElementType;
     private readonly IEmitElementVisitor _visitor = visitor;
     private readonly IEmitConverter _elementConverter = elementConverter;
+    /// <summary>
+    /// 源类型
+    /// </summary>
+    public Type SourceType
+        => _sourceType;
+    /// <summary>
+    /// 源子元素类型
+    /// </summary>
+    public Type SourceElementType
+        => _sourceElementType;
     /// <summary>
     /// 集合访问者
     /// </summary>
@@ -40,16 +54,15 @@ public class CollectionArrayConverter(Type elementType, Type collectionType, IEm
         var dest = Expression.Variable(_collectionType, "dest");
         var count = Expression.Variable(typeof(int), "count");
         var index = Expression.Variable(typeof(int), "index");
-        LabelTarget destTarget = Expression.Label(_collectionType, "returndest");
+        var sourceItem = Expression.Variable(_sourceElementType, "sourceItem");
 
         return Expression.Block(
-            [count, dest, index],
+            [count, dest, index, sourceItem],
             Expression.Assign(count, _length.Count(source)),
             Expression.Assign(dest, New(count)),
             Expression.Assign(index, Expression.Constant(0)),
-            _visitor.Travel(source, item => CopyElement(dest, index, item, _elementConverter)),
-            // Expression.Return(returnTarget, dest),
-            Expression.Label(destTarget, dest)
+            _visitor.Travel(source, item => CopyElement(dest, index, item, sourceItem, _elementConverter)),
+            dest
         );
     }
     /// <summary>
@@ -58,8 +71,12 @@ public class CollectionArrayConverter(Type elementType, Type collectionType, IEm
     /// <param name="dest"></param>
     /// <param name="index"></param>
     /// <param name="item"></param>
+    /// <param name="sourceItem"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    public static Expression CopyElement(Expression dest, Expression index, Expression item, IEmitConverter converter)
-        => Expression.Assign(Expression.ArrayAccess(dest, Expression.PostIncrementAssign(index)), converter.Convert(item));
+    public static Expression CopyElement(Expression dest, Expression index, Expression item, ParameterExpression sourceItem, IEmitConverter converter)
+        => Expression.Block(
+            Expression.Assign(sourceItem, item),
+            Expression.Assign(Expression.ArrayAccess(dest, Expression.PostIncrementAssign(index)), converter.Convert(sourceItem))
+            );
 }

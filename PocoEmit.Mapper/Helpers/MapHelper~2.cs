@@ -4,6 +4,7 @@ using PocoEmit.Converters;
 using PocoEmit.Maping;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace PocoEmit.Helpers;
 
@@ -128,24 +129,35 @@ public partial class MapHelper<TSource, TDest>
     }
     #endregion
     #region Activator
+    #region UseActivator
     /// <summary>
-    /// 设置带参委托来激活
+    /// 设置带参表达式来激活
     /// </summary>
-    /// <param name="activatorFunc"></param>
+    /// <param name="expression"></param>
     /// <returns></returns>
-    public MapHelper<TSource, TDest> UseActivator(Func<TSource, TDest> activatorFunc)
+    public MapHelper<TSource, TDest> UseActivator(Expression<Func<TSource, TDest>> expression)
     {
-        _mapper.Configure(_key, new ArgumentDelegateActivator<TSource, TDest>(activatorFunc));
+        _mapper.Configure(_key, new DelegateActivator<TSource, TDest>(expression));
         return this;
     }
     /// <summary>
-    /// 设置委托来激活
+    /// 设置表达式来激活
     /// </summary>
-    /// <param name="activatorFunc"></param>
+    /// <param name="expression"></param>
     /// <returns></returns>
-    public MapHelper<TSource, TDest> UseActivator(Func<TDest> activatorFunc)
+    public MapHelper<TSource, TDest> UseActivator(Expression<Func<TDest>> expression)
     {
-        _mapper.Configure(_key, new DelegateActivator<TDest>(activatorFunc));
+        _mapper.Configure(_key, new DelegateActivator<TDest>(expression));
+        return this;
+    }
+    #endregion
+    /// <summary>
+    /// 转化后成员检查配置
+    /// </summary>
+    /// <param name="checkAction"></param>
+    public MapHelper<TSource, TDest> UseCheckAction(Action<TSource, TDest> checkAction)
+    {
+        _mapper.Configure(_key, checkAction);
         return this;
     }
     #endregion
@@ -158,7 +170,7 @@ public partial class MapHelper<TSource, TDest>
     /// </summary>
     /// <param name="convertFunc"></param>
     /// <returns></returns>
-    public IMapper UseConvertFunc(Func<TSource, TDest> convertFunc)
+    public IMapper UseConvertFunc(Expression<Func<TSource, TDest>> convertFunc)
     {
         _mapper.Configure(_key, new DelegateConverter<TSource, TDest>(convertFunc));
         return _mapper;

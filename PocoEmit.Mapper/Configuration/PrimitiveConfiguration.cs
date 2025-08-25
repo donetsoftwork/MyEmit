@@ -39,7 +39,7 @@ public class PrimitiveConfiguration
     {
         if (ReflectionHelper.IsNullable(key))
         {
-            var originalType = key.GenericTypeArguments[0];
+            var originalType = Nullable.GetUnderlyingType(key);
             return Get(originalType);
         }
         return false;

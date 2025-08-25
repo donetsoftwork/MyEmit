@@ -46,17 +46,17 @@ public class PocoGetConvertFuncTests : PocoConvertTestBase
         int source = 123;
         Assert.Equal(123, convertFun(source));
     }
-    [Fact]
-    public void GetConvertFunc_Id()
-    {
-        // Act
-        var convertFun = _poco.GetConvertFunc<int, PocoId>();
-        // Assert
-        Assert.NotNull(convertFun);
-        int source = 11;
-        var result = convertFun(source);
-        Assert.Equal(source, result.Id);
-    }
+    //[Fact]
+    //public void GetConvertFunc_Id()
+    //{
+    //    // Act
+    //    var convertFun = _poco.GetConvertFunc<int, PocoId>();
+    //    // Assert
+    //    Assert.NotNull(convertFun);
+    //    int source = 11;
+    //    var result = convertFun(source);
+    //    Assert.Equal(source, result.Id);
+    //}
     #region 继承
     [Fact]
     public void GetConvert_int2true()

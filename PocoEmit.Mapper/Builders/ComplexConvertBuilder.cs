@@ -4,9 +4,7 @@ using PocoEmit.Converters;
 using PocoEmit.Members;
 using System;
 using System.Collections.Generic;
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
 using System.Reflection;
-#endif
 
 namespace PocoEmit.Builders;
 
@@ -15,7 +13,7 @@ namespace PocoEmit.Builders;
 /// </summary>
 /// <param name="options"></param>
 public class ComplexConvertBuilder(IMapperOptions options)
-    : ConvertBuilder
+    : ConvertBuilder(options)
 {
     #region 配置
     /// <summary>
@@ -25,12 +23,44 @@ public class ComplexConvertBuilder(IMapperOptions options)
     /// <summary>
     /// Emit配置
     /// </summary>
-    public IMapperOptions Options
+    public new IMapperOptions Options
         => _options;
     #endregion
     /// <inheritdoc />
     public override IEmitConverter Build(Type sourceType, Type destType)
     {
+        // 同类型
+        if (sourceType == destType)
+            return BuildForSelf(destType);
+        IEmitConverter converter = null;
+        // object类型
+        if (TryBuildObject(sourceType, destType, ref converter))
+            return converter;
+        // 兼容类型
+        if (PairTypeKey.CheckValueType(sourceType, destType))
+            return BuildForSelf(destType);
+        // 可空类型
+        if (TryBuildNullable(sourceType, destType, ref converter))
+            return converter;
+        // 枚举类型
+        if (TryBuildEnumConverter(sourceType, destType, ref converter))
+            return converter;
+        // 字符串
+        if (destType == typeof(string))
+            return BuildForString(sourceType);
+        return BuildOther(sourceType, destType)/* ?? BuildByEmit(destType)*/;
+    }
+    /// <inheritdoc />
+    protected override IEmitConverter BuildOther(Type sourceType, Type destType)
+    {
+        var sourceIsPrimitive = _options.CheckPrimitive(sourceType);
+        IEmitConverter converter = null;
+        // 基础类型没有成员
+        if (!sourceIsPrimitive && TryBuildByMember(sourceType, destType, ref converter))
+            return converter;
+        var destIsPrimitive = _options.CheckPrimitive(destType);
+        if (!destIsPrimitive && TryBuildByConstructor(sourceType, destType, ref converter))
+            return converter;
         if (destType.IsArray)
             return ToArray(sourceType, destType);
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
@@ -45,18 +75,63 @@ public class ComplexConvertBuilder(IMapperOptions options)
         // 接口不支持
         if (isInterface)
             return null;
-        if (_options.CheckPrimitive(sourceType))
-            return base.Build(sourceType, destType);
-        var converter = TryBuildByMember(sourceType, destType);
-        if(converter is not null)
-            return converter;
-        if (_options.CheckPrimitive(destType))
+
+        // 系统类型转换
+        if (sourceIsPrimitive && destIsPrimitive)
+            return BuildByConvert(sourceType, destType);
+        if (destIsPrimitive)
             return null;
+        //constructor = _options.GetConstructor(destType);
+        //if (constructor is not null)
+        //    return BuildByConstructor(constructor, sourceType);
         var key = new PairTypeKey(sourceType, destType);
-        var activator = _options.GetEmitActivator(key) ?? CreateDefaultActivator(destType);
+        var activator = _options.GetEmitActivator(key) ?? CreateDefaultActivator(sourceType, destType);
         if (activator is null)
             return null;
         return new ComplexTypeConverter(activator, _options.GetEmitCopier(key));
+    }
+    /// <summary>
+    /// 尝试构造函数转化器
+    /// </summary>
+    public static bool TryBuildByConstructor(Type sourceType, Type destType, ref IEmitConverter converter)
+    {
+        // 按构造函数
+        var constructor = ReflectionHelper.GetConstructorByParameterType(destType, sourceType);
+        if (constructor is null)
+        {
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        var isValueType = sourceType.GetTypeInfo().IsValueType;
+#else
+            var isValueType = sourceType.IsValueType;
+#endif
+            if (isValueType)
+            {
+                var compatibleSourceType = typeof(Nullable<>).MakeGenericType(sourceType);
+                constructor = ReflectionHelper.GetConstructorByParameterType(destType, compatibleSourceType);
+                if (constructor is null)
+                    return false;
+                converter = new ConstructorCompatibleConverter(constructor, compatibleSourceType);
+                return true;
+            }
+        }
+        else
+        {
+            converter = new ConstructorConverter(constructor);
+            return true;
+        }
+        return false;
+    }
+    /// <summary>
+    /// 系统转化
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
+    /// <returns></returns>
+    protected IEmitConverter BuildByConvert(Type sourceType, Type destType)
+    {
+        IEmitConverter converter = null;
+        TryBuildByConvert(sourceType, destType, ref converter);
+        return converter;
     }
     /// <summary>
     /// 数组不支持(预留扩展)
@@ -89,23 +164,23 @@ public class ComplexConvertBuilder(IMapperOptions options)
     /// </summary>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
+    /// <param name="converter"></param>
     /// <returns></returns>
-    private MemberReadConverter TryBuildByMember(Type sourceType, Type destType)
+    private bool TryBuildByMember(Type sourceType, Type destType, ref IEmitConverter converter)
     {
         var bundle = _options.MemberCacher.Get(sourceType);
         if (bundle is null)
-            return null;
+            return false;
         foreach (var memberReader in bundle.EmitReaders.Values)
         {
             var reader = memberReader;
             if (CheckReader(_options, ref reader, destType) && reader is not null)
-                return new MemberReadConverter(reader);
+            {
+                converter = new MemberReadConverter(reader);
+                return true;
+            }
         }
-        //var method = ReflectionHelper.GetMethod(sourceType, m => m.GetParameters().Length == 0 && m.ReturnType == destType);
-        //if (method is null)
-        //    return null;
-        //return new SelfMethodConverter(method);
-        return null;
+        return false;
     }
     /// <summary>
     /// 检查成员是否匹配
@@ -117,20 +192,20 @@ public class ComplexConvertBuilder(IMapperOptions options)
     private static bool CheckReader(IMapperOptions options, ref IEmitMemberReader reader, Type destType)
     {
         var valueType = reader.ValueType;
-        if (ReflectionHelper.CheckValueType(valueType, destType))
+        if (PairTypeKey.CheckValueType(valueType, destType))
             return true;
         bool isNullable = false;
         if (ReflectionHelper.IsNullable(valueType))
         {
-            valueType = valueType.GenericTypeArguments[0];
+            valueType = Nullable.GetUnderlyingType(valueType);
             isNullable = true;
         }
         if (ReflectionHelper.IsNullable(destType))
         {
             isNullable = true;
-            destType = destType.GenericTypeArguments[0];
+            destType = Nullable.GetUnderlyingType(destType);
         }
-        if(isNullable && ReflectionHelper.CheckValueType(valueType, destType))
+        if(isNullable && PairTypeKey.CheckValueType(valueType, destType))
         {
             options.CheckValueType(ref reader, destType);
             return true;
@@ -140,25 +215,26 @@ public class ComplexConvertBuilder(IMapperOptions options)
     /// <summary>
     /// 构造默认激活器
     /// </summary>
-    /// <param name="key"></param>
+    /// <param name="sourceType"></param>
+    /// <param name="destType"></param>
     /// <returns></returns>
-    public IEmitActivator CreateDefaultActivator(Type key)
+    public IEmitActivator CreateDefaultActivator(Type sourceType, Type destType)
     {
-        var constructor = _options.GetConstructor(key);
+        var constructor = _options.GetConstructor(destType);
         if (constructor is not null)
         {
             var parameters = constructor.GetParameters();
             if (parameters.Length == 0)
-                return new ConstructorActivator(key, constructor);
-            return new ParameterConstructorActivator(_options, key, constructor, parameters);
+                return new ConstructorActivator(destType, constructor);
+            return ParameterConstructorActivator.Create(_options, sourceType, destType, constructor, parameters);
         }
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        var isValueType = key.GetTypeInfo().IsValueType;
+        var isValueType = destType.GetTypeInfo().IsValueType;
 #else
-        var isValueType = key.IsValueType;
+        var isValueType = destType.IsValueType;
 #endif
         if (isValueType)
-            return new TypeActivator(key);
+            return new TypeActivator(destType);
         return null;
     }
 }

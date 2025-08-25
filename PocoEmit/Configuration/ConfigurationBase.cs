@@ -27,7 +27,7 @@ public abstract partial class ConfigurationBase
         _convertConfiguration = new ConcurrentDictionary<PairTypeKey, IEmitConverter>(concurrencyLevel, options.ConverterConfigurationCapacity);
         _memberBundles = new ConcurrentDictionary<Type, MemberBundle>(concurrencyLevel, options.MemberBundleCapacity);
         _reflectionMember = DefaultReflectionMember.Default;
-        _convertBuilder = ConvertBuilder.Default;
+        _convertBuilder = new ConvertBuilder(this);
         _converterFactory = new(this);
         _memberCacher = new TypeMemberCacher(this);
     }

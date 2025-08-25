@@ -43,7 +43,7 @@ public class ConvertToArray(IMapperOptions options)
             //不支持多维数组
             if (sourceType.GetArrayRank() > 1)
                 return null;
-            return ArrayToArray(destType, destElementType, elementConverter);
+            return ArrayToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
         }
             
         if (ReflectionHelper.HasGenericType(sourceType, typeof(IList<>)))
@@ -57,12 +57,14 @@ public class ConvertToArray(IMapperOptions options)
     /// <summary>
     /// 数组转数组
     /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="sourceElementType"></param>
     /// <param name="destType"></param>
     /// <param name="destElementType"></param>
     /// <param name="elementConverter"></param>
     /// <returns></returns>
-    public static ArrayConverter ArrayToArray(Type destType, Type destElementType, IEmitConverter elementConverter)
-        => new(destType, destElementType, elementConverter);
+    public static ArrayConverter ArrayToArray(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
+        => new(sourceType, sourceElementType, destType, destElementType, elementConverter);
     /// <summary>
     /// 列表转数组
     /// </summary>
@@ -77,7 +79,7 @@ public class ConvertToArray(IMapperOptions options)
         var container = CollectionContainer.Instance;
         var length = container.CountCacher.Get(sourceType, sourceElementType);
         var indexReader = container.GetIndexReader(sourceType);
-        return new(destType, destElementType, length, indexReader, elementConverter);
+        return new(sourceType, sourceElementType, destType, destElementType, length, indexReader, elementConverter);
     }
     /// <summary>
     /// 迭代转数组
@@ -97,7 +99,7 @@ public class ConvertToArray(IMapperOptions options)
         var visitor = container.GetVisitor(sourceType);
         if (visitor is null)
             return null;
-        return new CollectionArrayConverter(destType, destElementType, length, visitor, elementConverter);
+        return new CollectionArrayConverter(sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
     }
     /// <summary>
     /// 字典转数组

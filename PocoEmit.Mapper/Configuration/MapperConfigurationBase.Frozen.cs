@@ -3,6 +3,9 @@ using PocoEmit.Collections;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
 using System;
+using PocoEmit.Members;
+using PocoEmit.Builders;
+
 
 
 #if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
@@ -40,6 +43,10 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     private IDictionary<PairTypeKey, IEmitActivator> _argumentActiveConfiguration;
     /// <summary>
+    /// 转化后成员检查配置
+    /// </summary>
+    private IDictionary<PairTypeKey, Delegate> _checkMembers;
+    /// <summary>
     /// 成员匹配配置
     /// </summary>
     private IDictionary<PairTypeKey, IMemberMatch> _matchConfiguration;
@@ -50,7 +57,7 @@ public abstract partial class MapperConfigurationBase
     /// <summary>
     /// 默认值配置
     /// </summary>
-    private IDictionary<Type, object> _defaultValueConfiguration;
+    private IDictionary<Type, IEmitBuilder> _defaultValueConfiguration;
 #else
     /// <summary>
     /// 复制器缓存
@@ -69,6 +76,10 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     private readonly ConcurrentDictionary<PairTypeKey, IEmitActivator> _argumentActiveConfiguration;
     /// <summary>
+    /// 转化后成员检查配置
+    /// </summary>
+    private readonly ConcurrentDictionary<PairTypeKey, Delegate> _checkMembers;
+    /// <summary>
     /// 成员匹配配置
     /// </summary>
     private readonly ConcurrentDictionary<PairTypeKey, IMemberMatch> _matchConfiguration;
@@ -79,7 +90,7 @@ public abstract partial class MapperConfigurationBase
     /// <summary>
     /// 默认值配置
     /// </summary>
-    private readonly ConcurrentDictionary<Type, object> _defaultValueConfiguration;
+    private readonly ConcurrentDictionary<Type, IEmitBuilder> _defaultValueConfiguration;
 #endif
     #endregion
     #region IMapperOptions
@@ -89,12 +100,18 @@ public abstract partial class MapperConfigurationBase
         _matchConfiguration.TryGetValue(key, out IMemberMatch matcher);
         return matcher ?? _defaultMatcher;
     }
+    /// <inheritdoc />
+    public Delegate GetCheckMembers(PairTypeKey key)
+    {
+        _checkMembers.TryGetValue(key, out Delegate checker);
+        return checker;
+    }
     #region IConfigure<PairTypeKey, IEmitCopier>
     /// <inheritdoc />
     void IConfigure<PairTypeKey, IEmitCopier>.Configure(PairTypeKey key, IEmitCopier value)
         => _copyConfiguration[key] = value;
     #endregion
-    #region ISettings<PairTypeKey, IEmitCopier>
+    #region ICacher<PairTypeKey, IEmitCopier>
     /// <inheritdoc />
     bool ICacher<PairTypeKey, IEmitCopier>.ContainsKey(PairTypeKey key)
         => _copiers.ContainsKey(key);
@@ -115,12 +132,21 @@ public abstract partial class MapperConfigurationBase
     void IConfigure<PairTypeKey, IEmitActivator>.Configure(PairTypeKey key, IEmitActivator value)
         => _argumentActiveConfiguration[key] = value;
     #endregion
+    #region IConfigure<PairTypeKey, Delegate>
+    /// <inheritdoc />
+    void IConfigure<PairTypeKey, Delegate>.Configure(PairTypeKey key, Delegate value)
+    {
+        if (_checkMembers.TryGetValue(key, out var value0))
+            value = Delegate.Combine(value0, value);
+        _checkMembers[key] = value;
+    }
+    #endregion
     #region IConfigure<PairTypeKey, IMemberMatch>
     /// <inheritdoc />
     void IConfigure<PairTypeKey, IMemberMatch>.Configure(PairTypeKey key, IMemberMatch value)
         => _matchConfiguration[key] = value;
     #endregion
-    #region ISettings<Type, bool>
+    #region ICacher<Type, bool>
     /// <inheritdoc />
     bool ICacher<Type, bool>.ContainsKey(Type key)
         => _primitiveTypes.ContainsKey(key);
@@ -136,9 +162,9 @@ public abstract partial class MapperConfigurationBase
     void IConfigure<Type, bool>.Configure(Type key, bool value)
        => _primitiveTypes[key] = value;
     #endregion
-    #region IConfigure<Type, object>
+    #region IConfigure<Type, IEmitBuilder>
     /// <inheritdoc />
-    void IConfigure<Type, object>.Configure(Type key, object value)
+    void IConfigure<Type, IEmitBuilder>.Configure(Type key, IEmitBuilder value)
         => _defaultValueConfiguration[key] = value;
     #endregion
     #endregion
@@ -150,10 +176,6 @@ public abstract partial class MapperConfigurationBase
     {
         base.ToFrozen();
         _copiers = _copiers.ToFrozenDictionary();
-        _activeConfiguration = _activeConfiguration.ToFrozenDictionary();
-        _argumentActiveConfiguration = _argumentActiveConfiguration.ToFrozenDictionary();
-        _matchConfiguration = _matchConfiguration.ToFrozenDictionary();        
-        _primitiveTypes = _primitiveTypes.ToFrozenDictionary();
     }
 #endif
 }

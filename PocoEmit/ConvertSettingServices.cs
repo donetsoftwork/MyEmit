@@ -2,6 +2,7 @@ using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
+using System.Linq.Expressions;
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
 using System.Reflection;
 #endif
@@ -21,7 +22,7 @@ public static partial class PocoEmitServices
     /// <param name="poco"></param>
     /// <param name="convertFunc"></param>
     /// <returns></returns>
-    public static IPoco UseConvertFunc<TSource, TDest>(this IPoco poco, Func<TSource, TDest> convertFunc)
+    public static IPoco UseConvertFunc<TSource, TDest>(this IPoco poco, Expression<Func<TSource, TDest>> convertFunc)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
         poco.Configure(key, new DelegateConverter<TSource, TDest>(convertFunc));
@@ -92,36 +93,36 @@ public static partial class PocoEmitServices
         }
         return configuration;
     }
-    /// <summary>
-    /// 加载System.Convert
-    /// </summary>
-    /// <typeparam name="TConfiguration"></typeparam>
-    /// <param name="configuration"></param>
-    /// <returns></returns>
-    public static TConfiguration UseSystemConvert<TConfiguration>(this TConfiguration configuration)
-        where TConfiguration : IPoco
-        => UseStaticConverter(configuration, typeof(Convert));
-    /// <summary>
-    /// 加载字符串转化基础类型
-    /// </summary>
-    /// <param name="configuration"></param>
-    public static TConfiguration SetStringConvert<TConfiguration>(this TConfiguration configuration)
-        where TConfiguration : IPoco
-    {
-        configuration.UseConvertFunc<string, bool>(System.Convert.ToBoolean);
-        configuration.UseConvertFunc<string, byte>(System.Convert.ToByte);
-        configuration.UseConvertFunc<string, char>(System.Convert.ToChar);
-        configuration.UseConvertFunc<string, DateTime>(System.Convert.ToDateTime);
-        configuration.UseConvertFunc<string, decimal>(System.Convert.ToDecimal);
-        configuration.UseConvertFunc<string, float>(System.Convert.ToSingle);
-        configuration.UseConvertFunc<string, double>(System.Convert.ToDouble);
-        configuration.UseConvertFunc<string, short>(System.Convert.ToInt16);
-        configuration.UseConvertFunc<string, int>(System.Convert.ToInt32);
-        configuration.UseConvertFunc<string, long>(System.Convert.ToInt64);
-        configuration.UseConvertFunc<string, sbyte>(System.Convert.ToSByte);
-        configuration.UseConvertFunc<string, ushort>(System.Convert.ToUInt16);
-        configuration.UseConvertFunc<string, uint>(System.Convert.ToUInt32);
-        configuration.UseConvertFunc<string, ulong>(System.Convert.ToUInt64);
-        return configuration;
-    }
+    ///// <summary>
+    ///// 加载System.Convert
+    ///// </summary>
+    ///// <typeparam name="TConfiguration"></typeparam>
+    ///// <param name="configuration"></param>
+    ///// <returns></returns>
+    //public static TConfiguration UseSystemConvert<TConfiguration>(this TConfiguration configuration)
+    //    where TConfiguration : IPoco
+    //    => UseStaticConverter(configuration, typeof(Convert));
+    ///// <summary>
+    ///// 加载字符串转化基础类型
+    ///// </summary>
+    ///// <param name="configuration"></param>
+    //public static TConfiguration UseSystemStringConvert<TConfiguration>(this TConfiguration configuration)
+    //    where TConfiguration : IPoco
+    //{
+    //    configuration.UseConvertFunc<string, bool>(System.Convert.ToBoolean);
+    //    configuration.UseConvertFunc<string, byte>(System.Convert.ToByte);
+    //    configuration.UseConvertFunc<string, char>(System.Convert.ToChar);
+    //    configuration.UseConvertFunc<string, DateTime>(System.Convert.ToDateTime);
+    //    configuration.UseConvertFunc<string, decimal>(System.Convert.ToDecimal);
+    //    configuration.UseConvertFunc<string, float>(System.Convert.ToSingle);
+    //    configuration.UseConvertFunc<string, double>(System.Convert.ToDouble);
+    //    configuration.UseConvertFunc<string, short>(System.Convert.ToInt16);
+    //    configuration.UseConvertFunc<string, int>(System.Convert.ToInt32);
+    //    configuration.UseConvertFunc<string, long>(System.Convert.ToInt64);
+    //    configuration.UseConvertFunc<string, sbyte>(System.Convert.ToSByte);
+    //    configuration.UseConvertFunc<string, ushort>(System.Convert.ToUInt16);
+    //    configuration.UseConvertFunc<string, uint>(System.Convert.ToUInt32);
+    //    configuration.UseConvertFunc<string, ulong>(System.Convert.ToUInt64);
+    //    return configuration;
+    //}
 }

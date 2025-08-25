@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -69,7 +68,7 @@ public class EnumerableVisitor
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     public static MethodInfo GetGetEnumerator(Type collectionType)
-        => ReflectionHelper.GetMethod(collectionType, method => method.Name == "GetEnumerator" && method.GetParameters().Length == 0)
+        => ReflectionHelper.GetMethod(collectionType, "GetEnumerator")
         ?? throw new ArgumentException($"type '{collectionType.Name}' does not have GetEnumerator.");
     /// <summary>
     /// 获取MoveNext方法
@@ -78,7 +77,7 @@ public class EnumerableVisitor
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     private static MethodInfo GetMoveNextCore(Type collectionType)
-        => ReflectionHelper.GetMethod(collectionType, method => method.Name == "MoveNext" && method.GetParameters().Length == 0);
+        => ReflectionHelper.GetMethod(collectionType, "MoveNext");
     /// <summary>
     /// 获取Current
     /// </summary>

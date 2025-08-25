@@ -122,6 +122,19 @@ public static partial class PocoEmitServices
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
+    /// <param name="poco"></param>
+    /// <returns></returns>
+    public static Expression<Func<TSource, TDest>> BuildConverter<TSource, TDest>(this IPoco poco)
+    {
+        var source = Expression.Parameter(typeof(TSource), "source");
+        var body = poco.GetEmitConverter<TSource, TDest>().Convert(source);
+        return Expression.Lambda<Func<TSource, TDest>>(body, source);
+    }
+    /// <summary>
+    /// 编译转换委托
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
     /// <param name="emit"></param>
     /// <returns></returns>
     public static Expression<Func<TSource, TDest>> Build<TSource, TDest>(this IEmitConverter emit)
@@ -137,9 +150,10 @@ public static partial class PocoEmitServices
     class Inner
     {
         /// <summary>
-        /// Compiler
+        /// 反射Compile方法
         /// </summary>
-        private static readonly MethodInfo ConvertCompilerMethod = Compiler.GetCompiler("converter");
+        private static readonly MethodInfo ConvertCompilerMethod = EmitHelper.GetActionMethodInfo<IEmitConverter>(emit => Compiler.Compile<long, object>(emit))
+            .GetGenericMethodDefinition();
         /// <summary>
         /// 反射调用编译方法
         /// </summary>

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace PocoEmit.Builders;
 
@@ -61,6 +63,132 @@ public static class EmitHelper
                 Expression.Break(forLabel)
             ),
             forLabel);
+    }
+    #endregion
+    #region GetMethodInfo
+    /// <summary>
+    /// 从表达式提取方法
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public static MethodInfo GetMethodInfo<T>(Expression<Func<T>> expression)
+        => GetBodyMethod(expression);
+    /// <summary>
+    /// 从表达式提取方法
+    /// </summary>
+    /// <typeparam name="TArgument"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public static MethodInfo GetMethodInfo<TArgument, TResult>(Expression<Func<TArgument, TResult>> expression)
+        => GetBodyMethod(expression);
+    /// <summary>
+    /// 从表达式提取方法
+    /// </summary>
+    /// <typeparam name="T1"></typeparam>
+    /// <typeparam name="T2"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public static MethodInfo GetMethodInfo<T1, T2, TResult>(Expression<Func<T1, T2, TResult>> expression)
+        => GetBodyMethod(expression);
+    /// <summary>
+    /// 从表达式提取方法
+    /// </summary>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public static MethodInfo GetActionMethodInfo(Expression<Action> expression)
+        => GetBodyMethod(expression);
+    /// <summary>
+    /// 从表达式提取方法
+    /// </summary>
+    /// <typeparam name="TArgument"></typeparam>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public static MethodInfo GetActionMethodInfo<TArgument>(Expression<Action<TArgument>> expression)
+        => GetBodyMethod(expression);
+    /// <summary>
+    /// 从表达式提取方法
+    /// </summary>
+    /// <typeparam name="T1"></typeparam>
+    /// <typeparam name="T2"></typeparam>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public static MethodInfo GetActionMethodInfo<T1, T2>(Expression<Action<T1, T2>> expression)
+        => GetBodyMethod(expression);
+    /// <summary>
+    /// 从表达式提取方法
+    /// </summary>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    private static MethodInfo GetBodyMethod(LambdaExpression expression)
+    {
+        if(expression.Body is MethodCallExpression callExpression)
+            return callExpression.Method;
+        return null;
+    }
+    ///// <summary>
+    ///// 从表达式提取方法
+    ///// </summary>
+    ///// <param name="expression"></param>
+    ///// <returns></returns>
+    //private static MemberInfo GetBodyMember(LambdaExpression expression)
+    //{
+    //    if (expression.Body is MemberExpression memberExpression)
+    //        return memberExpression.Member;
+    //    return null;
+    //}
+    #endregion
+    /// <summary>
+    /// 是否为复杂类型
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static bool CheckComplex(ExpressionType type)
+    {
+        return type switch
+        {
+            ExpressionType.Constant => false,
+            ExpressionType.Parameter => false,
+            _ => true,
+        };
+    }
+    #region BuildConditions
+    /// <summary>
+    /// 构造条件分支
+    /// </summary>
+    /// <param name="valueType"></param>
+    /// <param name="conditions"></param>
+    /// <returns></returns>
+    public static Expression BuildConditions(Type valueType, List<KeyValuePair<Expression, Expression>> conditions)
+        => BuildConditions(valueType, conditions, conditions.Count - 1, Expression.Default(valueType));
+    /// <summary>
+    /// 构造条件分支
+    /// </summary>
+    /// <param name="conditions"></param>
+    /// <returns></returns>
+    public static Expression BuildConditions(List<KeyValuePair<Expression, Expression>> conditions)
+        => BuildConditions(typeof(void), conditions, conditions.Count - 1, Expression.Empty());
+    /// <summary>
+    /// 构造条件分支
+    /// </summary>
+    /// <param name="conditionType"></param>
+    /// <param name="conditions"></param>
+    /// <param name="index"></param>
+    /// <param name="ifFalse"></param>
+    /// <returns></returns>
+    public static Expression BuildConditions(Type conditionType, List<KeyValuePair<Expression, Expression>> conditions, int index, Expression ifFalse)
+    {
+        var expression = Expression.Condition(
+            conditions[index].Key,
+            conditions[index].Value,
+            ifFalse,
+            conditionType
+        );
+        if (index == 0)
+            return expression;
+        return BuildConditions(conditionType, conditions, index - 1, expression);
     }
     #endregion
 }
