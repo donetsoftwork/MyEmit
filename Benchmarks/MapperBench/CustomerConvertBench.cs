@@ -29,8 +29,7 @@ public class CustomerConvertBench
 
     [Benchmark]
     public CustomerDTO Auto()
-    {
-        
+    {        
         return _auto.Map<Customer, CustomerDTO>(_customer);
     }
     public void Test()
@@ -91,7 +90,6 @@ public class CustomerConvertBench
     {
         return _convertFunc(_customer);
     }
-
 
     [GlobalSetup]
     public void Setup()

@@ -6,7 +6,7 @@
     <PackageId>PocoEmit.Mapper.DI</PackageId>
     <Description>Emit加速操作属性和字段</Description>
     <PackageTags>Emit;Poco;Mapper;Map</PackageTags>
-    <Version>$(VersionBase).2-alpha</Version>
+    <Version>$(VersionBase).3-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
   </PropertyGroup>

@@ -437,123 +437,138 @@ CustomerDTO _autoMap(Customer source, CustomerDTO destination, ResolutionContext
 
 ### 3.2 以下是PocoEmit.Mapper生成的代码
 ```csharp
-T __f<T>(System.Func<T> f) => f();
 CustomerDTO _pocoConvert(Customer source)
 {
     CustomerDTO dest = null;
-    return (source == (Customer)null) ? (CustomerDTO)null : 
-        __f(() => {
-            dest = new CustomerDTO();
-            Address member0 = null;
-            Address member1 = null;
-            Address[] member2 = null;
-            List<Address> member3 = null;
-            dest.Id = source.Id;
-            dest.Name = source.Name;
-            member0 = source.Address;
-            if ((member0 != null))
+    if ((source == (Customer)null))
+    {
+        dest = (CustomerDTO)null;
+    }
+    else
+    {
+        dest = new CustomerDTO();
+        Address member0 = null;
+        Address member1 = null;
+        Address[] member2 = null;
+        List<Address> member3 = null;
+        dest.Id = source.Id;
+        dest.Name = source.Name;
+        member0 = source.Address;
+        if ((member0 != null))
+        {
+            dest.Address = member0;
+        }
+        member1 = source.HomeAddress;
+        if ((member1 != null))
+        {
+            // { The block result will be assigned to `dest.HomeAddress`
+            AddressDTO dest_1 = null;
+            if ((member1 == (Address)null))
             {
-                dest.Address = member0;
+                dest_1 = (AddressDTO)null;
             }
-            member1 = source.HomeAddress;
-            if ((member1 != null))
+            else
             {
-                // { The block result will be assigned to `dest.HomeAddress`
-                AddressDTO dest_1 = null;
-                dest.HomeAddress = (member1 == (Address)null) ? (AddressDTO)null : 
-                    __f(() => {
-                        dest_1 = new AddressDTO();
-                        dest_1.Id = member1.Id;
-                        dest_1.City = member1.City;
-                        dest_1.Country = member1.Country;
-                        return dest_1;
-                    });
-                // } end of block assignment;
+                dest_1 = new AddressDTO();
+                dest_1.Id = member1.Id;
+                dest_1.City = member1.City;
+                dest_1.Country = member1.Country;
             }
-            member2 = source.Addresses;
-            if ((member2 != null))
+            dest.HomeAddress = dest_1;
+            // } end of block assignment;
+        }
+        member2 = source.Addresses;
+        if ((member2 != null))
+        {
+            // { The block result will be assigned to `dest.Addresses`
+            int count = default;
+            AddressDTO[] dest_2 = null;
+            int index = default;
+            Address sourceItem = null;
+            count = member2.Length;
+            dest_2 = new AddressDTO[count];
+            index = 0;
+            while (true)
             {
-                // { The block result will be assigned to `dest.Addresses`
-                int count = default;
-                AddressDTO[] dest_2 = null;
-                int index = default;
-                Address sourceItem = null;
-                count = member2.Length;
-                dest_2 = new AddressDTO[count];
-                index = 0;
-                while (true)
+                if ((index < count))
                 {
-                    if ((index < count))
+                    sourceItem = member2[index];
+                    // { The block result will be assigned to `dest_2[index]`
+                    AddressDTO dest_3 = null;
+                    if ((sourceItem == (Address)null))
                     {
-                        sourceItem = member2[index];
-                        // { The block result will be assigned to `dest_2[index]`
-                        AddressDTO dest_3 = null;
-                        dest_2[index] = (sourceItem == (Address)null) ? (AddressDTO)null : 
-                            __f(() => {
-                                dest_3 = new AddressDTO();
-                                dest_3.Id = sourceItem.Id;
-                                dest_3.City = sourceItem.City;
-                                dest_3.Country = sourceItem.Country;
-                                return dest_3;
-                            });
-                        // } end of block assignment
-                        index++;
+                        dest_3 = (AddressDTO)null;
                     }
                     else
                     {
-                        goto forLabel;
+                        dest_3 = new AddressDTO();
+                        dest_3.Id = sourceItem.Id;
+                        dest_3.City = sourceItem.City;
+                        dest_3.Country = sourceItem.Country;
                     }
+                    dest_2[index] = dest_3;
+                    // } end of block assignment
+                    index++;
                 }
-                forLabel:;
-                dest.Addresses = dest_2;
-                // } end of block assignment;
-            }
-            member3 = source.WorkAddresses;
-            if ((member3 != null))
-            {
-                // { The block result will be assigned to `dest.WorkAddresses`
-                List<AddressDTO> dest_4 = null;
-                dest_4 = new List<AddressDTO>(member3.Count);
-                dest_4;
-                int index_1 = default;
-                int len = default;
-                index_1 = 0;
-                len = member3.Count;
-                while (true)
+                else
                 {
-                    if ((index_1 < len))
-                    {
-                        Address sourceItem_1 = null;
-                        AddressDTO destItem = null;
-                        sourceItem_1 = member3[index_1];
-                        // { The block result will be assigned to `destItem`
-                            AddressDTO dest_5 = null;
-                            destItem = (sourceItem_1 == (Address)null) ? (AddressDTO)null : 
-                                __f(() => {
-                                    dest_5 = new AddressDTO();
-                                    dest_5.Id = sourceItem_1.Id;
-                                    dest_5.City = sourceItem_1.City;
-                                    dest_5.Country = sourceItem_1.Country;
-                                    return dest_5;
-                                });
-                            // } end of block assignment;
-                        dest_4.Add(destItem);
-                        index_1++;
-                    }
-                    else
-                    {
-                        goto forLabel_1;
-                    }
+                    goto forLabel;
                 }
-                forLabel_1:;
-                dest.WorkAddresses = dest_4;
-                // } end of block assignment;
             }
-            CustomerConvertBench.ConvertAddressCity(
-                source,
-                dest);
-            return dest;
-        });
+            forLabel:;
+            dest.Addresses = dest_2;
+            // } end of block assignment;
+        }
+        member3 = source.WorkAddresses;
+        if ((member3 != null))
+        {
+            // { The block result will be assigned to `dest.WorkAddresses`
+            List<AddressDTO> dest_4 = null;
+            dest_4 = new List<AddressDTO>(member3.Count);
+            dest_4;
+            int index_1 = default;
+            int len = default;
+            index_1 = 0;
+            len = member3.Count;
+            while (true)
+            {
+                if ((index_1 < len))
+                {
+                    Address sourceItem_1 = null;
+                    AddressDTO destItem = null;
+                    sourceItem_1 = member3[index_1];
+                    // { The block result will be assigned to `destItem`
+                        AddressDTO dest_5 = null;
+                        if ((sourceItem_1 == (Address)null))
+                        {
+                            dest_5 = (AddressDTO)null;
+                        }
+                        else
+                        {
+                            dest_5 = new AddressDTO();
+                            dest_5.Id = sourceItem_1.Id;
+                            dest_5.City = sourceItem_1.City;
+                            dest_5.Country = sourceItem_1.Country;
+                        }
+                        destItem = dest_5;
+                        // } end of block assignment;
+                    dest_4.Add(destItem);
+                    index_1++;
+                }
+                else
+                {
+                    goto forLabel_1;
+                }
+            }
+            forLabel_1:;
+            dest.WorkAddresses = dest_4;
+            // } end of block assignment;
+        }
+        CustomerConvertBench.ConvertAddressCity(
+            source,
+            dest);
+    }
+    return dest;
 }
 ```
 

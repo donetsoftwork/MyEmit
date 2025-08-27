@@ -50,13 +50,13 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
                 list.Add(Expression.Assign(source2, source));
                 source = source2;
             }
-            list.Add(Expression.Condition(
+            list.Add(Expression.IfThenElse(
                     Expression.Equal(source, Expression.Constant(null, sourceType)),
-                    Expression.Default(destType),
+                    Expression.Assign(dest, Expression.Default(destType)),
                     Expression.Block(ConvertCore(source, dest))
                 )
             );
-
+            list.Add(dest);
             return Expression.Block(variables, list);
         }
         return Expression.Block(variables, ConvertCore(source, dest));
@@ -73,7 +73,6 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
         var list = new List<Expression>() { assign };
         if (_copier is not null)
             list.AddRange(_copier.Copy(source, dest));
-        list.Add(dest);
         return list;
     }
 }
