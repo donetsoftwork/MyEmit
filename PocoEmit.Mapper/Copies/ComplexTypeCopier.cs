@@ -38,7 +38,7 @@ public class ComplexTypeCopier(IMapperOptions options, IEnumerable<IMemberConver
         {
             var sourceMember = member.GetSourceMember(source);
             var sourceMemberType = sourceMember.Type;
-            if (EmitHelper.CheckComplex(sourceMember.NodeType))
+            if (EmitHelper.CheckComplexSource(sourceMember, _options.CheckPrimitive(sourceMemberType)))
             {
                 var sourceMemberVariable = Expression.Variable(sourceMember.Type, "member" + index++);
                 variables.Add(sourceMemberVariable);

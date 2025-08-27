@@ -7,11 +7,12 @@ namespace PocoEmit.Converters;
 /// <summary>
 /// 兼容类型转化
 /// </summary>
+/// <param name="isPrimitiveSource"></param>
 /// <param name="original"></param>
 /// <param name="originalSourceType"></param>
 /// <param name="destType"></param>
-public sealed class CompatibleConverter(IEmitConverter original, Type originalSourceType, Type destType)
-    : EmitConverter(destType), IEmitConverter
+public sealed class CompatibleConverter(bool isPrimitiveSource, IEmitConverter original, Type originalSourceType, Type destType)
+    : EmitConverter(isPrimitiveSource, destType), IEmitConverter
 {
     #region 配置
     private readonly IEmitConverter _original = original;
@@ -35,13 +36,13 @@ public sealed class CompatibleConverter(IEmitConverter original, Type originalSo
         => ConvertDestCore(_original.Convert(ConvertOriginalSourceCore(value, _originalSourceType)), _destType);
     //=> ConvertDest(ConvertOriginal(value));
     #region ConvertOriginal
-    /// <summary>
-    /// 源转化
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    private Expression ConvertOriginalSource(Expression value)
-        => Convert(value, _originalSourceType, ConvertOriginalSourceCore);
+    ///// <summary>
+    ///// 源转化
+    ///// </summary>
+    ///// <param name="value"></param>
+    ///// <returns></returns>
+    //private Expression ConvertOriginalSource(Expression value)
+    //    => Convert(value, _isPrimitiveSource, _originalSourceType, ConvertOriginalSourceCore);
     /// <summary>
     /// 源核心转化
     /// </summary>
@@ -52,13 +53,13 @@ public sealed class CompatibleConverter(IEmitConverter original, Type originalSo
         => originalSourceType == value.Type ? value : Expression.Convert(value, originalSourceType);
     #endregion
     #region ConvertDest
-    /// <summary>
-    /// 最终转化
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    private Expression ConvertDest(Expression value)
-        => Convert(value, _destType, ConvertDestCore);
+    ///// <summary>
+    ///// 最终转化
+    ///// </summary>
+    ///// <param name="value"></param>
+    ///// <returns></returns>
+    //private Expression ConvertDest(Expression value)
+    //    => Convert(value, _isPrimitiveSource, _destType, ConvertDestCore);
     /// <summary>
     /// 最终核心转化
     /// </summary>

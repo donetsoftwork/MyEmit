@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 using MapperBench.Supports;
 using Microsoft.Extensions.DependencyInjection;
 using PocoEmit;
+using System.Linq.Expressions;
 
 namespace MapperBench;
 
@@ -19,6 +20,7 @@ public class CustomerConvertBench
     private Customer _customer = GetCustomer();
     private Func<Customer, CustomerDTO, ResolutionContext, CustomerDTO> _autoFunc;
     private ResolutionContext _resolutionContext;
+    public static readonly Func<User, UserDTO> UserDTOConvert = PocoEmit.Mapper.Default.GetConvertFunc<User, UserDTO>();
     /// <summary>
     /// 
     /// </summary>
@@ -34,25 +36,36 @@ public class CustomerConvertBench
     public void Test()
     {
         //var user2 = _auto.Map<User, UserDTO2>(new User { Id = 1, Name = "a" });
-        var text = _auto.Map<int, string>(1);
-        var num = _auto.Map<string, int>("1");
+        //var text = _auto.Map<int, string>(1);
+        //var num = _auto.Map<string, int>("1");
+        ConsoleColor color = ConsoleColor.Red;
+        LambdaExpression autoExpression = _auto.ConfigurationProvider.BuildExecutionPlan(typeof(ConsoleColor), typeof(MyColor));
+        var autoCode = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(autoExpression);
+        Console.WriteLine(autoCode);
+        var autoColor = _auto.Map<ConsoleColor, MyColor>(color);
+        Console.WriteLine(autoColor.ToString());
+        LambdaExpression pocoExpression = _poco.BuildConverter<ConsoleColor, MyColor>();
+        var pocoCode = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(pocoExpression);
+        Console.WriteLine(pocoCode);
+        var pocoColor = _poco.Convert<ConsoleColor, MyColor>(color);
+        Console.WriteLine(pocoColor.ToString());
     }
     [Benchmark]
     public CustomerDTO AutoFunc()
     {
-        return _autoFunc.Invoke(_customer, default(CustomerDTO), _resolutionContext);
+        return _autoFunc(_customer, default(CustomerDTO), _resolutionContext);
     }
     public string BuildPoco()
     {
-        var expression = _poco.BuildConverter<Customer, CustomerDTO>();
+        Expression<Func<Customer, CustomerDTO>> expression = _poco.BuildConverter<Customer, CustomerDTO>();
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Console.WriteLine(code);
         return code;
     }
     public string BuildAuto()
     {
-        var expression = _auto.ConfigurationProvider.BuildExecutionPlan(typeof(Customer), typeof(CustomerDTO));        
-        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        LambdaExpression expression = _auto.ConfigurationProvider.BuildExecutionPlan(typeof(Customer), typeof(CustomerDTO));        
+        string code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Console.WriteLine(code);
         return code;
     }

@@ -61,7 +61,7 @@ public class ConvertBuilder(IPocoOptions options)
     /// <param name="destType"></param>
     /// <returns></returns>
     protected static EmitConverter BuildByEmit(Type destType)
-        => new(destType);
+        => new(false, destType);
     /// <summary>
     /// 其他类型
     /// </summary>
@@ -164,7 +164,7 @@ public class ConvertBuilder(IPocoOptions options)
     /// <param name="destType"></param>
     /// <returns></returns>
     public virtual IEmitConverter BuildForNullable(IEmitConverter original, Type originalSourceType, Type destType)
-        => new CompatibleConverter(original, originalSourceType, destType);
+        => new CompatibleConverter(false, original, originalSourceType, destType);
     /// <summary>
     /// 尝试系统类型转化
     /// </summary>

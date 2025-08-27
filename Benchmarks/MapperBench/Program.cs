@@ -5,9 +5,9 @@ using MapperBench.Supports;
 using System.Linq.Expressions;
 
 
-CustomerConvertBench convertBench = new();
-convertBench.Setup();
-convertBench.Test();
+//CustomerConvertBench convertBench = new();
+//convertBench.Setup();
+//convertBench.Test();
 //var auto = convertBench.BuildAuto();
 //var poco = convertBench.BuildPoco();
 //var dto1 = convertBench.Auto();
@@ -17,7 +17,7 @@ convertBench.Test();
 //var dto12 = convertBench.Auto();
 //var dto22 = convertBench.Convert();
 //Console.ReadLine();
-//BenchmarkRunner.Run<CustomerConvertBench>();
+BenchmarkRunner.Run<CustomerConvertBench>();
 //BenchmarkRunner.Run<UserConvertBench>();
 
 //Expression<Action<Customer>> expression = static customer => customer.Name = "changed";

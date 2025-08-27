@@ -2,24 +2,31 @@ using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-using System.Reflection;
-#endif
 
 namespace PocoEmit.Converters;
 
 /// <summary>
 /// Emit类型转化
 /// </summary>
+/// <param name="isPrimitiveSource"></param>
 /// <param name="destType"></param>
-public class EmitConverter(Type destType)
+public class EmitConverter(bool isPrimitiveSource, Type destType)
     : IEmitConverter
 {
     #region 配置
     /// <summary>
+    /// 源类型是否为基础类型
+    /// </summary>
+    protected bool _isPrimitiveSource = isPrimitiveSource;
+    /// <summary>
     /// 映射目标类型
     /// </summary>
     protected readonly Type _destType = destType;
+    /// <summary>
+    /// 源类型是否为基础类型
+    /// </summary>
+    public bool IsPrimitiveSource
+        => _isPrimitiveSource;
     /// <summary>
     /// 映射目标类型
     /// </summary>
@@ -28,10 +35,12 @@ public class EmitConverter(Type destType)
     /// <inheritdoc />
     bool ICompileInfo.Compiled
         => false;
+
+
     #endregion
     /// <inheritdoc />
     public virtual Expression Convert(Expression value)
-        => Convert(value, _destType, ConvertCore);
+        => Convert(value, _isPrimitiveSource, _destType, ConvertCore);
     /// <summary>
     /// 核心转化
     /// </summary>
@@ -44,15 +53,16 @@ public class EmitConverter(Type destType)
     /// 转化类型
     /// </summary>
     /// <param name="value"></param>
+    /// <param name="isPrimitive"></param>
     /// <param name="destType"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    public static Expression Convert(Expression value, Type destType, Func<Expression, Type, Expression> converter)
+    public static Expression Convert(Expression value, bool isPrimitive, Type destType, Func<Expression, Type, Expression> converter)
     {
         var sourceType = value.Type;
         if (PairTypeKey.CheckNullCondition(sourceType))
         {
-            if (EmitHelper.CheckComplex(value.NodeType))
+            if (EmitHelper.CheckComplexSource(value, isPrimitive))
             {
                 var source = Expression.Variable(sourceType, "source");
                 return Expression.Block(

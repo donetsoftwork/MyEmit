@@ -4,7 +4,9 @@ using PocoEmit.Converters;
 using PocoEmit.Members;
 using System;
 using System.Collections.Generic;
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
 using System.Reflection;
+#endif
 
 namespace PocoEmit.Builders;
 
@@ -90,6 +92,9 @@ public class ComplexConvertBuilder(IMapperOptions options)
             return null;
         return new ComplexTypeConverter(activator, _options.GetEmitCopier(key));
     }
+    /// <inheritdoc />
+    public override IEmitConverter BuildForNullable(IEmitConverter original, Type originalSourceType, Type destType)
+        => new CompatibleConverter(_options.CheckPrimitive(originalSourceType), original, originalSourceType, destType);
     /// <summary>
     /// 尝试构造函数转化器
     /// </summary>

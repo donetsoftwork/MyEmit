@@ -5,7 +5,7 @@
     <PackageId>PocoEmit</PackageId>
     <Description>Emit加速操作属性和字段</Description>
     <PackageTags>Emit;Poco;Reflection;Property;Field</PackageTags>
-    <Version>$(VersionBase).0-alpha</Version>
+    <Version>$(VersionBase).2-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace PocoEmit.Enums;
 
@@ -18,9 +17,7 @@ public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundl
     : IEmitConverter
 {
     #region 配置
-    private readonly Type _sourceEnumType = sourceBundle.EnumType;
     private readonly Type _destEnumType = destBundle.EnumType;
-    private readonly MethodInfo _comparisonMethod = null;
     private readonly IEnumBundle _sourceBundle = sourceBundle;
     private readonly IEnumBundle _destBundle = destBundle;
     /// <summary>

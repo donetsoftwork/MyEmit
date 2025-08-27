@@ -43,7 +43,7 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
         if(PairTypeKey.CheckNullCondition(sourceType))
         {
             var list = new List<Expression>();
-            if (EmitHelper.CheckComplex(source.NodeType))
+            if (EmitHelper.CheckComplexSource(source, false))
             {
                 var source2 = Expression.Variable(sourceType, "source");
                 variables.Add(source2);
@@ -67,7 +67,7 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    private IEnumerable<Expression> ConvertCore(Expression source, ParameterExpression dest)
+    private List<Expression> ConvertCore(Expression source, ParameterExpression dest)
     {
         var assign = Expression.Assign(dest, _destActivator.New(source));
         var list = new List<Expression>() { assign };

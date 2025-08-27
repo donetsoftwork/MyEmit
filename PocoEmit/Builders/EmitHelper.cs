@@ -143,14 +143,17 @@ public static class EmitHelper
     /// <summary>
     /// 是否为复杂类型
     /// </summary>
-    /// <param name="type"></param>
+    /// <param name="value"></param>
+    /// <param name="isPrimitive"></param>
     /// <returns></returns>
-    public static bool CheckComplex(ExpressionType type)
+    public static bool CheckComplexSource(Expression value, bool isPrimitive)
     {
+        ExpressionType type = value.NodeType;
         return type switch
         {
             ExpressionType.Constant => false,
             ExpressionType.Parameter => false,
+            ExpressionType.MemberAccess => !isPrimitive,
             _ => true,
         };
     }
