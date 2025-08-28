@@ -1,6 +1,7 @@
 using PocoEmit.Activators;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
 using PocoEmit.Helpers;
 using PocoEmit.Maping;
 using System;
@@ -66,6 +67,22 @@ public static partial class MapperServices
         where TInstance : new()
         => mapper.UseActivator(static () => new TInstance());
     #endregion
+    #region UseConvertFunc
+    /// <summary>
+    /// 使用委托转化
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="mapper"></param>
+    /// <param name="convertFunc"></param>
+    /// <returns></returns>
+    public static IMapper UseConvertFunc<TSource, TDest>(this IMapper mapper, Expression<Func<TSource, TDest>> convertFunc)
+    {
+        var key = new PairTypeKey(typeof(TSource), typeof(TDest));
+        mapper.Configure(key, new DelegateConverter<TSource, TDest>(convertFunc));
+        return mapper;
+    }
+    #endregion
     #region UseDefault
     /// <summary>
     /// 配置类型默认值
@@ -76,7 +93,6 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IMapper UseDefault<TValue>(this IMapper mapper, TValue value)
     {
-        object defaultValue = value;
         var type = typeof(TValue);
         mapper.Configure(type, ConstantBuilder.Use(value, type));
         return mapper;
@@ -90,7 +106,6 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IMapper UseDefault<TValue>(this IMapper mapper, Expression<Func<TValue>> valueFunc)
     {
-        object defaultValue = valueFunc;
         mapper.Configure(typeof(TValue), new FuncBuilder<TValue>(valueFunc));
         return mapper;
     }

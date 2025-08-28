@@ -4,6 +4,18 @@ namespace PocoEmit.MapperUnitTests.New;
 
 public class MapHelperSourceTests : MapHelperBaseTests
 {
+    //static MapHelperSourceTests()
+    //{
+    //    Mapper.GlobalOptions(options => {
+    //        // 转化器数量
+    //        options.ConverterCapacity = 100;
+    //    });
+    //    Mapper.GlobalConfigure(mapper => {
+    //        mapper.ConfigureMap<User, UserDTO>()
+    //        .Source
+    //        .Ignore(nameof(User.Name));
+    //    });
+    //}
     [Fact]
     public void Ignore()
     {

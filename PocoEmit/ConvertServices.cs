@@ -126,9 +126,8 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     public static Expression<Func<TSource, TDest>> BuildConverter<TSource, TDest>(this IPoco poco)
     {
-        var source = Expression.Parameter(typeof(TSource), "source");
-        var body = poco.GetEmitConverter<TSource, TDest>().Convert(source);
-        return Expression.Lambda<Func<TSource, TDest>>(body, source);
+        return poco.GetEmitConverter<TSource, TDest>()
+            .Build<TSource, TDest>();
     }
     /// <summary>
     /// 编译转换委托

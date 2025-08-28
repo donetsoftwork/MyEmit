@@ -114,6 +114,19 @@ public static partial class MapperServices
     #endregion
     #region Build
     /// <summary>
+    /// 编译转换委托
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="mapper"></param>
+    /// <returns></returns>
+    public static Expression<Action<TSource, TDest>> BuildCopier<TSource, TDest>(this IMapper mapper)
+        where TDest : class
+    {
+        return mapper.GetEmitCopier(typeof(TSource), typeof(TDest))
+            .Build<TSource, TDest>();
+    }
+    /// <summary>
     /// 转换委托
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
