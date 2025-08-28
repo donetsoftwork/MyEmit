@@ -16,7 +16,7 @@ var poco = convertBench.BuildPoco();
 //convertBench.Customer.Name = "changed";
 //var dto12 = convertBench.Auto();
 //var dto22 = convertBench.Convert();
-//Console.ReadLine();
+Console.ReadLine();
 //BenchmarkRunner.Run<CustomerConvertBench>();
 //UserConvertBench userConvertBench = new();
 //userConvertBench.Setup();

@@ -90,7 +90,7 @@ public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundl
         var condition = EmitHelper.BuildConditions(conditions);
         return Expression.Block([sourceUnder, dest],
             Expression.Assign(sourceUnder, _sourceToUnderConverter.FromEnum(source)),
-            Expression.Assign(dest, Expression.Default(_destEnumType)),
+            //Expression.Assign(dest, Expression.Default(_destEnumType)),
             condition,
             dest
         );
@@ -152,7 +152,7 @@ public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundl
         var conditions = new List<Expression>(sourceFields.Count + 3)
         {
             Expression.Assign(sourceUnder, _sourceToUnderConverter.FromFlag(source)),
-            Expression.Assign(destUnder, Expression.Default(destUnderType))
+            //Expression.Assign(destUnder, Expression.Default(destUnderType))
         };
         CheckFlagToFlagConditions(conditions, sourceUnder, destUnder, sourceFields, destFlagBundle);
         conditions.Add(_destFromUnderConverter.ToFlag(destUnder));

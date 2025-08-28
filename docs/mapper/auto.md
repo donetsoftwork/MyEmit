@@ -440,11 +440,7 @@ CustomerDTO _autoMap(Customer source, CustomerDTO destination, ResolutionContext
 CustomerDTO _pocoConvert(Customer source)
 {
     CustomerDTO dest = null;
-    if ((source == (Customer)null))
-    {
-        dest = (CustomerDTO)null;
-    }
-    else
+    if ((source != (Customer)null))
     {
         dest = new CustomerDTO();
         Address member0 = null;
@@ -463,11 +459,7 @@ CustomerDTO _pocoConvert(Customer source)
         {
             // { The block result will be assigned to `dest.HomeAddress`
             AddressDTO dest_1 = null;
-            if ((member1 == (Address)null))
-            {
-                dest_1 = (AddressDTO)null;
-            }
-            else
+            if ((member1 != (Address)null))
             {
                 dest_1 = new AddressDTO();
                 dest_1.Id = member1.Id;
@@ -495,11 +487,7 @@ CustomerDTO _pocoConvert(Customer source)
                     sourceItem = member2[index];
                     // { The block result will be assigned to `dest_2[index]`
                     AddressDTO dest_3 = null;
-                    if ((sourceItem == (Address)null))
-                    {
-                        dest_3 = (AddressDTO)null;
-                    }
-                    else
+                    if ((sourceItem != (Address)null))
                     {
                         dest_3 = new AddressDTO();
                         dest_3.Id = sourceItem.Id;
@@ -539,11 +527,7 @@ CustomerDTO _pocoConvert(Customer source)
                     sourceItem_1 = member3[index_1];
                     // { The block result will be assigned to `destItem`
                         AddressDTO dest_5 = null;
-                        if ((sourceItem_1 == (Address)null))
-                        {
-                            dest_5 = (AddressDTO)null;
-                        }
-                        else
+                        if ((sourceItem_1 != (Address)null))
                         {
                             dest_5 = new AddressDTO();
                             dest_5.Id = sourceItem_1.Id;

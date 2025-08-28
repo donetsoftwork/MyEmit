@@ -13,6 +13,14 @@ namespace PocoEmit.Converters;
 public class EmitConverter(bool isPrimitiveSource, Type destType)
     : IEmitConverter
 {
+    /// <summary>
+    /// Emit类型转化
+    /// </summary>
+    /// <param name="destType"></param>
+    public EmitConverter(Type destType)
+        : this(true, destType)
+    {
+    }
     #region 配置
     /// <summary>
     /// 源类型是否为基础类型

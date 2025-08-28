@@ -40,9 +40,10 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
         var destType = _destActivator.ReturnType;
         var dest = Expression.Variable(destType, "dest");
         variables.Add(dest);
-        if(PairTypeKey.CheckNullCondition(sourceType))
+        List<Expression> list;
+        if (PairTypeKey.CheckNullCondition(sourceType))
         {
-            var list = new List<Expression>();
+            list = [];
             if (EmitHelper.CheckComplexSource(source, false))
             {
                 var source2 = Expression.Variable(sourceType, "source");
@@ -50,16 +51,19 @@ public class ComplexTypeConverter(IEmitActivator destActivator, IEmitCopier copi
                 list.Add(Expression.Assign(source2, source));
                 source = source2;
             }
-            list.Add(Expression.IfThenElse(
-                    Expression.Equal(source, Expression.Constant(null, sourceType)),
-                    Expression.Assign(dest, Expression.Default(destType)),
+            list.Add(Expression.IfThen(
+                    Expression.NotEqual(source, Expression.Constant(null, sourceType)),
+                    //Expression.Assign(dest, Expression.Default(destType)),
                     Expression.Block(ConvertCore(source, dest))
                 )
             );
-            list.Add(dest);
-            return Expression.Block(variables, list);
         }
-        return Expression.Block(variables, ConvertCore(source, dest));
+        else
+        {
+            list = ConvertCore(source, dest);
+        }
+        list.Add(dest);
+        return Expression.Block(variables, list);
     }
     /// <summary>
     /// 转化核心方法

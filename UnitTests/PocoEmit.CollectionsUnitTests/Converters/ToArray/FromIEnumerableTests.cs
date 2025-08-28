@@ -7,6 +7,9 @@ public class FromIEnumerableTests : CollectionTestBase
     [Fact]
     public void Convert_IEnumerableUser2DTO()
     {
+        var expression = _mapper.BuildConverter<IEnumerable<User>, UserDTO[]>();
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
         IEnumerable<User> source = [new User { Id = 1, Name = "Jxj" }, new User { Id = 2, Name = "张三" }];
         var result = _mapper.Convert<IEnumerable<User>, UserDTO[]>(source);
         Assert.NotNull(result);
