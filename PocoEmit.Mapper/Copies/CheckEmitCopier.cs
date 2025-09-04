@@ -33,7 +33,7 @@ public class CheckEmitCopier(IEmitCopier inner, Expression target, MethodInfo me
         => _inner;
     #endregion
     /// <summary>
-    /// 
+    /// 复制
     /// </summary>
     /// <param name="source"></param>
     /// <param name="dest"></param>

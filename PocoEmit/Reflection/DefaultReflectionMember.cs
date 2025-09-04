@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using PocoEmit.Members;
 
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Frozen;
 #else
 using System.Linq;
@@ -42,6 +42,7 @@ public class DefaultReflectionMember(StringComparer comparer, bool includeField 
     /// <inheritdoc />
     public MemberBundle GetMembers(Type instanceType)
     {
+        HashSet<Type> memberTypes = [];
         Dictionary<string, MemberInfo> readMembers = new(_comparer);
         Dictionary<string, MemberInfo> writeMembers = new(_comparer);
         foreach (var property in GetProperties(instanceType))
@@ -110,7 +111,7 @@ public class DefaultReflectionMember(StringComparer comparer, bool includeField 
     /// <returns></returns>
     protected virtual IDictionary<string, MemberInfo> CheckMembers(Dictionary<string, MemberInfo> dic)
     {
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
         return dic.ToFrozenDictionary(_comparer);
 #else
         return dic;
@@ -123,7 +124,7 @@ public class DefaultReflectionMember(StringComparer comparer, bool includeField 
     /// <returns></returns>
     protected virtual IDictionary<string, IEmitMemberReader> CheckMembers(IEnumerable<IEmitMemberReader> list)
     {
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
         return list.ToFrozenDictionary(m => m.Name, m => m, _comparer);
 #else
         return list.ToDictionary(m => m.Name, m => m, _comparer);
@@ -136,7 +137,7 @@ public class DefaultReflectionMember(StringComparer comparer, bool includeField 
     /// <returns></returns>
     protected virtual IDictionary<string, IEmitMemberWriter> CheckMembers(IEnumerable<IEmitMemberWriter> list)
     {
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
         return list.ToFrozenDictionary(m => m.Name, m => m, _comparer);
 #else
         return list.ToDictionary(m => m.Name, m => m, _comparer);

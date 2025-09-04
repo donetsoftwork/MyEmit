@@ -3,12 +3,9 @@ using PocoEmit.Collections;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
 using System;
-using PocoEmit.Members;
 using PocoEmit.Builders;
 
-
-
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Generic;
 using System.Collections.Frozen;
 #else
@@ -25,7 +22,7 @@ public abstract partial class MapperConfigurationBase
     , IMapperOptions
 {
     #region 配置
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 复制器缓存
     /// </summary>
@@ -168,7 +165,7 @@ public abstract partial class MapperConfigurationBase
         => _defaultValueConfiguration[key] = value;
     #endregion
     #endregion
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 设置为不可变
     /// </summary>

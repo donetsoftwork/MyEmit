@@ -9,10 +9,10 @@ namespace PocoEmit.Collections.Activators;
 /// 数组激活器
 /// </summary>
 /// <param name="elementType"></param>
-/// <param name="collectionType"></param>
+/// <param name="arrayType"></param>
 /// <param name="length"></param>
-public class ArrayActivator(Type collectionType, Type elementType, IEmitCounter length)
-    : EmitCollectionBase(collectionType, elementType)
+public class ArrayActivator(Type arrayType, Type elementType, IEmitCounter length)
+    : EmitCollectionBase(arrayType, elementType)
     , IEmitActivator
 {
     #region 配置

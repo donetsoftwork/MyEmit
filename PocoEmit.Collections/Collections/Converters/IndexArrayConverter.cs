@@ -60,7 +60,7 @@ public class IndexArrayConverter(Type sourceType, Type sourceElementType, Type d
             [count, dest, index, sourceItem],
             Expression.Assign(count, _length.Count(source)),
             Expression.Assign(dest, New(count)),
-            Expression.Assign(index, Expression.Constant(0)),
+            //Expression.Assign(index, Expression.Constant(0)),
             EmitHelper.For(index, count, i => CopyElement(source, dest, i, sourceItem, _indexReader, _elementConverter)),
             dest
         );

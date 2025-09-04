@@ -24,30 +24,22 @@ public record MemberBundle(IDictionary<string, MemberInfo> ReadMembers, IDiction
 public class MemberBundle(IDictionary<string, MemberInfo> readMembers, IDictionary<string, IEmitMemberReader> emitReaders, IDictionary<string, MemberInfo> writeMembers, IDictionary<string, IEmitMemberWriter> emitWriters)
 {
     #region 配置
-    private readonly IDictionary<string, MemberInfo> _readMembers = readMembers;
-    private readonly IDictionary<string, IEmitMemberReader> _emitReaders = emitReaders;
-    private readonly IDictionary<string, MemberInfo> _writeMembers = writeMembers;
-    private readonly IDictionary<string, IEmitMemberWriter> _emitWriters = emitWriters;
     /// <summary>
     /// 可读成员
     /// </summary>
-    public IDictionary<string, MemberInfo> ReadMembers
-        => _readMembers;
+    public IDictionary<string, MemberInfo> ReadMembers { get; } = readMembers;
     /// <summary>
     /// 读取器
     /// </summary>
-    public IDictionary<string, IEmitMemberReader> EmitReaders
-        => _emitReaders;
+    public IDictionary<string, IEmitMemberReader> EmitReaders { get; } = emitReaders;
     /// <summary>
     /// 可写成员
     /// </summary>
-    public IDictionary<string, MemberInfo> WriteMembers
-        => _writeMembers;
+    public IDictionary<string, MemberInfo> WriteMembers { get; } = writeMembers;
     /// <summary>
     /// 写入器
     /// </summary>
-    public IDictionary<string, IEmitMemberWriter> EmitWriters
-        => _emitWriters;
+    public IDictionary<string, IEmitMemberWriter> EmitWriters { get; } = emitWriters;
     #endregion
 }
 #endif

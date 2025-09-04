@@ -1,0 +1,39 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!csharp
+
+#r "nuget:System.Collections.Immutable,9.0.0.0"
+
+#!csharp
+
+#r "nuget:PocoEmit.Collections,0.6.2.1-alpha"
+
+#!csharp
+
+using PocoEmit;
+using PocoEmit.Dictionaries;
+using System.Collections.Generic;
+
+CollectionContainer.GlobalUseCollection();
+
+#!csharp
+
+Console.WriteLine($"Running on .NET version {Environment.Version}");
+
+#!csharp
+
+#!import ./Student.cs
+
+#!csharp
+
+var func = Mapper.Default.CreateDictionaryConvertFunc<Student, Dictionary<string, int>>();
+Student source = new()
+{
+    User = new() { Id = 2, Name = "Jxj" },
+    Age = 17,
+    Score = new() { { "语文", 95 }, { "数学", 96 } }
+};
+Dictionary<string, int> result = func(source);
+result.Display();

@@ -62,7 +62,7 @@ public static partial class PocoEmitServices
         {
             if (emitReader.Compiled && emitReader is ICompiledReader<TInstance, TValue> compiledReader)
                 return compiledReader.ReadFunc;
-            var readFunc = Compiler.Compile<TInstance, TValue>(emitReader);
+            var readFunc = Compiler.CompileFunc<TInstance, TValue>(emitReader);
             MemberContainer.Instance.MemberReaderCacher.Set(emitReader.Info, new CompiledReader<TInstance, TValue>(emitReader, readFunc));
             return readFunc;
         }
@@ -70,7 +70,7 @@ public static partial class PocoEmitServices
         {
             return null;
         }
-        return Compiler.Compile<TInstance, TValue>(emitReader);
+        return Compiler.CompileFunc<TInstance, TValue>(emitReader);
     }
     #endregion
     #region GetMemberReader
@@ -121,7 +121,7 @@ public static partial class PocoEmitServices
         {
             if (emitReader.Compiled && emitReader is ICompiledReader<TInstance, TValue> compiledReader)
                 return compiledReader;
-            compiledReader = new CompiledReader<TInstance, TValue>(emitReader, Compiler.Compile<TInstance, TValue>(emitReader));
+            compiledReader = new CompiledReader<TInstance, TValue>(emitReader, Compiler.CompileFunc<TInstance, TValue>(emitReader));
             MemberContainer.Instance.MemberReaderCacher.Set(emitReader.Info, compiledReader);
             return compiledReader;
         }
@@ -130,7 +130,7 @@ public static partial class PocoEmitServices
             return null;
         }
         var instance = Expression.Parameter(instanceType, "instance");
-        return new CompiledReader<TInstance, TValue>(emitReader, Compiler.Compile<TInstance, TValue>(emitReader));
+        return new CompiledReader<TInstance, TValue>(emitReader, Compiler.CompileFunc<TInstance, TValue>(emitReader));
     }
     #endregion
     #region CheckType

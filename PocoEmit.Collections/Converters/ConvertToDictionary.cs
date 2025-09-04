@@ -1,8 +1,8 @@
+using PocoEmit.Collections.Bundles;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using PocoEmit.Dictionaries;
 using System;
-using System.Collections.Generic;
 
 namespace PocoEmit.Converters;
 
@@ -26,20 +26,13 @@ public class ConvertToDictionary(IMapperOptions options)
     /// </summary>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
-    /// <param name="isInterface"></param>
+    /// <param name="destBundle"></param>
     /// <returns></returns>
-    public IEmitConverter ToDictionary(Type sourceType, Type destType, bool isInterface)
+    public IEmitConverter ToDictionary(Type sourceType, Type destType, DictionaryBundle destBundle)
     {
-        IEmitCopier copier = _options.GetCollectionCopier().DictionaryCopier.Create(sourceType, destType, false);
+        IEmitCopier copier = _options.GetCollectionCopier().DictionaryCopier.Create(sourceType, destType, destBundle);
         if (copier is null)
             return null;
-        var destArguments = ReflectionHelper.GetGenericArguments(destType);
-        if (destArguments.Length != 2)
-            return null;
-        var keyType = destArguments[0];
-        var elementType = destArguments[1];
-        if (isInterface)
-            return new DictionaryConverter(typeof(Dictionary<,>).MakeGenericType(keyType, elementType), keyType, elementType, copier);
-        return new DictionaryConverter(destType, keyType, elementType, copier);
+        return new DictionaryConverter(destType, destBundle.KeyType, destBundle.ValueType, copier);
     }
 }

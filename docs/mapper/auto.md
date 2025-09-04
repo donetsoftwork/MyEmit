@@ -36,10 +36,9 @@ public static readonly Func<User, UserDTO> UserDTOConvert = PocoEmit.Mapper.Defa
 
 | Method      | Mean     | Error    | StdDev   | Median   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
 |------------ |---------:|---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
-| Auto        | 89.30 ns | 1.006 ns | 1.118 ns | 90.17 ns |  1.46 |    0.03 | 0.0260 |     448 B |        1.08 |
-| Poco        | 61.31 ns | 1.036 ns | 1.194 ns | 61.25 ns |  1.00 |    0.03 | 0.0241 |     416 B |        1.00 |
-| PocoFunc    | 42.56 ns | 0.066 ns | 0.073 ns | 42.56 ns |  0.69 |    0.01 | 0.0223 |     384 B |        0.92 |
-
+| Auto        | 86.58 ns | 0.724 ns | 0.774 ns | 86.59 ns |  1.73 |    0.02 | 0.0260 |     448 B |        1.33 |
+| Poco        | 50.00 ns | 0.401 ns | 0.462 ns | 49.93 ns |  1.00 |    0.01 | 0.0195 |     336 B |        1.00 |
+| PocoFunc    | 30.38 ns | 0.084 ns | 0.097 ns | 30.38 ns |  0.61 |    0.01 | 0.0176 |     304 B |        0.90 |
 
 >* Auto耗时比Poco多50%左右。
 >* Auto耗时是PocoFunc的两倍多。
@@ -73,10 +72,10 @@ ResolutionContext resolutionContext = field.GetValue(_auto) as ResolutionContext
 ### 2.2.3 加入AutoMapper生成委托再对比一下
 | Method      | Mean     | Error    | StdDev   | Median   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
 |------------ |---------:|---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
-| Auto        | 89.30 ns | 1.006 ns | 1.118 ns | 90.17 ns |  1.46 |    0.03 | 0.0260 |     448 B |        1.08 |
-| AutoFunc    | 56.04 ns | 0.103 ns | 0.119 ns | 56.03 ns |  0.91 |    0.02 | 0.0260 |     448 B |        1.08 |
-| Poco        | 61.31 ns | 1.036 ns | 1.194 ns | 61.25 ns |  1.00 |    0.03 | 0.0241 |     416 B |        1.00 |
-| PocoFunc    | 42.56 ns | 0.066 ns | 0.073 ns | 42.56 ns |  0.69 |    0.01 | 0.0223 |     384 B |        0.92 |
+| Auto        | 86.58 ns | 0.724 ns | 0.774 ns | 86.59 ns |  1.73 |    0.02 | 0.0260 |     448 B |        1.33 |
+| AutoFunc    | 55.00 ns | 0.153 ns | 0.176 ns | 54.96 ns |  1.10 |    0.01 | 0.0260 |     448 B |        1.33 |
+| Poco        | 50.00 ns | 0.401 ns | 0.462 ns | 49.93 ns |  1.00 |    0.01 | 0.0195 |     336 B |        1.00 |
+| PocoFunc    | 30.38 ns | 0.084 ns | 0.097 ns | 30.38 ns |  0.61 |    0.01 | 0.0176 |     304 B |        0.90 |
 
 >* AutoMapper生成委托确实也快了不少。
 >* 从百分比来看即使不生成委托,AutoMapper也慢不了多少？没有数量级的区别,能忍? --- 反问句
@@ -84,12 +83,12 @@ ResolutionContext resolutionContext = field.GetValue(_auto) as ResolutionContext
 ### 2.3 简单类型转化对比
 >* User转UserDTO,只有两个简单属性
 
-| Method      | Mean      | Error     | StdDev    | Ratio | Gen0   | Allocated | Alloc Ratio |
-|------------ |----------:|----------:|----------:|------:|-------:|----------:|------------:|
-| Auto        | 35.436 ns | 0.0455 ns | 0.0505 ns |  1.57 | 0.0019 |      32 B |        0.50 |
-| AutoFunc    |  4.159 ns | 0.0847 ns | 0.0906 ns |  0.18 | 0.0019 |      32 B |        0.50 |
-| Poco        | 22.607 ns | 0.1754 ns | 0.1801 ns |  1.00 | 0.0037 |      64 B |        1.00 |
-| PocoFunc    |  3.818 ns | 0.0176 ns | 0.0180 ns |  0.17 | 0.0019 |      32 B |        0.50 |
+| Method    | Mean      | Error     | StdDev    | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
+|---------- |----------:|----------:|----------:|------:|--------:|-------:|----------:|------------:|
+| Auto      | 35.409 ns | 0.1376 ns | 0.1585 ns |  1.64 |    0.02 | 0.0019 |      32 B |        0.50 |
+| AutoFunc  |  4.033 ns | 0.0970 ns | 0.1038 ns |  0.19 |    0.01 | 0.0019 |      32 B |        0.50 |
+| Poco      | 21.659 ns | 0.2595 ns | 0.2777 ns |  1.00 |    0.02 | 0.0037 |      64 B |        1.00 |
+| PocoFunc  |  3.659 ns | 0.0248 ns | 0.0276 ns |  0.17 |    0.00 | 0.0019 |      32 B |        0.50 |
 
 >* Auto耗时是AutoFunc差不多十倍,差出一个数量级了(回答了前面的反问)
 >* AutoFunc耗时比PocoFunc稍多,这说明AutoMapper复杂类型转化性能非常不好,简单类型转化可能还能凑合
@@ -479,7 +478,6 @@ CustomerDTO _pocoConvert(Customer source)
             Address sourceItem = null;
             count = member2.Length;
             dest_2 = new AddressDTO[count];
-            index = 0;
             while (true)
             {
                 if ((index < count))
@@ -516,7 +514,6 @@ CustomerDTO _pocoConvert(Customer source)
             dest_4;
             int index_1 = default;
             int len = default;
-            index_1 = 0;
             len = member3.Count;
             while (true)
             {

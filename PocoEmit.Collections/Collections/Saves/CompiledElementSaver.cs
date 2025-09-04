@@ -1,6 +1,7 @@
 using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace PocoEmit.Collections.Saves;
 
@@ -28,11 +29,11 @@ public class CompiledElementSaver<TCollection, Element>(IEmitElementSaver inner,
     public Action<TCollection, Element> SaveAction 
         => _saveAction;
     /// <inheritdoc />
-    public Type CollectionType 
-        => _inner.CollectionType;
-    /// <inheritdoc />
     public Type ElementType 
         => _inner.ElementType;
+    /// <inheritdoc />
+    MethodInfo IEmitElementSaver.AddMethod
+        => _inner.AddMethod;
     /// <inheritdoc />
     bool ICompileInfo.Compiled
         => true;

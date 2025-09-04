@@ -8,10 +8,6 @@ namespace PocoEmit.Collections;
 public interface IEmitCollection
 {
     /// <summary>
-    /// 集合类型
-    /// </summary>
-    public Type CollectionType { get; }
-    /// <summary>
     /// 子元素类型
     /// </summary>
     public Type ElementType { get; }

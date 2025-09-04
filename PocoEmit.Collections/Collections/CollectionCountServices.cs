@@ -82,8 +82,7 @@ public static partial class PocoEmitCollectionServices
             return null;
         if (emitCounter.Compiled && emitCounter is ICompiledCounter<TCollection> compiledCounter)
             return compiledCounter;
-        compiledCounter = new CompiledCounter<TCollection>(emitCounter, Compile<TCollection>(emitCounter));
-        container.CountCacher.Set(key, compiledCounter);
+        container.CountCacher.Set(key, compiledCounter = new CompiledCounter<TCollection>(emitCounter, Compile<TCollection>(emitCounter)));
         return compiledCounter;
     }
     #endregion

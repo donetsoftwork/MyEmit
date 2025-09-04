@@ -6,13 +6,13 @@ namespace PocoEmitUnitTests.New;
 public class PocoConvertTests : PocoConvertTestBase
 {
     [Fact]
-    public void Convert_nt2long()
+    public void Convert_int2long()
     {
         Assert.Equal(123L, _poco.Convert<int, long>(123));
     }
 
     [Fact]
-    public void Convert_ntNullable()
+    public void Convert_intNullable()
     {
         int? source = 123;
         Assert.Equal(123, _poco.Convert<int?, int>(source));
@@ -25,7 +25,7 @@ public class PocoConvertTests : PocoConvertTestBase
         Assert.Equal(expected, _poco.Convert<string, string?>(source));
     }
     [Fact]
-    public void Convert_ntSelf()
+    public void Convert_intSelf()
     {
         int source = 123;
         Assert.Equal(123, _poco.Convert<int, int>(source));

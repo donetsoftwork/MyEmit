@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using PocoEmit.Enums;
 
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Frozen;
 #endif
 
@@ -44,7 +44,7 @@ public partial class MemberContainer
         _enumCacher = new EnumCacher(this);
     }
     #region 配置
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     private IDictionary<PropertyInfo, PropertyAccessor> _propertyAccessors;
     private IDictionary<FieldInfo, FieldAccessor> _fieldAccessors;
     private IDictionary<MemberInfo, IEmitMemberReader> _memberReaders;
@@ -149,7 +149,7 @@ public partial class MemberContainer
     bool ICacher<Type, IEnumBundle>.TryGetValue(Type key, out IEnumBundle value)
         => _IEnumBundles.TryGetValue(key, out value);
     #endregion
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 设置为不可变
     /// </summary>

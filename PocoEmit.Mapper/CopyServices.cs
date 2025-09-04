@@ -32,7 +32,7 @@ public static partial class MapperServices
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled;
-        var compiledCopier = new CompiledCopier<TSource, TDest>(emitCopier, Compile<TSource, TDest>(emitCopier));
+        var compiledCopier = Compile<TSource, TDest>(emitCopier);
         mapper.Set(key, compiledCopier);
         return compiledCopier;
     }
@@ -78,7 +78,7 @@ public static partial class MapperServices
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled.CopyAction;
-        var copyAction = Compile<TSource, TDest>(emitCopier);
+        var copyAction = CompileAction<TSource, TDest>(emitCopier);
         mapper.Set(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
         return copyAction;
     }
@@ -150,9 +150,19 @@ public static partial class MapperServices
     /// <typeparam name="TDest"></typeparam>
     /// <param name="copier"></param>
     /// <returns></returns>
-    public static Action<TSource, TDest> Compile<TSource, TDest>(IEmitCopier copier)
+    public static Action<TSource, TDest> CompileAction<TSource, TDest>(this IEmitCopier copier)
         where TDest : class
         => Compiler._instance.CompileAction(copier.Build<TSource, TDest>());
+    /// <summary>
+    /// 编译
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="copier"></param>
+    /// <returns></returns>
+    internal static CompiledCopier<TSource, TDest> Compile<TSource, TDest>(this IEmitCopier copier)
+         where TDest : class
+        => new(copier, CompileAction<TSource, TDest>(copier));
     /// <summary>
     /// 内部延迟初始化
     /// </summary>

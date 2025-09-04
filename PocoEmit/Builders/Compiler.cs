@@ -34,22 +34,13 @@ public class Compiler
     #endregion
     #region Compile
     /// <summary>
-    /// 编译类型转化
-    /// </summary>
-    /// <typeparam name="TSource"></typeparam>
-    /// <typeparam name="TDest"></typeparam>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    public static Func<TSource, TDest> Compile<TSource, TDest>(IEmitConverter converter)
-        => _instance.CompileFunc(converter.Build<TSource, TDest>());
-    /// <summary>
     /// 编译成员读取器
     /// </summary>
     /// <typeparam name="TInstance"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     /// <param name="reader"></param>
     /// <returns></returns>
-    public static Func<TInstance, TValue> Compile<TInstance, TValue>(IEmitMemberReader reader)
+    public static Func<TInstance, TValue> CompileFunc<TInstance, TValue>(IEmitMemberReader reader)
         => _instance.CompileFunc(reader.Build<TInstance, TValue>());
     /// <summary>
     /// 编译成员写入器
@@ -58,7 +49,7 @@ public class Compiler
     /// <typeparam name="TValue"></typeparam>
     /// <param name="writer"></param>
     /// <returns></returns>
-    public static Action<TInstance, TValue> Compile<TInstance, TValue>(IEmitMemberWriter writer)
+    public static Action<TInstance, TValue> CompileAction<TInstance, TValue>(IEmitMemberWriter writer)
         => _instance.CompileAction(writer.Build<TInstance, TValue>());
     #endregion
     #region Instance

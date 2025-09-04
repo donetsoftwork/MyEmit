@@ -6,7 +6,7 @@ namespace PocoEmit;
 /// <summary>
 /// 集合配置扩展方法
 /// </summary>
-public static partial class CollectionConfigureServices
+public static class CollectionConfigureServices
 {
     /// <summary>
     /// 启用集合功能(转化和复制)

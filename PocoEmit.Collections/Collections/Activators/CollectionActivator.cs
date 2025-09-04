@@ -9,15 +9,22 @@ namespace PocoEmit.Collections.Activators;
 /// <summary>
 /// 集合激活器
 /// </summary>
-/// <param name="elementType"></param>
 /// <param name="collectionType"></param>
+/// <param name="elementType"></param>
+/// <param name="capacityConstructor"></param>
 /// <param name="sourceCount"></param>
-public class CollectionActivator(Type collectionType, Type elementType, IEmitCounter sourceCount)
+public class CollectionActivator(Type collectionType, Type elementType, ConstructorInfo capacityConstructor, IEmitCounter sourceCount)
     : EmitCollectionBase(collectionType, elementType)
     , IEmitActivator
 {
     #region 配置
+    private readonly ConstructorInfo _capacityConstructor = capacityConstructor;
     private readonly IEmitCounter _sourceCount = sourceCount;
+    /// <summary>
+    /// 容量构造函数
+    /// </summary>
+    public ConstructorInfo CapacityConstructo
+        => _capacityConstructor;
     /// <summary>
     /// 获取源数据量
     /// </summary>
@@ -33,31 +40,9 @@ public class CollectionActivator(Type collectionType, Type elementType, IEmitCou
         if (_sourceCount is null)
             return Expression.New(_collectionType);
         // 尝试设置集合的容量,减少扩容的消耗
-        var constructor = GetCapacityConstructor(_collectionType);
-        if (constructor is null)
+        if (_capacityConstructor is null)
             return Expression.New(_collectionType);
         var len = _sourceCount.Count(argument);
-        return Expression.New(constructor, len);
-    }
-    /// <summary>
-    /// 获取容量构造函数
-    /// </summary>
-    /// <param name="collectionType"></param>
-    /// <returns></returns>
-    private static ConstructorInfo GetCapacityConstructor(Type collectionType)
-        => ReflectionHelper.GetConstructor(collectionType, CheckCapacityParameter);
-    /// <summary>
-    /// 判断容量参数
-    /// </summary>
-    /// <param name="parameters"></param>
-    /// <returns></returns>
-    private static bool CheckCapacityParameter(ParameterInfo[] parameters)
-    {
-        if (parameters.Length == 1)
-        {
-            var parameter = parameters[0];
-            return parameter.Name == "capacity" && parameter.ParameterType == typeof(int);
-        }
-        return false;
+        return Expression.New(_capacityConstructor, len);
     }
 }

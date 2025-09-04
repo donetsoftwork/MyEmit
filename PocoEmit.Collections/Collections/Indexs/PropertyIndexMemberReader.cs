@@ -1,6 +1,4 @@
 using PocoEmit.Indexs;
-using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -23,23 +21,4 @@ public class PropertyIndexMemberReader(PropertyInfo item)
     /// <inheritdoc />
     public Expression Read(Expression instance, Expression index)
         => Expression.Property(instance, _item, index);
-
-    /// <summary>
-    /// 获取Item索引器属性
-    /// </summary>
-    public static PropertyInfo GetItemProperty(Type listType)
-        => ReflectionHelper.GetPropery(listType, property => property.Name == "Item" && property.CanRead);
-
-    /// <summary>
-    /// 构造索引方法读取器
-    /// </summary>
-    /// <param name="listType"></param>
-    /// <returns></returns>
-    public static PropertyIndexMemberReader Create(Type listType)
-    {
-        var itemProperty = GetItemProperty(listType);
-        if (itemProperty is null)
-            return null;
-        return new PropertyIndexMemberReader(itemProperty);
-    }
 }

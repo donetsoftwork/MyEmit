@@ -14,5 +14,5 @@ public interface IIndexVisitor
     /// <param name="collection"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    Expression Travel(Expression collection, Func<Expression, IndexExpression, Expression> callback);
+    Expression Travel(Expression collection, Func<Expression, Expression, Expression> callback);
 }

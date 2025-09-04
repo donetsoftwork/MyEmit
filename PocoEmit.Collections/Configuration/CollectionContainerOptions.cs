@@ -31,4 +31,20 @@ public class CollectionContainerOptions
     /// 元素保存器数量
     /// </summary>
     public int SaverCapacity = 31;
+    /// <summary>
+    /// 迭代类数量
+    /// </summary>
+    public int EnumerableCapacity = 31;
+    /// <summary>
+    /// 集合类数量
+    /// </summary>
+    public int Collectionapacity = 31;
+    /// <summary>
+    /// 列表类数量
+    /// </summary>
+    public int ListCapacity = 31;
+    /// <summary>
+    /// 字典类数量
+    /// </summary>
+    public int DictionaryCapacity = 11;
 }

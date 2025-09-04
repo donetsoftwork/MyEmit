@@ -17,9 +17,6 @@ public class CompiledCounter<TCollection>(IEmitElementCounter inner, Func<TColle
     private readonly IEmitElementCounter _inner = inner;
     private readonly Func<TCollection, int> _countFunc = countFunc;
     /// <inheritdoc />
-    public Type CollectionType 
-        => _inner.CollectionType;
-    /// <inheritdoc />
     public Type ElementType 
         => _inner.ElementType;
     /// <inheritdoc />

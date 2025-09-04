@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
@@ -41,5 +42,5 @@ public abstract class EmitCollectionBase(Type collectionType, Type elementType)
     /// <param name="instance"></param>
     /// <returns></returns>
     protected Expression CheckInstance(Expression instance)
-        => PairTypeKey.CheckValueType(instance.Type, _collectionType) ? instance : Expression.Convert(instance, _collectionType);
+        => EmitHelper.CheckType(instance, _collectionType);
 }

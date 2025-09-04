@@ -1,3 +1,4 @@
+using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Converters;
 using PocoEmit.Collections.Counters;
 using PocoEmit.Configuration;
@@ -27,74 +28,172 @@ public class ConvertToCollection(IMapperOptions options)
     /// </summary>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
-    /// <param name="isInterface"></param>
+    /// <param name="destBundle"></param>
     /// <returns></returns>
-    public IEmitConverter ToCollection(Type sourceType, Type destType, bool isInterface)
+    public IEmitConverter ToCollection(Type sourceType, Type destType, CollectionBundle destBundle)
     {
-        var sourceElementType = ReflectionHelper.GetElementType(sourceType);
-        if (sourceElementType == null)
-            return null;
-        var destElementType = ReflectionHelper.GetElementType(destType);
-        if (destType == null)
-            return null;
-        IEmitCounter sourceCount = CollectionContainer.Instance.CountCacher.Get(sourceType, sourceElementType);
-        if (isInterface)
-        {
-            if (ReflectionHelper.HasGenericType(destType, typeof(IList<>)))
-                return ToList(sourceType, destElementType, sourceCount);
-            if (ReflectionHelper.HasGenericType(destType, typeof(ISet<>)))
-                return ToHashSet(sourceType, destElementType, sourceCount);
-            if (ReflectionHelper.HasGenericType(destType, typeof(ICollection<>)))
-                return ToList(sourceType, destElementType, sourceCount);
-            if (ReflectionHelper.HasGenericType(destType, typeof(IProducerConsumerCollection<>)))
-                return ToConcurrentBag(sourceType, destElementType, sourceCount);
-            if (ReflectionHelper.HasGenericType(destType, typeof(IEnumerable<>)))
-                return ToList(sourceType, destElementType, sourceCount);
-            return null;
-        }
-        IEmitCopier copier = _options.GetCollectionCopier().CollectionCopier.Create(sourceType, destType, false);
+        var container = CollectionContainer.Instance;
+        if (sourceType.IsArray)
+            return ArrayToCollection(sourceType, ReflectionHelper.GetElementType(sourceType), destType, destBundle);
+        if (container.DictionaryCacher.Validate(sourceType, out var dictionaryBundle))
+            return DictionaryToCollection(sourceType, dictionaryBundle, destType, destBundle);
+        if (container.ListCacher.Validate(sourceType, out var listBundle))
+            return ListToCollection(sourceType, listBundle, destType, destBundle);
+        if (container.EnumerableCacher.Validate(sourceType, out var enumerableBundle))
+            return EnumerableToCollection(sourceType, enumerableBundle, destType, destBundle);
+        return ElementToCollection(sourceType, destType, destBundle);
+    }
+    /// <summary>
+    /// 数组转化为集合
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="sourceElementType"></param>
+    /// <param name="destType"></param>
+    /// <param name="destBundle"></param>
+    /// <returns></returns>
+    private CollectionConverter ArrayToCollection(Type sourceType, Type sourceElementType, Type destType, CollectionBundle destBundle)
+    {
+        IEmitCopier copier = _options.GetCollectionCopier().CollectionCopier
+            .ArrayToCollection(sourceType, sourceElementType, destType, destBundle, false);
         if (copier is null)
             return null;
-        
-        return new CollectionConverter(destType, destElementType, sourceCount, copier);
+        IEmitCounter sourceCount = null;
+        var capacityConstructor = destBundle.CapacityConstructor;
+        // 容量构造函数存在才需要获取sourceCount
+        if (capacityConstructor is not null)
+            sourceCount = CollectionContainer.Instance.CountCacher.GetByArray(sourceType, sourceElementType);
+        return new(destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     /// <summary>
-    /// 转化为列表
+    /// 字典转集合
     /// </summary>
     /// <param name="sourceType"></param>
-    /// <param name="destElementType"></param>
-    /// <param name="sourceCount"></param>
+    /// <param name="sourceBundle"></param>
+    /// <param name="destType"></param>
+    /// <param name="destBundle"></param>
     /// <returns></returns>
-    public CollectionConverter ToList(Type sourceType, Type destElementType, IEmitCounter sourceCount)
+    private CollectionConverter DictionaryToCollection(Type sourceType, DictionaryBundle sourceBundle, Type destType, CollectionBundle destBundle)
     {
-        var collectionType = typeof(List<>).MakeGenericType(destElementType);
-        IEmitCopier copier = _options.GetCollectionCopier().CollectionCopier.Create(sourceType, collectionType, false);
-        return new(collectionType, destElementType, sourceCount, copier);
+        IEmitCopier copier = _options.GetCollectionCopier().CollectionCopier
+            .DictionaryToCollection(sourceType, sourceBundle, destType, destBundle, false);
+        if (copier is null)
+            return null;
+        IEmitCounter sourceCount = null;
+        var capacityConstructor = destBundle.CapacityConstructor;
+        // 容量构造函数存在才需要获取sourceCount
+        if (capacityConstructor is not null)
+            sourceCount = CollectionContainer.Instance.CountCacher.GetByDictionary(sourceType, sourceBundle);
+        return new(destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     /// <summary>
-    /// 转化为HashSet
+    /// 列表转集合
     /// </summary>
     /// <param name="sourceType"></param>
-    /// <param name="destElementType"></param>
-    /// <param name="sourceCount"></param>
+    /// <param name="sourceBundle"></param>
+    /// <param name="destType"></param>
+    /// <param name="destBundle"></param>
     /// <returns></returns>
-    public CollectionConverter ToHashSet(Type sourceType, Type destElementType, IEmitCounter sourceCount)
+    private CollectionConverter ListToCollection(Type sourceType, ListBundle sourceBundle, Type destType, CollectionBundle destBundle)
     {
-        var collectionType = typeof(HashSet<>).MakeGenericType(destElementType);
-        IEmitCopier copier = _options.GetCollectionCopier().CollectionCopier.Create(sourceType, collectionType, false);
-        return new(collectionType, destElementType, sourceCount, copier);
+        IEmitCopier copier = _options.GetCollectionCopier().CollectionCopier
+            .ListToCollection(sourceType, sourceBundle, destType, destBundle, false);
+        if (copier is null)
+            return null;
+        IEmitCounter sourceCount = null;
+        var capacityConstructor = destBundle.CapacityConstructor;
+        // 容量构造函数存在才需要获取sourceCount
+        if (capacityConstructor is not null)
+            sourceCount = CollectionContainer.Instance.CountCacher.GetByCollection(sourceType, sourceBundle);
+        return new(destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     /// <summary>
-    /// 转化为ConcurrentBag
+    /// 迭代转集合
     /// </summary>
     /// <param name="sourceType"></param>
-    /// <param name="destElementType"></param>
-    /// <param name="sourceCount"></param>
+    /// <param name="sourceBundle"></param>
+    /// <param name="destType"></param>
+    /// <param name="destBundle"></param>
     /// <returns></returns>
-    public CollectionConverter ToConcurrentBag(Type sourceType, Type destElementType, IEmitCounter sourceCount)
+    private CollectionConverter EnumerableToCollection(Type sourceType, EnumerableBundle sourceBundle, Type destType, CollectionBundle destBundle)
     {
-        var collectionType = typeof(ConcurrentBag<>).MakeGenericType(destElementType);
-        IEmitCopier copier = _options.GetCollectionCopier().CollectionCopier.Create(sourceType, collectionType, false);
-        return new(collectionType, destElementType, sourceCount, copier);
+        IEmitCopier copier = _options.GetCollectionCopier().CollectionCopier
+            .EnumerableToCollection(sourceType, sourceBundle, destType, destBundle, false);
+        if (copier is null)
+            return null;
+        IEmitCounter sourceCount = null;
+        var capacityConstructor = destBundle.CapacityConstructor;
+        // 容量构造函数存在才需要获取sourceCount
+        if (capacityConstructor is not null)
+            sourceCount = CollectionContainer.Instance.CountCacher.GetByEnumerable(sourceType, sourceBundle.ElementType);
+        return new(destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
+    ///// <summary>
+    ///// 其他情况
+    ///// </summary>
+    ///// <param name="sourceType"></param>
+    ///// <param name="collectionType"></param>
+    ///// <param name="elementType"></param>
+    ///// <param name="isObject"></param>
+    ///// <returns></returns>
+    //public IEmitConverter OthersToCollection(Type sourceType, Type collectionType, Type elementType, bool isObject)
+    //{
+    //    var bundle = _options.MemberCacher.Get(sourceType).EmitReaders;
+    //    if (bundle.Count == 0)
+    //    {
+    //        if (isObject)
+    //            return ElementToCollection(sourceType, collectionType, elementType);
+    //        return null;
+    //    }
+    //    var saver = CollectionContainer.Instance.SaveCacher.Get(collectionType, elementType);
+    //    if (saver is null)
+    //        return null;
+    //    if (isObject)
+    //        return new MemberCollectionConverter(_options, collectionType, elementType, saver, bundle, bundle.Keys);
+    //    var members = bundle.Values
+    //        .Where(m => PairTypeKey.CheckValueType(m.ValueType, elementType))
+    //        .Select(m => m.Name)
+    //        .ToList();
+    //    if (members.Count == 0)
+    //        return ElementToCollection(sourceType, collectionType, elementType);
+    //    return new MemberCollectionConverter(_options, collectionType, elementType, saver, bundle, members);
+    //}
+    /// <summary>
+    /// 子元素转集合
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="collectionType"></param>
+    /// <param name="destBundle"></param>
+    /// <returns></returns>
+    public CollectionInitConverter ElementToCollection(Type sourceType, Type collectionType, CollectionBundle destBundle)
+    {
+        Type elementType = destBundle.ElementType;
+        if (!PairTypeKey.CheckValueType(sourceType, elementType))
+            return null;
+        var elementConverter = _options.GetEmitConverter(sourceType, elementType);
+        if (elementConverter is null)
+            return null;
+        var saver = CollectionContainer.Instance.SaveCacher.GetByCollection(collectionType, destBundle);
+        if (saver is null)
+            return null;
+        return new(collectionType, elementType, saver, elementConverter);
+    }
+    /// <summary>
+    /// 接口转化为实现类型
+    /// </summary>
+    /// <param name="interface"></param>
+    /// <returns></returns>
+    public static Type CheckGenericImplType(Type @interface)
+    {
+        if (ReflectionHelper.HasGenericType(@interface, typeof(IList<>)))
+            return typeof(List<>);
+        if (ReflectionHelper.HasGenericType(@interface, typeof(ISet<>)))
+            return typeof(HashSet<>);
+        if (ReflectionHelper.HasGenericType(@interface, typeof(ICollection<>)))
+            return typeof(List<>);
+        if (ReflectionHelper.HasGenericType(@interface, typeof(IProducerConsumerCollection<>)))
+            return typeof(ConcurrentBag<>);
+        if (ReflectionHelper.HasGenericType(@interface, typeof(IEnumerable<>)))
+            return typeof(List<>);
+        return null;
+    }    
 }

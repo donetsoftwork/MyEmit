@@ -1,7 +1,7 @@
 using PocoEmit.Converters;
 using PocoEmit.Collections;
 using System;
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Generic;
 using System.Collections.Frozen;
 #else
@@ -17,7 +17,7 @@ public abstract partial class ConfigurationBase
     : IPocoOptions
 {
     #region 缓存数据
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 转换器缓存
     /// </summary>
@@ -71,7 +71,7 @@ public abstract partial class ConfigurationBase
     bool ICacher<Type, MemberBundle>.TryGetValue(Type key, out MemberBundle value)
         => _memberBundles.TryGetValue(key, out value);
     #endregion
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 设置为不可变
     /// </summary>

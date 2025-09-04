@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Collections.Activators;
 using PocoEmit.Collections.Counters;
 using PocoEmit.Collections.Visitors;
@@ -60,7 +61,7 @@ public class CollectionArrayConverter(Type sourceType, Type sourceElementType, T
             [count, dest, index, sourceItem],
             Expression.Assign(count, _length.Count(source)),
             Expression.Assign(dest, New(count)),
-            Expression.Assign(index, Expression.Constant(0)),
+            //Expression.Assign(index, Expression.Constant(0)),
             _visitor.Travel(source, item => CopyElement(dest, index, item, sourceItem, _elementConverter)),
             dest
         );

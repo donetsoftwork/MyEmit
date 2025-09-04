@@ -48,38 +48,7 @@ public class EnumFromStringConverter(Type enumType, IEnumField[] fields)
     {
         var conditions = CreateConditions(source, _fields);
         return EmitHelper.BuildConditions(_enumType, conditions);
-    }
-    //public Expression Convert(Expression source)
-    //{
-    //    var cases = new List<SwitchCase>(_fields.Length);
-    //    var memberCheck = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-    //    foreach (var field in _fields)
-    //    {
-    //        var member = field.Member;
-    //        if (string.IsNullOrWhiteSpace(member) || memberCheck.Contains(member))
-    //            continue;
-    //        cases.Add(Expression.SwitchCase(
-    //            field.Expression,
-    //            Expression.Constant(member)
-    //        ));
-    //    }
-    //    foreach (var field in _fields)
-    //    {
-    //        var member = field.Name;
-    //        if (memberCheck.Contains(member))
-    //            continue;
-    //        cases.Add(Expression.SwitchCase(
-    //            field.Expression,
-    //            Expression.Constant(member)
-    //        ));
-    //    }
-
-    //    return Expression.Switch(source,
-    //        Expression.Default(_enumType),
-    //        // ComparisonMethod,
-    //        [.. cases]
-    //    );
-    //}
+    }    
     #region CreateConditions
     /// <summary>
     /// 构造条件分支

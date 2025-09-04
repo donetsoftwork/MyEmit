@@ -61,7 +61,7 @@ public static partial class PocoEmitServices
         {
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> typeWriter)
                 return typeWriter.WriteAction;
-            var writeAction = Compiler.Compile<TInstance, TValue>(emitWriter);
+            var writeAction = Compiler.CompileAction<TInstance, TValue>(emitWriter);
             MemberContainer.Instance.MemberWriterCacher.Set(emitWriter.Info, new CompiledWriter<TInstance, TValue>(emitWriter, writeAction));
             return writeAction;
         }
@@ -69,7 +69,7 @@ public static partial class PocoEmitServices
         {
             return null;
         }
-        return Compiler.Compile<TInstance, TValue>(emitWriter);
+        return Compiler.CompileAction<TInstance, TValue>(emitWriter);
     }
     #endregion
     #region GetMemberWriter
@@ -120,7 +120,7 @@ public static partial class PocoEmitServices
         {
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> compiledWriter)
                 return compiledWriter;
-            compiledWriter = new CompiledWriter<TInstance, TValue>(emitWriter, Compiler.Compile<TInstance, TValue>(emitWriter));
+            compiledWriter = new CompiledWriter<TInstance, TValue>(emitWriter, Compiler.CompileAction<TInstance, TValue>(emitWriter));
             MemberContainer.Instance.MemberWriterCacher.Set(emitWriter.Info, compiledWriter);
             return compiledWriter;
         }
@@ -128,7 +128,7 @@ public static partial class PocoEmitServices
         {
             return null;
         }
-        return new CompiledWriter<TInstance, TValue>(emitWriter, Compiler.Compile<TInstance, TValue>(emitWriter));
+        return new CompiledWriter<TInstance, TValue>(emitWriter, Compiler.CompileAction<TInstance, TValue>(emitWriter));
     }
     #endregion
     #region Check

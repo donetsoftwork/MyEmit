@@ -61,31 +61,24 @@ public class ComplexConvertBuilder(IMapperOptions options)
         if (!sourceIsPrimitive && TryBuildByMember(sourceType, destType, ref converter))
             return converter;
         var destIsPrimitive = _options.CheckPrimitive(destType);
+        // 系统类型转换
+        if (sourceIsPrimitive && destIsPrimitive)
+            return BuildByConvert(sourceType, destType);
+        if (destType.IsArray)
+            return null;
+        if (ReflectionHelper.HasGenericType(destType, typeof(IDictionary<,>)))
+            return null;
+        if (ReflectionHelper.HasGenericType(destType, typeof(IEnumerable<>)))
+            return null;
         if (!destIsPrimitive && TryBuildByConstructor(sourceType, destType, ref converter))
             return converter;
-        if (destType.IsArray)
-            return ToArray(sourceType, destType);
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
         var isInterface = destType.GetTypeInfo().IsInterface;
 #else
         var isInterface = destType.IsInterface;
 #endif
-        if (ReflectionHelper.HasGenericType(destType, typeof(IDictionary<,>)))
-            return ToDictionary(sourceType, destType, isInterface);
-        if (ReflectionHelper.HasGenericType(destType, typeof(IEnumerable<>)))
-            return ToCollection(sourceType, destType, isInterface);
-        // 接口不支持
-        if (isInterface)
+        if (destIsPrimitive || isInterface)
             return null;
-
-        // 系统类型转换
-        if (sourceIsPrimitive && destIsPrimitive)
-            return BuildByConvert(sourceType, destType);
-        if (destIsPrimitive)
-            return null;
-        //constructor = _options.GetConstructor(destType);
-        //if (constructor is not null)
-        //    return BuildByConstructor(constructor, sourceType);
         var key = new PairTypeKey(sourceType, destType);
         var activator = _options.GetEmitActivator(key) ?? CreateDefaultActivator(sourceType, destType);
         if (activator is null)
@@ -139,39 +132,13 @@ public class ComplexConvertBuilder(IMapperOptions options)
         return converter;
     }
     /// <summary>
-    /// 数组不支持(预留扩展)
-    /// </summary>
-    /// <param name="sourceType"></param>
-    /// <param name="destType"></param>
-    /// <returns></returns>
-    protected virtual IEmitConverter ToArray(Type sourceType, Type destType)
-        => null;
-    /// <summary>
-    /// 字典不支持(预留扩展)
-    /// </summary>
-    /// <param name="sourceType"></param>
-    /// <param name="destType"></param>
-    /// <param name="isInterface"></param>
-    /// <returns></returns>
-    protected virtual IEmitConverter ToDictionary(Type sourceType, Type destType, bool isInterface)
-        => null;
-    /// <summary>
-    /// 集合不支持(预留扩展)
-    /// </summary>
-    /// <param name="sourceType"></param>
-    /// <param name="destType"></param>
-    /// <param name="isInterface"></param>
-    /// <returns></returns>
-    protected virtual IEmitConverter ToCollection(Type sourceType, Type destType, bool isInterface)
-        => null;
-    /// <summary>
     /// 尝试按成员读取来转化
     /// </summary>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    private bool TryBuildByMember(Type sourceType, Type destType, ref IEmitConverter converter)
+    protected bool TryBuildByMember(Type sourceType, Type destType, ref IEmitConverter converter)
     {
         var bundle = _options.MemberCacher.Get(sourceType);
         if (bundle is null)
@@ -194,7 +161,7 @@ public class ComplexConvertBuilder(IMapperOptions options)
     /// <param name="reader"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    private static bool CheckReader(IMapperOptions options, ref IEmitMemberReader reader, Type destType)
+    protected static bool CheckReader(IMapperOptions options, ref IEmitMemberReader reader, Type destType)
     {
         var valueType = reader.ValueType;
         if (PairTypeKey.CheckValueType(valueType, destType))

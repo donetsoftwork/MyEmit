@@ -1,10 +1,10 @@
 using AutoMapper;
-using AutoMapper.Execution;
 using AutoMapper.Internal;
 using BenchmarkDotNet.Attributes;
 using MapperBench.Supports;
 using Microsoft.Extensions.DependencyInjection;
 using PocoEmit;
+using PocoEmit.Dictionaries;
 
 namespace MapperBench;
 
@@ -38,7 +38,7 @@ public class UserConvertBench
     }
     public string BuildPoco()
     {
-        var expression = _poco.BuildConverter<User, UserDTO>();
+        var expression = _poco.BuildDictionaryConverter<User, UserDTO>();
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Console.WriteLine(code);
         return code;
@@ -51,7 +51,7 @@ public class UserConvertBench
         return code;
     }
     [Benchmark(Baseline = true)]
-    public UserDTO Convert()
+    public UserDTO Poco()
     {
         return _poco.Convert<User, UserDTO>(_user);
     }
@@ -68,7 +68,7 @@ public class UserConvertBench
     }
 
     [Benchmark]
-    public UserDTO ConvertFunc()
+    public UserDTO PocoFunc()
     {
         return _convertFunc(_user);
     }

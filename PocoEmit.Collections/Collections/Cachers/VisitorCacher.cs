@@ -1,44 +1,138 @@
+using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Dictionaries;
 using System;
-using System.Collections.Generic;
 
 namespace PocoEmit.Collections.Cachers;
 
 /// <summary>
 /// 集合访问者缓存
 /// </summary>
-/// <param name="cacher"></param>
-internal class VisitorCacher(ICacher<Type, IEmitElementVisitor> cacher)
-    : CacheBase<Type, IEmitElementVisitor>(cacher)
+/// <param name="container"></param>
+internal class VisitorCacher(CollectionContainer container)
+    : CacheBase<Type, IEmitElementVisitor>(container)
 {
+    #region 配置
+    private readonly CollectionContainer _container = container;
+    /// <summary>
+    /// 集合容器
+    /// </summary>
+    public CollectionContainer Container
+        => _container;
+    #endregion
     /// <inheritdoc />
     protected override IEmitElementVisitor CreateNew(Type key)
+        => CreateByType(_container, key);
+    /// <summary>
+    /// 按类型构造集合访问者
+    /// </summary>
+    /// <param name="container"></param>
+    /// <param name="collectionType"></param>
+    /// <returns></returns>
+    public static IEmitElementVisitor CreateByType(CollectionContainer container, Type collectionType)
     {
-        if (key.IsArray)
-            return new ArrayVisitor(key);
-        if (ReflectionHelper.HasGenericType(key, typeof(IDictionary<,>)))
-            return CreateByDictionary(key);
-        var elementType = ReflectionHelper.GetElementType(key);
-        if (elementType == null)
-            return null;
-        if (ReflectionHelper.HasGenericType(key, typeof(IList<>)))
-            return new ListVisitor(key, elementType);
-        else if (ReflectionHelper.HasGenericType(key, typeof(IEnumerable<>)))
-            return new EnumerableVisitor(elementType);
+        if (collectionType.IsArray)
+            return CreateByArray(collectionType);
+        if (container.DictionaryCacher.Validate(collectionType, out var dictionaryBundle))
+            return CreateByDictionary(collectionType, dictionaryBundle);
+        if (container.ListCacher.Validate(collectionType, out var listBundle))
+            return CreateByList(collectionType, listBundle);
+        else if (container.EnumerableCacher.Validate(collectionType, out var enumerableBundle))
+            return CreateByEnumerable(collectionType, enumerableBundle);
         return null;
     }
-
     /// <summary>
-    /// 获取字典数量
+    /// 构造数组访问者
+    /// </summary>
+    /// <param name="arrayType"></param>
+    /// <returns></returns>
+    private static ArrayVisitor CreateByArray(Type arrayType)
+        => new(arrayType);
+    /// <summary>
+    /// 获取数组访问者
+    /// </summary>
+    /// <param name="arrayType"></param>
+    /// <returns></returns>
+    public IEmitElementVisitor GetByByArray(Type arrayType)
+    {
+        if (TryGetValue(arrayType, out IEmitElementVisitor visitor))
+            return visitor;
+        Set(arrayType, visitor = CreateByArray(arrayType));
+        return visitor;
+    }
+    /// <summary>
+    /// 构造字典值访问者
     /// </summary>
     /// <param name="dictionaryType"></param>
+    /// <param name="bundle"></param>
     /// <returns></returns>
-    private static DictionaryValuesVisitor CreateByDictionary(Type dictionaryType)
+    private static DictionaryValuesVisitor CreateByDictionary(Type dictionaryType, DictionaryBundle bundle)
     {
-        var arguments = ReflectionHelper.GetGenericArguments(dictionaryType);
-        if (arguments.Length != 2)
+        if (bundle is null)
             return null;
-        return new DictionaryValuesVisitor(dictionaryType, arguments[1]);
+        return new(dictionaryType, bundle.ValueType, bundle.Values);
+    }
+    /// <summary>
+    /// 获取字典值访问者
+    /// </summary>
+    /// <param name="dictionaryType"></param>
+    /// <param name="bundle"></param>
+    /// <returns></returns>
+    public IEmitElementVisitor GetByDictionary(Type dictionaryType, DictionaryBundle bundle)
+    {
+        if (TryGetValue(dictionaryType, out IEmitElementVisitor visitor))
+            return visitor;
+        Set(dictionaryType, visitor = CreateByDictionary(dictionaryType, bundle));
+        return visitor;
+    }
+    /// <summary>
+    /// 构造列表访问者
+    /// </summary>
+    /// <param name="listType"></param>
+    /// <param name="bundle"></param>
+    /// <returns></returns>
+    private static ListVisitor CreateByList(Type listType, ListBundle bundle)
+    {
+        if (bundle is null)
+            return null;
+        return new(listType, bundle.ElementType, bundle.Count, bundle.Items);
+    }
+    /// <summary>
+    /// 获取列表访问者
+    /// </summary>
+    /// <param name="listType"></param>
+    /// <param name="bundle"></param>
+    /// <returns></returns>
+    public IEmitElementVisitor GetByList(Type listType, ListBundle bundle)
+    {
+        if (TryGetValue(listType, out IEmitElementVisitor visitor))
+            return visitor;
+        Set(listType, visitor = CreateByList(listType, bundle));
+        return visitor;
+    }
+    /// <summary>
+    /// 构造迭代访问者
+    /// </summary>
+    /// <param name="enumerableType"></param>
+    /// <param name="bundle"></param>
+    /// <returns></returns>
+    private static EnumerableVisitor CreateByEnumerable(Type enumerableType, EnumerableBundle bundle)
+    {
+        if (bundle is null)
+            return null;
+        return new(enumerableType, bundle.ElementType, bundle.GetEnumeratorMethod, bundle.EnumeratorType, bundle.MoveNextMethod, bundle.CurrentProperty);
+    }
+    /// <summary>
+    /// 获取迭代访问者
+    /// </summary>
+    /// <param name="enumerableType"></param>
+    /// <param name="bundle"></param>
+    /// <returns></returns>
+    public IEmitElementVisitor GetByEnumerable(Type enumerableType, EnumerableBundle bundle)
+    {
+        if (TryGetValue(enumerableType, out IEmitElementVisitor visitor))
+            return visitor;
+        Set(enumerableType, visitor = CreateByEnumerable(enumerableType, bundle));
+        return visitor;
     }
 }

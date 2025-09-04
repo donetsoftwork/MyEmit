@@ -1,3 +1,4 @@
+using PocoEmit.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -42,7 +43,6 @@ public static class EmitHelper
         var index = Expression.Variable(typeof(int), "index");
         return Expression.Block(
             [index],
-            Expression.Assign(index, Expression.Constant(0, typeof(int))),
             For(index, count, callBack)
             );
     }
@@ -140,6 +140,7 @@ public static class EmitHelper
     //    return null;
     //}
     #endregion
+    #region CheckComplexSource
     /// <summary>
     /// 是否为复杂类型
     /// </summary>
@@ -157,6 +158,7 @@ public static class EmitHelper
             _ => true,
         };
     }
+    #endregion
     #region BuildConditions
     /// <summary>
     /// 构造条件分支
@@ -192,6 +194,20 @@ public static class EmitHelper
         if (index == 0)
             return expression;
         return BuildConditions(conditionType, conditions, index - 1, expression);
+    }
+    #endregion
+    #region CheckType
+    /// <summary>
+    /// 检查类型
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="valueType"></param>
+    /// <returns></returns>
+    public static Expression CheckType(Expression value, Type valueType)
+    {
+        if (PairTypeKey.CheckValueType(value.Type, valueType))
+            return value;
+        return Expression.Convert(value, valueType);
     }
     #endregion
 }

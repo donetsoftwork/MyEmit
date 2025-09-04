@@ -48,8 +48,7 @@ public static partial class PocoEmitCollectionServices
             return null;
         if (emitSaver.Compiled && emitSaver is ICompiledElementSaver<TCollection, TElement> compiledSaver)
             return compiledSaver;
-        compiledSaver = new CompiledElementSaver<TCollection, TElement>(emitSaver, Compile<TCollection, TElement>(emitSaver));
-        container.SaveCacher.Set(key, compiledSaver);
+        container.SaveCacher.Set(key, compiledSaver = new CompiledElementSaver<TCollection, TElement>(emitSaver, Compile<TCollection, TElement>(emitSaver)));
         return compiledSaver;
     }
     #endregion

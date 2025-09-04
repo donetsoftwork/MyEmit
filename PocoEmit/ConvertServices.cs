@@ -29,7 +29,7 @@ public static partial class PocoEmitServices
             return null;
         if (emitConverter.Compiled && emitConverter is IPocoConverter<TSource, TDest> converter)
             return converter;
-        var compiledConverter = new CompiledConverter<TSource, TDest>(emitConverter, Compiler.Compile<TSource, TDest>(emitConverter));
+        var compiledConverter = Compile<TSource, TDest>(emitConverter);
         poco.Set(key, compiledConverter);
         return compiledConverter;
     }
@@ -73,7 +73,7 @@ public static partial class PocoEmitServices
             return null;
         if (emitConverter.Compiled && emitConverter is ICompiledConverter<TSource, TDest> compiled)
             return compiled.ConvertFunc;
-        var convertFunc = Compiler.Compile<TSource, TDest>(emitConverter);
+        var convertFunc = emitConverter.CompileFunc<TSource, TDest>();
         var compiledConverter = new CompiledConverter<TSource, TDest>(emitConverter, convertFunc);
         poco.Set(key, compiledConverter);
         return convertFunc;
@@ -142,16 +142,35 @@ public static partial class PocoEmitServices
         var body = emit.Convert(source);
         return Expression.Lambda<Func<TSource, TDest>>(body, source);
     }
+    /// <summary>
+    /// 编译类型转化
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    public static Func<TSource, TDest> CompileFunc<TSource, TDest>(this IEmitConverter converter)
+        => Compiler._instance.CompileFunc(converter.Build<TSource, TDest>());
+    /// <summary>
+    /// 编译
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="emitConverter"></param>
+    /// <returns></returns>
+    internal static CompiledConverter<TSource, TDest> Compile<TSource, TDest>(this IEmitConverter emitConverter)
+        => new(emitConverter, emitConverter.CompileFunc<TSource, TDest>());
     #endregion
     /// <summary>
     /// 内部延迟初始化
     /// </summary>
     class Inner
     {
+
         /// <summary>
         /// 反射Compile方法
         /// </summary>
-        private static readonly MethodInfo ConvertCompilerMethod = EmitHelper.GetActionMethodInfo<IEmitConverter>(emit => Compiler.Compile<long, object>(emit))
+        private static readonly MethodInfo ConvertCompilerMethod = EmitHelper.GetActionMethodInfo<IEmitConverter>(poco => Compile<long, object>(poco))
             .GetGenericMethodDefinition();
         /// <summary>
         /// 反射调用编译方法

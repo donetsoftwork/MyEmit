@@ -15,6 +15,9 @@ public class FromArrayTests : CollectionTestBase
     [Fact]
     public void Convert_UserArray2DTO()
     {
+        var expression = _mapper.BuildConverter<UserArray, UserDTOIEnumerable>();
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
         User[] sourceItems = [new User { Id = 1, Name = "Jxj" }, new User { Id = 2, Name = "张三" }];
         var source = new UserArray { Name = "VIP", Users = sourceItems };
         var result = _mapper.Convert<UserArray, UserDTOIEnumerable>(source);

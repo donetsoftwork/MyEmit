@@ -1,7 +1,8 @@
+using PocoEmit.Collections.Bundles;
 using PocoEmit.Configuration;
 using PocoEmit.Dictionaries;
 using System;
-using System.Collections.Generic;
+using System.Reflection;
 
 namespace PocoEmit.Copies;
 
@@ -25,53 +26,58 @@ public class CopyToDictionary(IMapperOptions options)
     /// <param name="key"></param>
     /// <returns></returns>
     public IEmitCopier ToDictionary(PairTypeKey key)
-        => Create(key.LeftType, key.RightType, true);
+    {
+        var destType = key.RightType;
+        var destBundle = CollectionContainer.Instance.DictionaryCacher.Get(destType);
+        if(destBundle is null)
+            return null;
+        return Create(key.LeftType, destType, destBundle);
+    }
     /// <summary>
     /// 构造复制器
     /// </summary>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
-    /// <param name="clear"></param>
+    /// <param name="destBundle"></param>
     /// <returns></returns>
-    public DictionaryCopier Create(Type sourceType, Type destType, bool clear = true)
+    public DictionaryCopier Create(Type sourceType, Type destType, DictionaryBundle destBundle)
     {
-        var destArguments = ReflectionHelper.GetGenericArguments(destType);
-        if (destArguments.Length != 2)
-            return null;
-        var keyType = destArguments[0];
-        var elementType = destArguments[1];
+        var keyType = destBundle.KeyType;
+        var destElementType = destBundle.ValueType;
         if (sourceType.IsArray)
-            return ArrayToDictionary(sourceType, destType, keyType, elementType, clear);
-        if (ReflectionHelper.HasGenericType(sourceType, typeof(IDictionary<,>)))
-            return DictionaryToDictionary(sourceType, destType, keyType, elementType, clear);
-        if (ReflectionHelper.HasGenericType(sourceType, typeof(IEnumerable<>)))
-            return ListToDictionary(sourceType, destType, keyType, elementType, clear);
+            return ArrayToDictionary(sourceType, destType, keyType, destElementType, destBundle.Items);
+        var container = CollectionContainer.Instance;
+        if (container.DictionaryCacher.Validate(sourceType))
+            return DictionaryToDictionary(sourceType, container.DictionaryCacher.Get(sourceType), destType, keyType, destElementType, destBundle.Items);
+        if (container.ListCacher.Validate(sourceType))
+            return ListToDictionary(sourceType, destType, keyType, destElementType, destBundle.Items);
         return null;
     }
+
     /// <summary>
     /// 字典到字典
     /// </summary>
     /// <param name="sourceType"></param>
+    /// <param name="bundle"></param>
     /// <param name="destType"></param>
     /// <param name="keyType"></param>
     /// <param name="elementType"></param>
-    /// <param name="clear"></param>
+    /// <param name="itemProperty"></param>
     /// <returns></returns>
-    public DictionaryCopier DictionaryToDictionary(Type sourceType, Type destType, Type keyType, Type elementType, bool clear = true)
+    public DictionaryCopier DictionaryToDictionary(Type sourceType, DictionaryBundle bundle, Type destType, Type keyType, Type elementType, PropertyInfo itemProperty)
     {
-        var sourceArguments = ReflectionHelper.GetGenericArguments(sourceType);
-        if (sourceArguments.Length != 2)
+        if(bundle is null)
             return null;
-        var keyConverter = _options.GetEmitConverter(sourceArguments[0], keyType);
+        var keyConverter = _options.GetEmitConverter(bundle.KeyType, keyType);
         if (keyConverter is null)
             return null;
-        var elementConverter = _options.GetEmitConverter(sourceArguments[1], elementType);
+        var elementConverter = _options.GetEmitConverter(bundle.ValueType, elementType);
         if (elementConverter is null)
             return null;
-        var sourceVisitor = CollectionContainer.Instance.GetIndexVisitor(sourceType);
+        var sourceVisitor = CollectionContainer.Instance.IndexVisitorCacher.Get(sourceType);
         if (sourceVisitor is null)
             return null;
-        return new(destType, keyType, elementType, sourceVisitor, keyConverter, elementConverter, clear);
+        return new(destType, keyType, elementType, itemProperty, sourceVisitor, keyConverter, elementConverter, false);
     }
     /// <summary>
     /// 数组到字典
@@ -80,11 +86,11 @@ public class CopyToDictionary(IMapperOptions options)
     /// <param name="destType"></param>
     /// <param name="keyType"></param>
     /// <param name="elementType"></param>
-    /// <param name="clear"></param>
+    /// <param name="itemProperty"></param>
     /// <returns></returns>
-    public DictionaryCopier ArrayToDictionary(Type sourceType, Type destType, Type keyType, Type elementType, bool clear = true)
+    public DictionaryCopier ArrayToDictionary(Type sourceType, Type destType, Type keyType, Type elementType, PropertyInfo itemProperty)
     {
-        var sourceVisitor = CollectionContainer.Instance.GetIndexVisitor(sourceType);
+        var sourceVisitor = CollectionContainer.Instance.IndexVisitorCacher.Get(sourceType);
         if (sourceVisitor is null)
             return null;
         var sourceKeyType = typeof(int);
@@ -95,18 +101,18 @@ public class CopyToDictionary(IMapperOptions options)
         var elementConverter = _options.GetEmitConverter(sourcetElementType, elementType);
         if (elementConverter is null)
             return null;
-        return new(destType, keyType, elementType, sourceVisitor, keyConverter, elementConverter, clear);
+        return new(destType, keyType, elementType, itemProperty, sourceVisitor, keyConverter, elementConverter, false);
     }
     /// <summary>
-    /// 列表到字典
+    /// 迭代到字典
     /// </summary>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
     /// <param name="keyType"></param>
     /// <param name="elementType"></param>
-    /// <param name="clear"></param>
+    /// <param name="itemProperty"></param>
     /// <returns></returns>
-    public DictionaryCopier ListToDictionary(Type sourceType, Type destType, Type keyType, Type elementType, bool clear = true)
+    public DictionaryCopier ListToDictionary(Type sourceType, Type destType, Type keyType, Type elementType, PropertyInfo itemProperty)
     {
         var sourceKeyType = typeof(int);
         var keyConverter = _options.GetEmitConverter(sourceKeyType, keyType);
@@ -116,9 +122,9 @@ public class CopyToDictionary(IMapperOptions options)
         var elementConverter = _options.GetEmitConverter(sourcetElementType, elementType);
         if (elementConverter is null)
             return null;
-        var sourceVisitor = CollectionContainer.Instance.GetIndexVisitor(sourceType);
+        var sourceVisitor = CollectionContainer.Instance.IndexVisitorCacher.Get(sourceType);
         if (sourceVisitor is null)
             return null;
-        return new(destType, keyType, elementType, sourceVisitor, keyConverter, elementConverter, clear);
+        return new(destType, keyType, elementType, itemProperty, sourceVisitor, keyConverter, elementConverter, false);
     }
 }

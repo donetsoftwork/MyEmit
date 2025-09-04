@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <VersionBase>0.6.1</VersionBase>    
+    <VersionBase>0.6.2</VersionBase>    
     <LangVersion>Latest</LangVersion>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Authors>jiangxiangji</Authors>

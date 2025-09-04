@@ -5,18 +5,20 @@ using PocoEmit.Copies;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace PocoEmit.Collections.Converters;
 
 /// <summary>
 /// 集合类型转化
 /// </summary>
-/// <param name="elementType"></param>
 /// <param name="collectionType"></param>
+/// <param name="elementType"></param>
+/// <param name="capacityConstructor"></param>
 /// <param name="sourceCount"></param>
 /// <param name="copier"></param>
-public class CollectionConverter(Type collectionType, Type elementType, IEmitCounter sourceCount, IEmitCopier copier)
-    : CollectionActivator(collectionType, elementType, sourceCount)
+public class CollectionConverter(Type collectionType, Type elementType, ConstructorInfo capacityConstructor, IEmitCounter sourceCount, IEmitCopier copier)
+    : CollectionActivator(collectionType, elementType, capacityConstructor, sourceCount)
     , IEmitConverter
 {
     #region 配置

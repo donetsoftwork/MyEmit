@@ -31,9 +31,6 @@ public class ArrayCounter(Type arrayType, Type elementType)
     /// <inheritdoc />
     public Type ElementType
         => _elementType;
-    /// <inheritdoc />
-    Type IEmitCollection.CollectionType
-        => _arrayType;
     bool ICompileInfo.Compiled
         => false;
     #endregion

@@ -48,14 +48,6 @@ public class EnumFromUnderConverter(IEnumBundle bundle)
     /// <returns></returns>
     public Expression ToFlag(Expression source)
     {
-        //var under = Expression.Parameter(_underType, "under");
-        //var conditions = CreateConditions(source, under, _fields);
-        //var condition = EmitHelper.BuildConditions(conditions);
-        //return Expression.Block([under],
-        //    Expression.Assign(under, Expression.Default(_underType)),
-        //    condition,
-        //    Expression.Convert(under, _enumType)
-        //);
         return Expression.Convert(
             Expression.Call(_toObjectMethod,
                 Expression.Constant(_enumType, typeof(Type)),

@@ -7,8 +7,9 @@ using PocoEmit.Indexs;
 using System;
 using System.Collections.Concurrent;
 using PocoEmit.Collections.Saves;
+using PocoEmit.Collections.Bundles;
 
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Generic;
 using System.Collections.Frozen;
 #endif
@@ -18,12 +19,16 @@ namespace PocoEmit;
 /// <summary>
 /// 集合容器
 /// </summary>
-public sealed class CollectionContainer
+public sealed partial class CollectionContainer
     : ICacher<PairTypeKey, IEmitElementCounter>
     , ICacher<Type, IEmitElementVisitor>
     , ICacher<Type, IEmitIndexMemberReader>
     , ICacher<Type, IElementIndexVisitor>
     , ICacher<PairTypeKey, IEmitElementSaver>
+    , ICacher<Type, EnumerableBundle>
+    , ICacher<Type, CollectionBundle>
+    , ICacher<Type, ListBundle>
+    , ICacher<Type, DictionaryBundle>
 {
     /// <summary>
     /// 集合容器
@@ -36,11 +41,20 @@ public sealed class CollectionContainer
         _readIndexs = new ConcurrentDictionary<Type, IEmitIndexMemberReader>(concurrencyLevel, options.ReadIndexCapacity);
         _indexVisitors = new ConcurrentDictionary<Type, IElementIndexVisitor>(concurrencyLevel, options.ReadIndexCapacity);
         _savers = new ConcurrentDictionary<PairTypeKey, IEmitElementSaver>(concurrencyLevel, options.SaverCapacity);
+        _enumerables = new ConcurrentDictionary<Type, EnumerableBundle>(concurrencyLevel, options.EnumerableCapacity);
+        _collections = new ConcurrentDictionary<Type, CollectionBundle>(concurrencyLevel, options.Collectionapacity);
+        _lists = new ConcurrentDictionary<Type, ListBundle>(concurrencyLevel, options.ListCapacity);
+        _dictionaries = new ConcurrentDictionary<Type, DictionaryBundle>(concurrencyLevel, options.DictionaryCapacity);
+
         _countCacher = new(this);
         _visitorCacher = new(this);
         _readIndexCacher = new(this);
         _indexVisitorCacher = new(this);
         _saveCacher = new(this);
+        _enumerableCacher = new(this);
+        _collectionCacher = new(this);
+        _listCacher = new(this);
+        _dictionaryCacher = new(this);
     }
     #region 配置
     private readonly CountCacher _countCacher;
@@ -48,7 +62,11 @@ public sealed class CollectionContainer
     private readonly ReadIndexCacher _readIndexCacher;
     private readonly IndexVisitorCacher _indexVisitorCacher;
     private readonly SaveCacher _saveCacher;
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+    private readonly EnumerableCacher _enumerableCacher;
+    private readonly CollectionCacher _collectionCacher;
+    private readonly ListCacher _listCacher;
+    private readonly DictionaryCacher _dictionaryCacher;
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 集合数量缓存
     /// </summary>
@@ -69,6 +87,22 @@ public sealed class CollectionContainer
     /// 元素保存器
     /// </summary>
     private IDictionary<PairTypeKey, IEmitElementSaver> _savers;
+    /// <summary>
+    /// 迭代类成员
+    /// </summary>
+    private IDictionary<Type, EnumerableBundle> _enumerables;
+    /// <summary>
+    /// 集合类成员
+    /// </summary>
+    private IDictionary<Type, CollectionBundle> _collections;
+    /// <summary>
+    /// 列表类成员
+    /// </summary>
+    private IDictionary<Type, ListBundle> _lists;
+    /// <summary>
+    /// 字典类成员
+    /// </summary>
+    private IDictionary<Type, DictionaryBundle> _dictionaries;
 #else
     /// <summary>
     /// 集合数量缓存
@@ -90,6 +124,23 @@ public sealed class CollectionContainer
     /// 元素保存器
     /// </summary>
     private readonly ConcurrentDictionary<PairTypeKey, IEmitElementSaver> _savers;
+    /// <summary>
+    /// 迭代器成员
+    /// </summary>
+    private readonly ConcurrentDictionary<Type, EnumerableBundle> _enumerables;
+    /// <summary>
+    /// 集合类成员
+    /// </summary>
+    private readonly ConcurrentDictionary<Type, CollectionBundle> _collections;
+    /// <summary>
+    /// 列表类成员
+    /// </summary>
+    private readonly ConcurrentDictionary<Type, ListBundle> _lists;
+    /// <summary>
+    /// 字典类成员
+    /// </summary>
+    private readonly ConcurrentDictionary<Type, DictionaryBundle> _dictionaries;
+
 #endif
     #endregion
     #region ICacher<Type, IEmitElementCounter>
@@ -147,43 +198,102 @@ public sealed class CollectionContainer
     void IStore<PairTypeKey, IEmitElementSaver>.Set(PairTypeKey key, IEmitElementSaver value)
         => _savers[key] = value;
     #endregion
+    #region ICacher<Type, EnumerableBundle>
+    /// <inheritdoc />
+    bool ICacher<Type, EnumerableBundle>.ContainsKey(Type key)
+        => _enumerables.ContainsKey(key);
+    /// <inheritdoc />
+    bool ICacher<Type, EnumerableBundle>.TryGetValue(Type key, out EnumerableBundle value)
+        => _enumerables.TryGetValue(key, out value);
+    /// <inheritdoc />
+    void IStore<Type, EnumerableBundle>.Set(Type key, EnumerableBundle value)
+        => _enumerables[key] = value;
+    #endregion
+    #region ICacher<Type, CollectionBundle>
+    /// <inheritdoc />
+    bool ICacher<Type, CollectionBundle>.ContainsKey(Type key)
+        => _collections.ContainsKey(key);
+    /// <inheritdoc />
+    bool ICacher<Type, CollectionBundle>.TryGetValue(Type key, out CollectionBundle value)
+        => _collections.TryGetValue(key, out value);
+    /// <inheritdoc />
+    void IStore<Type, CollectionBundle>.Set(Type key, CollectionBundle value)
+        => _collections[key] = value;
+    #endregion
+    #region ICacher<Type, ListBundle>
+    /// <inheritdoc />
+    bool ICacher<Type, ListBundle>.ContainsKey(Type key)
+        => _lists.ContainsKey(key);
+    /// <inheritdoc />
+    bool ICacher<Type, ListBundle>.TryGetValue(Type key, out ListBundle value)
+        => _lists.TryGetValue(key, out value);
+    /// <inheritdoc />
+    void IStore<Type, ListBundle>.Set(Type key, ListBundle value)
+        => _lists[key] = value;
+    #endregion
+    #region ICacher<Type, DictionaryBundle>
+    /// <inheritdoc />
+    bool ICacher<Type, DictionaryBundle>.ContainsKey(Type key)
+        => _dictionaries.ContainsKey(key);
+    /// <inheritdoc />
+    bool ICacher<Type, DictionaryBundle>.TryGetValue(Type key, out DictionaryBundle value)
+        => _dictionaries.TryGetValue(key, out value);
+    /// <inheritdoc />
+    void IStore<Type, DictionaryBundle>.Set(Type key, DictionaryBundle value)
+        => _dictionaries[key] = value;
+    #endregion
     /// <summary>
-    /// 获取集合访问者
+    /// 集合访问者缓存
     /// </summary>
-    /// <param name="collectionType"></param>
-    /// <returns></returns>
-    public IEmitElementVisitor GetVisitor(Type collectionType)
-        => _visitorCacher.Get(collectionType);
+    internal VisitorCacher VisitorCacher
+        => _visitorCacher;
     /// <summary>
-    /// 获取索引读取器
+    /// 索引读取器缓存
     /// </summary>
-    /// <param name="collectionType"></param>
-    /// <returns></returns>
-    public IEmitIndexMemberReader GetIndexReader(Type collectionType)
-        => _readIndexCacher.Get(collectionType);
+    internal ReadIndexCacher ReadIndexCacher
+        => _readIndexCacher;
     /// <summary>
-    /// 获取集合访问者
+    /// 集合访问者缓存
     /// </summary>
-    /// <param name="collectionType"></param>
     /// <returns></returns>
-    public IElementIndexVisitor GetIndexVisitor(Type collectionType)
-        => _indexVisitorCacher.Get(collectionType);
+    internal IndexVisitorCacher IndexVisitorCacher
+        => _indexVisitorCacher;
     /// <summary>
     /// 获取集合数量缓存
     /// </summary>
-    public CacheBase<PairTypeKey, IEmitElementCounter> CountCacher 
+    internal CountCacher CountCacher 
         => _countCacher;
     /// <summary>
     /// 获取集合元素保持器缓存
     /// </summary>
-    public CacheBase<PairTypeKey, IEmitElementSaver> SaveCacher 
+    internal SaveCacher SaveCacher 
         => _saveCacher;
+    /// <summary>
+    /// 迭代器缓存
+    /// </summary>
+    internal EnumerableCacher EnumerableCacher
+        => _enumerableCacher;
+    /// <summary>
+    /// 集合成员缓存
+    /// </summary>
+    internal CollectionCacher CollectionCacher
+        => _collectionCacher;
+    /// <summary>
+    /// 列表成员缓存
+    /// </summary>
+    internal ListCacher ListCacher
+        => _listCacher;
+    /// <summary>
+    /// 字典成员缓存
+    /// </summary>
+    internal DictionaryCacher DictionaryCacher
+        => _dictionaryCacher;
     /// <summary>
     /// 实例
     /// </summary>
     public static CollectionContainer Instance
         => Inner.Instance;
-#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// 设置为不可变
     /// </summary>
@@ -194,6 +304,8 @@ public sealed class CollectionContainer
         _readIndexs = _readIndexs.ToFrozenDictionary();
         _indexVisitors = _indexVisitors.ToFrozenDictionary();
         _savers = _savers.ToFrozenDictionary();
+        _enumerables = _enumerables.ToFrozenDictionary();
+        _dictionaries = _dictionaries.ToFrozenDictionary();
     }
 #endif
     #region 配置

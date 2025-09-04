@@ -1,7 +1,6 @@
 using PocoEmit.Collections;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace PocoEmit.Dictionaries;
 
@@ -40,21 +39,4 @@ public abstract class EmitDictionaryBase(Type dictionaryType, Type keyType, Type
     /// <returns></returns>
     public static Type MakePairType(Type[] types)
         => typeof(KeyValuePair<,>).MakeGenericType(types);
-    #region MethodInfo
-    /// <summary>
-    /// 获取Keys属性
-    /// </summary>
-    public static PropertyInfo GetKeysProperty(Type dictionaryType)
-        => ReflectionHelper.GetPropery(dictionaryType, property => property.Name == "Keys");
-    /// <summary>
-    /// 获取Values属性
-    /// </summary>
-    public static PropertyInfo GetValuesProperty(Type dictionaryType)
-        => ReflectionHelper.GetPropery(dictionaryType, property => property.Name == "Values");
-    /// <summary>
-    /// 获取Item索引器属性
-    /// </summary>
-    public static PropertyInfo GetItemProperty(Type dictionaryType)
-        => ReflectionHelper.GetPropery(dictionaryType, property => property.Name == "Item");
-    #endregion
 }

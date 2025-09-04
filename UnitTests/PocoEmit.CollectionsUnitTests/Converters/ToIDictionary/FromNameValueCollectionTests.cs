@@ -1,3 +1,5 @@
+using PocoEmit.Collections;
+using PocoEmit.Collections.Bundles;
 using PocoEmit.CollectionsUnitTests.Supports;
 using System.Collections.Specialized;
 
@@ -5,6 +7,14 @@ namespace PocoEmit.CollectionsUnitTests.Converters.ToIDictionary;
 
 public class FromNameValueCollectionTests : CollectionTestBase
 {
+    public FromNameValueCollectionTests()
+        : base()
+    {
+        ICacher<Type, DictionaryBundle> container = CollectionContainer.Instance;
+        var type = typeof(NameValueCollection);
+        DictionaryBundle bundle = new(typeof(string), typeof(string), type.GetProperty("AllKeys"), null, CollectionContainer.GetItemProperty(type, typeof(string)), type.GetProperty("Count"));
+        container.Set(type, bundle);
+    }
     [Fact]
     public void Convert()
     {
@@ -15,10 +25,10 @@ public class FromNameValueCollectionTests : CollectionTestBase
             { "Key2", "Value2" },
             { "Key3", "Value3" }
         };
-        Assert.Throws<InvalidOperationException>(() => _mapper.Convert<NameValueCollection, IDictionary<string, string>>(source));
-        //var result = _mapper.Convert<NameValueCollection, IDictionary<string, string>>(source);
-        //Assert.NotNull(result);
-        //Assert.Equal(source.Count, result.Count);
-        //Assert.Equal(source.Get(key1), result[key1]);
+        //Assert.Throws<InvalidOperationException>(() => _mapper.Convert<NameValueCollection, IDictionary<string, string>>(source));
+        var result = _mapper.Convert<NameValueCollection, IDictionary<string, string>>(source);
+        Assert.NotNull(result);
+        Assert.Equal(source.Count, result.Count);
+        Assert.Equal(source.Get(key1), result[key1]);
     }
 }

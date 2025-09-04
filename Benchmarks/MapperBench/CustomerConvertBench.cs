@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 using MapperBench.Supports;
 using Microsoft.Extensions.DependencyInjection;
 using PocoEmit;
+using PocoEmit.Dictionaries;
 using System.Linq.Expressions;
 
 namespace MapperBench;
@@ -69,7 +70,7 @@ public class CustomerConvertBench
         return code;
     }
     [Benchmark(Baseline = true)]
-    public CustomerDTO Convert()
+    public CustomerDTO Poco()
     {
         return _poco.Convert<Customer, CustomerDTO>(_customer);
     }
@@ -86,7 +87,7 @@ public class CustomerConvertBench
     }
 
     [Benchmark]
-    public CustomerDTO ConvertFunc()
+    public CustomerDTO PocoFunc()
     {
         return _convertFunc(_customer);
     }

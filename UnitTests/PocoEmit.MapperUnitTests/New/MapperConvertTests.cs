@@ -88,4 +88,13 @@ public class MapperConvertTests : MapperConvertTestBase
         Assert.Equal(source.User.Id, result.User.Id);
         Assert.Equal(source.User.Name, result.User.Name);
     }
+
+    [Fact]
+    public void Convert_DTO3()
+    {
+        Node node1 = new() { Id = new(1), Name = "node1", SortOrder = 1 };
+        Node node2 = new() { Id = new(2), Name = "node2", SortOrder = 2, Parent = node1 };
+        var result = _mapper.Convert<Node, NodeDTO>(node2);
+        Assert.NotNull(result);
+    }
 }

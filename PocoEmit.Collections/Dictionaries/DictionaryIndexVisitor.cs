@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Collections.Visitors;
 using System;
 using System.Linq.Expressions;
@@ -11,30 +12,37 @@ namespace PocoEmit.Dictionaries;
 /// <param name="dictionaryType"></param>
 /// <param name="keyType"></param>
 /// <param name="elementType"></param>
-public class DictionaryIndexVisitor(Type dictionaryType, Type keyType, Type elementType)
+/// <param name="keysProperty"></param>
+/// <param name="itemProperty"></param>
+public class DictionaryIndexVisitor(Type dictionaryType, Type keyType, Type elementType, PropertyInfo keysProperty, PropertyInfo itemProperty)
     : EmitDictionaryBase(dictionaryType, keyType, elementType)
     , IElementIndexVisitor
 {
     #region 配置
-    private readonly EnumerableVisitor _keysVisitor = new(keyType);
-    private readonly PropertyInfo _keysProperty = GetKeysProperty(dictionaryType);
-    private readonly PropertyInfo _itemProperty = GetItemProperty(dictionaryType);
+    private readonly PropertyInfo _keysProperty = keysProperty;
+    private readonly PropertyInfo _itemProperty = itemProperty;
     #endregion
+    /// <inheritdoc />
+    Expression IIndexVisitor.Travel(Expression collection, Func<Expression, Expression, Expression> callback)
+        => Travel(collection, _keysProperty, _itemProperty, callback);
     /// <summary>
     /// 遍历字典
     /// </summary>
-    /// <param name="collection"></param>
+    /// <param name="dic"></param>
+    /// <param name="keysProperty"></param>
+    /// <param name="itemProperty"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public Expression Travel(Expression collection, Func<Expression, IndexExpression, Expression> callback)
+    public static Expression Travel(Expression dic, PropertyInfo keysProperty, PropertyInfo itemProperty, Func<Expression, Expression, Expression> callback)
     {
-        var keys = Expression.Variable(_keysProperty.PropertyType, "keys");
-        var instance = Expression.Variable(_collectionType, "dic");
+        var keysVisitor = CollectionContainer.Instance.VisitorCacher.Get(keysProperty.PropertyType);
+        if (keysVisitor is null)
+            return Expression.Empty();
+        var keys = Expression.Variable(keysProperty.PropertyType, "keys");
         return Expression.Block(
-            [instance, keys],
-            Expression.Assign(instance, CheckInstance(collection)),
-            Expression.Assign(keys, Expression.Property(instance, _keysProperty)),
-            _keysVisitor.Travel(keys, key => callback(key, Expression.MakeIndex(instance, _itemProperty, [key])))
+            [keys],
+            Expression.Assign(keys, Expression.Property(dic, keysProperty)),
+            keysVisitor.Travel(keys, key => callback(key, Expression.MakeIndex(dic, itemProperty, [key])))
         );
     }
 }

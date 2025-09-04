@@ -1,6 +1,6 @@
+using PocoEmit.Builders;
+using PocoEmit.Collections.Bundles;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -9,27 +9,15 @@ namespace PocoEmit.Collections.Visitors;
 /// <summary>
 /// 迭代器访问者
 /// </summary>
-public class EnumerableVisitor
-    : EmitCollectionBase
+public class EnumerableVisitor(Type collectionType, Type elementType, MethodInfo getEnumeratorMethod, Type enumeratorType, MethodInfo moveNextMethod, PropertyInfo currentProperty)
+    : EmitCollectionBase(collectionType, elementType)
     , IEmitElementVisitor
 {
-    /// <summary>
-    /// 迭代器访问者
-    /// </summary>
-    /// <param name="elementType"></param>
-    public EnumerableVisitor(Type elementType)
-        : base(typeof(IEnumerable<>).MakeGenericType(elementType), elementType)
-    {
-        _getEnumeratorMethod = GetGetEnumerator(_collectionType);
-        _enumeratorType = _getEnumeratorMethod.ReturnType;
-        _moveNextMethod = GetMoveNext(_enumeratorType);
-        _currentProperty = GetCurrent(_enumeratorType);
-    }
     #region 配置
-    private readonly MethodInfo _getEnumeratorMethod;
-    private readonly Type _enumeratorType;
-    private readonly MethodInfo _moveNextMethod;
-    private readonly PropertyInfo _currentProperty;
+    private readonly MethodInfo _getEnumeratorMethod = getEnumeratorMethod;
+    private readonly Type _enumeratorType = enumeratorType;
+    private readonly MethodInfo _moveNextMethod = moveNextMethod;
+    private readonly PropertyInfo _currentProperty = currentProperty;
     /// <summary>
     /// GetEnumerator方法
     /// </summary>
@@ -52,24 +40,57 @@ public class EnumerableVisitor
         => _currentProperty;
     #endregion
     /// <inheritdoc />
-    public Expression Travel(Expression collection, Func<Expression, Expression> callback)
+    Expression IEmitElementVisitor.Travel(Expression collection, Func<Expression, Expression> callback)
+        => Travel(CheckInstance(collection), _elementType, _enumeratorType,_getEnumeratorMethod, _moveNextMethod, _currentProperty, callback);
+    /// <summary>
+    /// 遍历
+    /// </summary>
+    /// <param name="collection"></param>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    public static Expression Travel(Expression collection, Func<Expression, Expression> callback)
+        => Travel(collection, CollectionContainer.Instance.EnumerableCacher.Get(collection.Type), callback);
+    /// <summary>
+    /// 遍历
+    /// </summary>
+    /// <param name="collection"></param>
+    /// <param name="bundle"></param>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    public static Expression Travel(Expression collection, EnumerableBundle bundle, Func<Expression, Expression> callback)
     {
-        var enumerator = Expression.Variable(_enumeratorType, "enumerator");
-
+        if (bundle is null)
+            return Expression.Empty();
+        return Travel(collection, bundle.ElementType, bundle.EnumeratorType, bundle.GetEnumeratorMethod, bundle.MoveNextMethod, bundle.CurrentProperty, callback);
+    }
+    /// <summary>
+    /// 遍历
+    /// </summary>
+    /// <param name="collection"></param>
+    /// <param name="elementType"></param>
+    /// <param name="enumeratorType"></param>
+    /// <param name="getEnumerator"></param>
+    /// <param name="moveNext"></param>
+    /// <param name="current"></param>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    public static Expression Travel(Expression collection, Type elementType, Type enumeratorType, MethodInfo getEnumerator, MethodInfo moveNext, PropertyInfo current, Func<Expression, Expression> callback)
+    {
+        var enumerator = Expression.Variable(enumeratorType, "enumerator");
         var breakLabel = Expression.Label("breakLabel");
-        
+
         return Expression.Block(
             [enumerator],
-            Expression.Assign(enumerator, Expression.Call(CheckInstance(collection), _getEnumeratorMethod)),
+            Expression.Assign(enumerator, Expression.Call(collection, getEnumerator)),
             Expression.TryFinally(
                 Expression.Loop(
                      Expression.IfThenElse(
-                         Expression.Equal(Expression.Call(enumerator, _moveNextMethod), Expression.Constant(true)),
-                         callback(Expression.Property(enumerator, _currentProperty)),
+                         Expression.Equal(Expression.Call(enumerator, moveNext), Expression.Constant(true)),
+                         callback(EmitHelper.CheckType(Expression.Property(enumerator, current), elementType)),
                          Expression.Break(breakLabel)
                      ),
                     breakLabel),
-                Dispose(EnumeratorType, enumerator)
+                Dispose(enumeratorType, enumerator)
             )
         );
     }
@@ -79,14 +100,14 @@ public class EnumerableVisitor
     /// <param name="enumeratorType"></param>
     /// <param name="enumerator"></param>
     /// <returns></returns>
-    private static Expression Dispose(Type enumeratorType, Expression enumerator)
+    public static Expression Dispose(Type enumeratorType, Expression enumerator)
     {
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
         var isDispose = enumeratorType.GetTypeInfo().IsAssignableFrom(typeof(IDisposable).GetTypeInfo());
 #else
         var isDispose = enumeratorType.IsAssignableFrom(typeof(IDisposable));
 #endif
-        if ( isDispose )
+        if (isDispose)
         {
             return Expression.Call(enumerator, _disposeMethod);
         }
@@ -103,37 +124,8 @@ public class EnumerableVisitor
 
     #region MethodInfo
     /// <summary>
-    /// 获取MoveNext方法
-    /// </summary>
-    public static MethodInfo GetMoveNext(Type enumeratorType)
-        => GetMoveNextCore(enumeratorType) ?? GetMoveNextCore(typeof(IEnumerator));
-
-    /// <summary>
-    /// 获取GetEnumerator方法
-    /// </summary>
-    /// <param name="collectionType"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static MethodInfo GetGetEnumerator(Type collectionType)
-        => ReflectionHelper.GetMethod(collectionType, "GetEnumerator")
-        ?? throw new ArgumentException($"type '{collectionType.Name}' does not have GetEnumerator.");
-    /// <summary>
-    /// 获取MoveNext方法
-    /// </summary>
-    /// <param name="collectionType"></param>
-    /// <returns></returns>
-    private static MethodInfo GetMoveNextCore(Type collectionType)
-        => ReflectionHelper.GetMethod(collectionType, "MoveNext");
-    /// <summary>
     /// 获取Dispose方法
     /// </summary>
     private static readonly MethodInfo _disposeMethod = ReflectionHelper.GetMethod(typeof(IDisposable), "Dispose");
-    /// <summary>
-    /// 获取Current
-    /// </summary>
-    /// <param name="enumeratorType"></param>
-    /// <returns></returns>
-    public static PropertyInfo GetCurrent(Type enumeratorType)
-        => ReflectionHelper.GetPropery(enumeratorType, property => property.Name == "Current");
     #endregion
 }

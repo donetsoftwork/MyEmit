@@ -37,7 +37,7 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
         => _destWriter;
     #endregion
     /// <summary>
-    /// 
+    /// 获取源成员
     /// </summary>
     /// <param name="source"></param>
     /// <returns></returns>

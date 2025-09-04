@@ -54,7 +54,7 @@ public class ArrayConverter(Type sourceType, Type sourceElementType, Type destTy
             [count, dest, index, sourceItem],
             Expression.Assign(count, Expression.ArrayLength(source)),
             Expression.Assign(dest, New(count)),
-            Expression.Assign(index, Expression.Constant(0)),
+            //Expression.Assign(index, Expression.Constant(0)),
             EmitHelper.For(index, count, i => CopyElement(source, dest, i, sourceItem, _elementConverter)),
             dest
         );

@@ -50,7 +50,7 @@ public class MapperActivatorTest
     [Fact]
     public void UseActivator3()
     {
-        int userId = 222;
+        const int userId = 222;
         IMapper mapper = Mapper.Create();
         mapper.ConfigureMap<User, UserCustomDTO>()
             .UseActivator(u => new UserCustomDTO(u.Name) { UId = userId })

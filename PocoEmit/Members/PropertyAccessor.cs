@@ -30,23 +30,15 @@ public class PropertyAccessor(PropertyInfo property)
     /// <inheritdoc />
     public Expression Read(Expression instance)
     {
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        var method = _member.GetMethod
-#else
-        var method = _member.GetGetMethod()
-#endif
-            ?? throw new ArgumentException($"Property '{_member.Name}' does not have a reader method.");
-        return Expression.Property(instance, method);
+        if (_member.CanRead)
+            return Expression.Property(instance, _member);
+        throw new ArgumentException($"Property '{_member.Name}' can not Read.");
     }
     /// <inheritdoc />
     public Expression Write(Expression instance, Expression value)
     {
-#if (NETSTANDARD1_1 || NETSTANDARD1_3)
-        var method = _member.SetMethod
-#else
-        var method = _member.GetSetMethod()
-#endif
-            ?? throw new ArgumentException($"Property '{_member.Name}' does not have a writer method.");
-        return Expression.Assign(Expression.Property(instance, method), value);
+        if (_member.CanWrite)
+            return Expression.Assign(Expression.Property(instance, _member), value);
+        throw new ArgumentException($"Property '{_member.Name}' can not Write.");
     }
 }

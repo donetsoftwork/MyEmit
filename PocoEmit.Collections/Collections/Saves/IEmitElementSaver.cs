@@ -1,5 +1,6 @@
 using PocoEmit.Configuration;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace PocoEmit.Collections.Saves;
 
@@ -9,6 +10,10 @@ namespace PocoEmit.Collections.Saves;
 public interface IEmitElementSaver
     : IEmitCollection, ICompileInfo
 {
+    /// <summary>
+    /// 添加方法
+    /// </summary>
+    MethodInfo AddMethod { get; }
     /// <summary>
     /// 添加
     /// </summary>

@@ -1,7 +1,7 @@
+using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Converters;
 using PocoEmit.Configuration;
 using System;
-using System.Collections.Generic;
 
 namespace PocoEmit.Converters;
 
@@ -24,79 +24,136 @@ public class ConvertToArray(IMapperOptions options)
     /// 转化为数组
     /// </summary>
     /// <param name="sourceType"></param>
+    /// <param name="isPrimitive"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    public IEmitConverter ToArray(Type sourceType, Type destType)
+    public IEmitConverter ToArray(Type sourceType, bool isPrimitive, Type destType)
     {
         //不支持多维数组
         if (destType.GetArrayRank() > 1)
             return null;
         var destElementType = ReflectionHelper.GetElementType(destType);
-        var sourceElementType = ReflectionHelper.GetElementType(sourceType);
-        if (sourceElementType == null)
-            return null;
-        var elementConverter = _options.GetEmitConverter(sourceElementType, destElementType);
-        if (elementConverter is null)
-            return null;
+        if(isPrimitive || PairTypeKey.CheckValueType(sourceType, destElementType))
+            return ElementToArray(sourceType, destType, destElementType);
         if (sourceType.IsArray)
         {
             //不支持多维数组
             if (sourceType.GetArrayRank() > 1)
                 return null;
-            return ArrayToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
+            return ArrayToArray(sourceType, destType, destElementType);
         }
-            
-        if (ReflectionHelper.HasGenericType(sourceType, typeof(IList<>)))
-            return ListToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
-        if (ReflectionHelper.HasGenericType(sourceType, typeof(IDictionary<,>)))
-            return DictionaryToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
-        if (ReflectionHelper.HasGenericType(sourceType, typeof(IEnumerable<>)))
-            return EnumerableToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
+        var container = CollectionContainer.Instance;
+        if (container.DictionaryCacher.Validate(sourceType))
+            return DictionaryToArray(sourceType, container.DictionaryCacher.Get(sourceType), destType, destElementType);
+        else if (container.ListCacher.Validate(sourceType))
+            return ListToArray(sourceType, container.ListCacher.Get(sourceType), destType, destElementType);
+        else if (container.EnumerableCacher.Validate(sourceType))
+            return EnumerableToArray(sourceType, container.EnumerableCacher.Get(sourceType), destType, destElementType);
         return null;
     }
+    ///// <summary>
+    ///// 其他情况
+    ///// </summary>
+    ///// <param name="sourceType"></param>
+    ///// <param name="arrayType"></param>
+    ///// <param name="elementType"></param>
+    ///// <param name="isObject"></param>
+    ///// <returns></returns>
+    //public IEmitConverter OthersToArray(Type sourceType, Type arrayType, Type elementType, bool isObject)
+    //{
+    //    var bundle = _options.MemberCacher.Get(sourceType).EmitReaders;
+    //    if (bundle.Count == 0)
+    //    {
+    //        if (isObject)
+    //            return ElementToArray(sourceType, arrayType, elementType);
+    //        return null;
+    //    }
+    //    if (isObject)
+    //        return new MemberArrayConverter(_options, arrayType, elementType, bundle, bundle.Keys);
+    //    var members = bundle.Values
+    //        .Where(m => PairTypeKey.CheckValueType(m.ValueType, elementType))
+    //        .Select(m => m.Name)
+    //        .ToList();
+    //    if (members.Count == 0)
+    //        return ElementToArray(sourceType, arrayType, elementType);
+    //    return new MemberArrayConverter(_options, arrayType, elementType, bundle, members);
+    //}
+    /// <summary>
+    /// 子元素转数组
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="arrayType"></param>
+    /// <param name="elementType"></param>
+    /// <returns></returns>
+    public ArrayInitConverter ElementToArray(Type sourceType, Type arrayType, Type elementType)
+    {
+        var elementConverter = _options.GetEmitConverter(sourceType, elementType);
+        if (elementConverter is null)
+            return null;
+        return new ArrayInitConverter(arrayType, elementType, elementConverter);
+    }
+
     /// <summary>
     /// 数组转数组
     /// </summary>
     /// <param name="sourceType"></param>
-    /// <param name="sourceElementType"></param>
     /// <param name="destType"></param>
     /// <param name="destElementType"></param>
-    /// <param name="elementConverter"></param>
     /// <returns></returns>
-    public static ArrayConverter ArrayToArray(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
-        => new(sourceType, sourceElementType, destType, destElementType, elementConverter);
+    public ArrayConverter ArrayToArray(Type sourceType, Type destType, Type destElementType)
+    {
+        var sourceElementType = ReflectionHelper.GetElementType(sourceType);
+        var elementConverter = _options.GetEmitConverter(sourceElementType, destElementType);
+        if (elementConverter is null)
+            return null;
+        return new(sourceType, sourceElementType, destType, destElementType, elementConverter);
+    }
     /// <summary>
     /// 列表转数组
     /// </summary>
     /// <param name="sourceType"></param>
-    /// <param name="sourceElementType"></param>
+    /// <param name="bundle"></param>
     /// <param name="destType"></param>
     /// <param name="destElementType"></param>
-    /// <param name="elementConverter"></param>
     /// <returns></returns>
-    public static IndexArrayConverter ListToArray(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
+    public IndexArrayConverter ListToArray(Type sourceType, ListBundle bundle, Type destType, Type destElementType)
     {
+        if (bundle is null)
+            return null;
+        var sourceElementType = bundle.ElementType;
+        var elementConverter = _options.GetEmitConverter(sourceElementType, destElementType);
+        if (elementConverter is null)
+            return null;
         var container = CollectionContainer.Instance;
         var length = container.CountCacher.Get(sourceType, sourceElementType);
-        var indexReader = container.GetIndexReader(sourceType);
+        if (length is null)
+            return null;
+        var indexReader = container.ReadIndexCacher.Get(sourceType);
+        if (indexReader is null)
+            return null;
         return new(sourceType, sourceElementType, destType, destElementType, length, indexReader, elementConverter);
     }
     /// <summary>
     /// 迭代转数组
     /// </summary>
     /// <param name="sourceType"></param>
-    /// <param name="sourceElementType"></param>
+    /// <param name="bundle"></param>
     /// <param name="destType"></param>
     /// <param name="destElementType"></param>
-    /// <param name="elementConverter"></param>
     /// <returns></returns>
-    public static CollectionArrayConverter EnumerableToArray(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
+    public CollectionArrayConverter EnumerableToArray(Type sourceType, EnumerableBundle bundle, Type destType, Type destElementType)
     {
+        if (bundle is null)
+            return null;
+        var sourceElementType = bundle.ElementType;
+        var elementConverter = _options.GetEmitConverter(sourceElementType, destElementType);
+        if (elementConverter is null)
+            return null;
         var container = CollectionContainer.Instance;
-        var length = container.CountCacher.Get(sourceType, sourceElementType);
+        var length = container.CountCacher.GetByEnumerable(sourceType, sourceElementType);
         if (length is null)
             return null;
-        var visitor = container.GetVisitor(sourceType);
+        var visitor = container.VisitorCacher.GetByEnumerable(sourceType, bundle);
         if (visitor is null)
             return null;
         return new CollectionArrayConverter(sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
@@ -105,6 +162,21 @@ public class ConvertToArray(IMapperOptions options)
     /// 字典转数组
     /// </summary>
     /// <returns></returns>
-    public static IEmitConverter DictionaryToArray(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
-        => EnumerableToArray(sourceType, sourceElementType, destType, destElementType, elementConverter);
+    public IEmitConverter DictionaryToArray(Type sourceType, DictionaryBundle bundle, Type destType, Type destElementType)
+    {
+        if (bundle is null)
+            return null;
+        var sourceElementType = bundle.ValueType;
+        var elementConverter = _options.GetEmitConverter(sourceElementType, destElementType);
+        if (elementConverter is null)
+            return null;
+        var container = CollectionContainer.Instance;
+        var length = container.CountCacher.GetByDictionary(sourceType, bundle);
+        if (length is null)
+            return null;
+        var visitor = container.VisitorCacher.GetByDictionary(sourceType, bundle);
+        if (visitor is null)
+            return null;
+        return new CollectionArrayConverter(sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
+    }
 }

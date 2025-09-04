@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Converters;
 using PocoEmit.Copies;
@@ -11,43 +12,55 @@ namespace PocoEmit.Dictionaries;
 /// <summary>
 /// 字典复制
 /// </summary>
-public class DictionaryCopier
-    : EmitDictionaryBase
+/// <param name="dictionaryType"></param>
+/// <param name="keyType"></param>
+/// <param name="elementType"></param>
+/// <param name="itemProperty"></param>
+/// <param name="sourceVisitor"></param>
+/// <param name="keyConverter"></param>
+/// <param name="elementConverter"></param>
+/// <param name="ignoreDefault"></param>
+public class DictionaryCopier(Type dictionaryType, Type keyType, Type elementType, PropertyInfo itemProperty, IIndexVisitor sourceVisitor, IEmitConverter keyConverter, IEmitConverter elementConverter, bool ignoreDefault)
+    : EmitDictionaryBase(dictionaryType, keyType, elementType)
     , IEmitCopier
 {
+    #region 配置
+    private readonly PropertyInfo _itemProperty = itemProperty;
+    private readonly IIndexVisitor _sourceVisitor = sourceVisitor;
+    private readonly IEmitConverter _keyConverter = keyConverter;
+    private readonly IEmitConverter _elementConverter = elementConverter;
+    private readonly bool _ignoreDefault = ignoreDefault;
     /// <summary>
-    /// 字典复制
+    /// 索引器属性
     /// </summary>
-    /// <param name="dictionaryType"></param>
-    /// <param name="keyType"></param>
-    /// <param name="elementType"></param>
-    /// <param name="sourceVisitor"></param>
-    /// <param name="keyConverter"></param>
-    /// <param name="elementConverter"></param>
-    /// <param name="clear"></param>
-    /// <exception cref="ArgumentException"></exception>
-    public DictionaryCopier(Type dictionaryType, Type keyType, Type elementType, IIndexVisitor sourceVisitor, IEmitConverter keyConverter, IEmitConverter elementConverter, bool clear = true)
-        :base(dictionaryType, keyType, elementType)
-    {
-        _sourceVisitor = sourceVisitor;
-        _keyConverter = keyConverter;
-        _elementConverter = elementConverter;
-        _itemProperty = GetItemProperty(dictionaryType);
-        if (clear)
-            _clearMethod = GetClearMethod() ?? throw new ArgumentException($"type '{_collectionType.Name}' does not have Clear.");
-    }
-    private readonly PropertyInfo _itemProperty;
-    private readonly MethodInfo _clearMethod;
-    private readonly IIndexVisitor _sourceVisitor;
-    private readonly IEmitConverter _keyConverter;
-    private readonly IEmitConverter _elementConverter;
+    public PropertyInfo ItemProperty
+        => _itemProperty;
+    /// <summary>
+    /// 数据源遍历
+    /// </summary>
+    public IIndexVisitor SourceVisitor
+        => _sourceVisitor;
+    /// <summary>
+    /// 键类型转化
+    /// </summary>
+    public IEmitConverter KeyConverter 
+        => _keyConverter;
+    /// <summary>
+    /// 子元素类型转化
+    /// </summary>
+    public IEmitConverter ElementConverter
+        => _elementConverter;
+    /// <summary>
+    /// 是否忽略默认值
+    /// </summary>
+    public bool IgnoreDefault 
+        => _ignoreDefault;
+    #endregion
 
     /// <inheritdoc />
     public IEnumerable<Expression> Copy(Expression source, Expression dest)
     {
         yield return dest = CheckInstance(dest);
-        if (_clearMethod is not null)
-            yield return Expression.Call(dest, _clearMethod);
         yield return _sourceVisitor.Travel(source, (k, v) => CopyElement(dest, k, v, _keyConverter, _elementConverter));
     }
     /// <summary>
@@ -60,13 +73,23 @@ public class DictionaryCopier
     /// <param name="elementConverter"></param>
     /// <returns></returns>
     public Expression CopyElement(Expression dest, Expression key, Expression element, IEmitConverter keyConverter, IEmitConverter elementConverter)
-        => Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), elementConverter.Convert(element));
-    #region MethodInfo
-    /// <summary>
-    /// 获取清空方法
-    /// </summary>
-    /// <returns></returns>
-    protected virtual MethodInfo GetClearMethod()
-        => ReflectionHelper.GetMethod(_collectionType, "Clear");
-    #endregion
+    {
+        if (_ignoreDefault)
+        {
+            var elementType = element.Type;            
+            if (EmitHelper.CheckComplexSource(element, false))
+            {
+                var value0 = Expression.Parameter(elementType, "value0");
+                return Expression.Block([value0],
+                    Expression.Assign(value0, element),
+                    Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), elementConverter.Convert(value0)))
+                );
+            }
+            else
+            {
+                return Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), elementConverter.Convert(element)));
+            }                
+        }
+        return Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), elementConverter.Convert(element));
+    }
 }

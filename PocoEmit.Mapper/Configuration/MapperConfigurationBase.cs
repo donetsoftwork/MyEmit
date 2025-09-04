@@ -2,7 +2,6 @@ using PocoEmit.Activators;
 using PocoEmit.Builders;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
-using PocoEmit.Members;
 using PocoEmit.Reflection;
 using System;
 using System.Collections.Concurrent;
@@ -127,21 +126,6 @@ public abstract partial class MapperConfigurationBase
     {
         if (_defaultValueConfiguration.TryGetValue(destType, out IEmitBuilder builder))
             return builder.Build();
-        //        {
-        //            if (defaultValue is Delegate func)
-        //            {
-        //#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        //                var call = Expression.Call(EmitHelper.CheckMethodCallInstance((object)func), func.GetMethodInfo());
-        //#else
-        //                var call = Expression.Call(EmitHelper.CheckMethodCallInstance((object)func), func.Method);
-        //#endif
-        //                return Expression.Convert(call, destType);
-        //            }
-        //            else
-        //            {
-        //                return Expression.Constant(defaultValue);
-        //            }
-        //        }
         return null;
     }
     #endregion
