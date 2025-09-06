@@ -1,3 +1,4 @@
+using PocoEmit.Converters;
 using PocoEmit.Members;
 using System;
 using System.Linq.Expressions;
@@ -15,6 +16,6 @@ public class ConstructorActivator(Type returnType, ConstructorInfo constructor)
     , IEmitActivator
 {
     /// <inheritdoc />
-    public virtual Expression New(Expression argument)
+    public virtual Expression New(ComplexContext cacher, Expression argument)
         => Expression.New(_constructor);
 }

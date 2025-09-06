@@ -1,4 +1,5 @@
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
 using PocoEmit.Maping;
 using PocoEmit.Members;
 using System;
@@ -26,14 +27,14 @@ public class ParameterConstructorActivator(Type returnType, ConstructorInfo cons
         => _readers;
     #endregion
     /// <inheritdoc />
-    public override Expression New(Expression argument)
-        => Expression.New(_constructor, CreateParameters(argument));
-    private Expression[] CreateParameters(Expression source)
+    public override Expression New(ComplexContext cacher, Expression argument)
+        => Expression.New(_constructor, CreateParameters(cacher, argument));
+    private Expression[] CreateParameters(ComplexContext cacher, Expression source)
     {
         var arguments = new Expression[_readers.Length];
         var i = 0;
         foreach (var reader in _readers)
-            arguments[i++] = reader.Read(source);
+            arguments[i++] = cacher.Read(reader, source);
         return arguments;
     }
     /// <summary>

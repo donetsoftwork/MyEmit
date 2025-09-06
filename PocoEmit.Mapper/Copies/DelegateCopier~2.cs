@@ -1,5 +1,6 @@
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -20,6 +21,6 @@ public class DelegateCopier<TSource, TDest>(Expression<Action<TSource, TDest>> c
     bool ICompileInfo.Compiled
         => false;
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(Expression source, Expression dest)
+    public IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
         => [Call(source, dest)];
 }

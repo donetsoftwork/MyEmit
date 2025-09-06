@@ -87,6 +87,15 @@ public static partial class MapperServices
     /// <summary>
     /// 获取Emit类型复制器
     /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="mapper"></param>
+    /// <returns></returns>
+    public static IEmitCopier GetEmitCopier<TSource, TDest>(this IMapper mapper)
+        => mapper.GetEmitCopier(new(typeof(TSource), typeof(TDest)));
+    /// <summary>
+    /// 获取Emit类型复制器
+    /// </summary>
     /// <param name="mapper"></param>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
@@ -138,7 +147,7 @@ public static partial class MapperServices
     {
         var source = Expression.Parameter(typeof(TSource), "source");
         var dest = Expression.Parameter(typeof(TDest), "dest");
-        var list = emit.Copy(source, dest).ToArray();
+        var list = emit.Copy(new(), source, dest).ToArray();
         var body = list.Length == 1 ? list[0] : Expression.Block(list);
         return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
     }

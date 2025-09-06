@@ -1,3 +1,4 @@
+using PocoEmit.Converters;
 using System;
 using System.Linq.Expressions;
 
@@ -27,6 +28,6 @@ public class ExpressionActivator(Expression expression, Type returnType)
         => _returnType;
     #endregion
     /// <inheritdoc />
-    public virtual Expression New(Expression argument)
+    public virtual Expression New(ComplexContext cacher, Expression argument)
         => _expression;
 }

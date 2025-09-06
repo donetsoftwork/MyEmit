@@ -17,7 +17,9 @@ namespace PocoEmit.Collections.Converters;
 /// <param name="destElementType"></param>
 /// <param name="elementConverter"></param>
 public class ArrayConverter(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
-    : ArrayActivator(destType, destElementType, ArrayLength.Length), IEmitConverter
+    : ArrayActivator(destType, destElementType, ArrayLength.Length)
+    , IEmitComplexConverter
+    , IEmitConverter
 {
     #region 配置
     private readonly Type _sourceType = sourceType;
@@ -42,9 +44,11 @@ public class ArrayConverter(Type sourceType, Type sourceElementType, Type destTy
     bool ICompileInfo.Compiled
         => false;
     #endregion
-
     /// <inheritdoc />
-    public Expression Convert(Expression source)
+    Expression IEmitConverter.Convert(Expression source)
+        => Convert(new(), source);
+    /// <inheritdoc />
+    public Expression Convert(ComplexContext cacher, Expression source)
     {
         var dest = Expression.Variable(_collectionType, "dest");        
         var count = Expression.Variable(typeof(int), "count");
@@ -55,22 +59,23 @@ public class ArrayConverter(Type sourceType, Type sourceElementType, Type destTy
             Expression.Assign(count, Expression.ArrayLength(source)),
             Expression.Assign(dest, New(count)),
             //Expression.Assign(index, Expression.Constant(0)),
-            EmitHelper.For(index, count, i => CopyElement(source, dest, i, sourceItem, _elementConverter)),
+            EmitHelper.For(index, count, i => CopyElement(cacher, source, dest, i, sourceItem, _elementConverter)),
             dest
         );
     }
     /// <summary>
     /// 复制子元素
     /// </summary>
+    /// <param name="cacher"></param>
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <param name="index"></param>
     /// <param name="sourceItem"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    public static Expression CopyElement(Expression source, Expression dest, Expression index, ParameterExpression sourceItem, IEmitConverter converter)
+    public Expression CopyElement(ComplexContext cacher, Expression source, Expression dest, Expression index, ParameterExpression sourceItem, IEmitConverter converter)
         => Expression.Block(
             Expression.Assign(sourceItem, Expression.ArrayIndex(source, index)),
-            Expression.Assign(Expression.ArrayAccess(dest, index), converter.Convert(sourceItem))
+            Expression.Assign(Expression.ArrayAccess(dest, index), cacher.Convert(converter, sourceItem, _elementType))
             );
 }

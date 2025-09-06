@@ -190,7 +190,7 @@ public static partial class PocoEmitServices
         if (emitConverter is null)
             emitReader = null;
         else
-            emitReader = new ConvertValueReader(emitReader, emitConverter);
+            emitReader = new ConvertValueReader(emitReader, emitConverter, valueType);
         return true;
     }
     #endregion

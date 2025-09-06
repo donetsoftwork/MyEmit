@@ -15,7 +15,7 @@ public interface ICacher<TKey, TValue>
     /// <returns></returns>
     bool ContainsKey(TKey key);
     /// <summary>
-    /// 获取
+    /// 尝试获取
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>

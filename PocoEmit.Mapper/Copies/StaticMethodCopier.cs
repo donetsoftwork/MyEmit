@@ -1,3 +1,4 @@
+using PocoEmit.Converters;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -33,7 +34,7 @@ public class MethodCopier(Expression target, MethodInfo method)
         => false;
     #endregion
     /// <inheritdoc />
-    public virtual IEnumerable<Expression> Copy(Expression source, Expression dest)
+    public virtual IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
         => [CallMethod(source, dest)];
     /// <summary>
     /// 调用方法

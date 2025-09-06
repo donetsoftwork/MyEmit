@@ -1,5 +1,6 @@
 using PocoEmit.Activators;
 using PocoEmit.Collections.Counters;
+using PocoEmit.Converters;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -35,7 +36,7 @@ public class CollectionActivator(Type collectionType, Type elementType, Construc
         => _collectionType;
     #endregion
     /// <inheritdoc />
-    public Expression New(Expression argument)
+    public Expression New(ComplexContext cacher, Expression argument)
     {
         if (_sourceCount is null)
             return Expression.New(_collectionType);

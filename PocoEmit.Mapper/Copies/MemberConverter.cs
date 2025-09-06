@@ -1,5 +1,7 @@
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
 using PocoEmit.Members;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
 using System.Reflection;
@@ -13,13 +15,15 @@ namespace PocoEmit.Copies;
 /// <param name="options"></param>
 /// <param name="sourceReader"></param>
 /// <param name="destWriter"></param>
-public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceReader, IEmitWriter destWriter)
+/// <param name="converter"></param>
+public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceReader, IEmitWriter destWriter, IEmitConverter converter)
     : IMemberConverter
 {
     #region 配置
     private readonly IMapperOptions _options = options;
     private readonly IEmitReader _sourceReader = sourceReader;
     private readonly IEmitWriter _destWriter = destWriter;
+    private readonly IEmitConverter _converter = converter;
     /// <summary>
     /// Emit配置
     /// </summary>
@@ -35,6 +39,11 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
     /// </summary>
     public IEmitWriter DestWriter 
         => _destWriter;
+    /// <summary>
+    /// 成员类型转化
+    /// </summary>
+    public IEmitConverter Converter 
+        => _converter;
     #endregion
     /// <summary>
     /// 获取源成员
@@ -46,31 +55,32 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
     /// <summary>
     /// 转化成员
     /// </summary>
+    /// <param name="cacher"></param>
     /// <param name="sourceMember"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    public Expression ConvertMember(Expression sourceMember, Expression dest)
+    public Expression ConvertMember(ComplexContext cacher, Expression sourceMember, Expression dest)
     {
-        var memberType = sourceMember.Type;
-        var defaultValue = _options.CreateDefault(memberType);
+        var sourceType = sourceMember.Type;
+        var defaultValue = _options.CreateDefault(sourceType);
         if (defaultValue is null)
         {
             // 基础类型直接赋值(忽略null判断)
-            if (_options.CheckPrimitive(memberType))
-                return _destWriter.Write(dest, sourceMember);
-            return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, sourceMember));
+            if (_options.CheckPrimitive(sourceType))
+                return _destWriter.Write(dest, _converter.Convert(sourceMember));
+            return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, cacher.Convert(_converter, sourceMember, dest.Type)));
         }
         else
         {
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-            var isValueType = memberType.GetTypeInfo().IsValueType;
+            var isValueType = sourceType.GetTypeInfo().IsValueType;
 #else
-            var isValueType = memberType.IsValueType;
+            var isValueType = sourceType.IsValueType;
 #endif
             // 值类型直接赋值(忽略null判断和默认值)
             if (isValueType)
                 return _destWriter.Write(dest, sourceMember);
-            return Expression.IfThenElse(Expression.Equal(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, defaultValue), _destWriter.Write(dest, sourceMember));
+            return Expression.IfThenElse(Expression.Equal(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, defaultValue), _destWriter.Write(dest, cacher.Convert(_converter, sourceMember, dest.Type)));
         }
     }
 }

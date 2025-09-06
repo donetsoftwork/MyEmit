@@ -11,6 +11,7 @@ namespace PocoEmit.Dictionaries;
 /// </summary>
 public class DictionaryConverter(Type dictionaryType, Type keyType, Type elementType, IEmitCopier copier)
     : EmitDictionaryBase(dictionaryType, keyType, elementType)
+    , IEmitComplexConverter
     , IEmitConverter
 {
     #region 配置
@@ -21,14 +22,16 @@ public class DictionaryConverter(Type dictionaryType, Type keyType, Type element
     public IEmitCopier Copier
         => _copier;
     #endregion
-
     /// <inheritdoc />
-    public Expression Convert(Expression source)
+    Expression IEmitConverter.Convert(Expression source)
+        => Convert(new(), source);
+    /// <inheritdoc />
+    public Expression Convert(ComplexContext cacher, Expression source)
     {
         var dest = Expression.Variable(_collectionType, "dest");
         var assign = Expression.Assign(dest, New(source));
         var list = new List<Expression>() { assign };
-        list.AddRange(_copier.Copy(source, dest));
+        list.AddRange(_copier.Copy(cacher, source, dest));
         list.Add(dest);
         return Expression.Block([dest], list);
     }

@@ -1,4 +1,5 @@
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -38,12 +39,12 @@ public sealed class CompatibleCopier(IEmitCopier inner, Type innerSourceType, Ty
         => false;
     #endregion
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(Expression source, Expression dest)
+    public IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
     {
         if (_innerSourceType != source.Type)
             source = Expression.Convert(source, _innerSourceType);
         if (_destType != dest.Type)
             dest = Expression.Convert(dest, _destType);
-        return _inner.Copy(source, dest);
+        return _inner.Copy(cacher, source, dest);
     }
 }

@@ -9,9 +9,10 @@ namespace PocoEmit.Members;
 /// <summary>
 /// 读取成员转化值类型
 /// </summary>
-/// <param name="converter"></param>
 /// <param name="inner"></param>
-public class ConvertValueReader(IEmitMemberReader inner, IEmitConverter converter)
+/// <param name="converter"></param>
+/// <param name="valueType"></param>
+public class ConvertValueReader(IEmitMemberReader inner, IEmitConverter converter, Type valueType)
     : IEmitMemberReader
 {
     #region 配置
@@ -22,6 +23,7 @@ public class ConvertValueReader(IEmitMemberReader inner, IEmitConverter converte
     public IEmitMemberReader Inner
         => _inner;
     private readonly IEmitConverter _converter = converter;
+    private readonly Type _valueType = valueType;
     /// <summary>
     /// 转换器
     /// </summary>
@@ -35,7 +37,7 @@ public class ConvertValueReader(IEmitMemberReader inner, IEmitConverter converte
         => _inner.Name;
     /// <inheritdoc />
     public Type ValueType
-        => _inner.ValueType;
+        => _valueType;
     /// <inheritdoc />
     MemberInfo IEmitMemberReader.Info
         => _inner.Info;

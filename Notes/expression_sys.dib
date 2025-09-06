@@ -1,0 +1,32 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!csharp
+
+#!import ./ExpressionHelper.cs
+
+#!csharp
+
+Customer _customer = new()
+{
+    Name = "jxj",
+    Address = new() { City = "gz" },
+    AddressList = [new() { City = "bj" }],
+    Addresses = [new() { City = "sh" }]
+};
+_customer.Display();
+
+#!csharp
+
+var expression = ExpressionHelper.CreateCustomerDTO();
+var func = expression.Compile();
+var dto = func(_customer);
+dto.Display();
+
+#!csharp
+
+using System.Text.Json;
+
+var json = JsonSerializer.Serialize(dto);
+json.Display();

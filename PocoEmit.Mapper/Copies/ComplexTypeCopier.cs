@@ -1,5 +1,6 @@
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
@@ -29,7 +30,7 @@ public class ComplexTypeCopier(IMapperOptions options, IEnumerable<IMemberConver
     bool ICompileInfo.Compiled
         => false;
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(Expression source, Expression dest)
+    public IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
     {
         int index = 0;
         List<ParameterExpression> variables = [];
@@ -43,11 +44,11 @@ public class ComplexTypeCopier(IMapperOptions options, IEnumerable<IMemberConver
                 var sourceMemberVariable = Expression.Variable(sourceMember.Type, "member" + index++);
                 variables.Add(sourceMemberVariable);
                 converters.Add(Expression.Assign(sourceMemberVariable, sourceMember));
-                converters.Add(member.ConvertMember(sourceMemberVariable, dest));
+                converters.Add(member.ConvertMember(cacher, sourceMemberVariable, dest));
             }
             else
             {
-                converters.Add(member.ConvertMember(sourceMember, dest));
+                converters.Add(member.ConvertMember(cacher, sourceMember, dest));
             }
         }
         if(converters.Count > 0)

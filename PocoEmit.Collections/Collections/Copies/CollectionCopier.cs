@@ -74,27 +74,28 @@ public class CollectionCopier : EmitCollectionBase
     #endregion
 
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(Expression source, Expression dest)
+    public IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
     {
         yield return dest = CheckInstance(dest);
         if (_clearMethod is not null)
             yield return Expression.Call(dest, _clearMethod);
-        yield return _sourceVisitor.Travel(source, item => CopyElement(dest, item));
+        yield return _sourceVisitor.Travel(source, item => CopyElement(cacher, dest, item));
     }
     /// <summary>
     /// 复制子元素
     /// </summary>
+    /// <param name="cacher"></param>
     /// <param name="dest"></param>
     /// <param name="item"></param>
     /// <returns></returns>
-    public Expression CopyElement(Expression dest, Expression item)
+    public Expression CopyElement(ComplexContext cacher, Expression dest, Expression item)
     {
         var sourceItem = Expression.Parameter(_sourceElementType, "sourceItem");
         var destItem = Expression.Parameter(_elementType, "destItem");
         return Expression.Block(
             [sourceItem, destItem],
             Expression.Assign(sourceItem, item),
-            Expression.Assign(destItem, _elementConverter.Convert(sourceItem)),
+            Expression.Assign(destItem, cacher.Convert(_elementConverter, sourceItem, _elementType)),
             _saver.Add(dest, destItem)
             );
     }

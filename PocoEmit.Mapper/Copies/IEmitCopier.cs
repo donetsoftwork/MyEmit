@@ -1,4 +1,5 @@
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
@@ -12,8 +13,9 @@ public interface IEmitCopier : ICompileInfo
     /// <summary>
     /// 复制
     /// </summary>
-    /// <param name="source">源</param>
-    /// <param name="dest">目标</param>
+    /// <param name="cacher"></param>
+    /// <param name="source"></param>
+    /// <param name="dest"></param>
     /// <returns></returns>
-    IEnumerable<Expression> Copy(Expression source, Expression dest);
+    IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest);
 }

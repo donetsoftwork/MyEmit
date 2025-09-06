@@ -93,14 +93,10 @@ public class CopierBuilder(IMapperOptions options)
     {
         foreach (var reader in match.Select(options.Recognizer, sourceMembers, writer))
         {
-            var sourceType = reader.ValueType;
-            var destType = writer.ValueType;
-            if (sourceType == destType || PairTypeKey.CheckValueType(sourceType, destType))
-                return new MemberConverter(options, reader, writer);
-            var converter = options.GetEmitConverter(sourceType, destType);
+            var converter = options.GetEmitConverter(reader.ValueType, writer.ValueType);
             if (converter is null)
                 continue;
-            return new MemberConverter(options, reader, new ConvertValueWriter(converter, writer));
+            return new MemberConverter(options, reader, writer, converter);
         }
         return null;
     }

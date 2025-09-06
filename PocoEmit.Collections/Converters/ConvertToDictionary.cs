@@ -20,7 +20,6 @@ public class ConvertToDictionary(IMapperOptions options)
     public IMapperOptions Options
         => _options;
     #endregion
-
     /// <summary>
     /// 转化为字典
     /// </summary>

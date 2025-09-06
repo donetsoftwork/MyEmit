@@ -15,6 +15,7 @@ namespace PocoEmit.Collections.Converters;
 /// <param name="elementConverter"></param>
 public sealed class CollectionInitConverter(Type collectionType, Type elementType, IEmitElementSaver saver, IEmitConverter elementConverter)
     : EmitCollectionBase(collectionType, elementType)
+    , IEmitComplexConverter
     , IEmitConverter
 {
     #region 配置
@@ -35,13 +36,17 @@ public sealed class CollectionInitConverter(Type collectionType, Type elementTyp
         => false;
     #endregion
     /// <inheritdoc />
-    public Expression Convert(Expression source)
-        => Expression.ListInit(Expression.New(_collectionType), Expression.ElementInit(_saver.AddMethod, CheckElement(source)));
+    Expression IEmitConverter.Convert(Expression source)
+        => Convert(new(), source);
+    /// <inheritdoc />
+    public Expression Convert(ComplexContext cacher, Expression source)
+        => Expression.ListInit(Expression.New(_collectionType), Expression.ElementInit(_saver.AddMethod, CheckElement(cacher, source)));
     /// <summary>
     /// 检查子元素
     /// </summary>
+    /// <param name="cacher"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    private Expression CheckElement(Expression source)
-        => _elementConverter.Convert(source);
+    private Expression CheckElement(ComplexContext cacher, Expression source)
+        => cacher.Convert(_elementConverter, source, _elementType);
 }

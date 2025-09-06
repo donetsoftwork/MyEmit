@@ -4,7 +4,6 @@ using BenchmarkDotNet.Attributes;
 using MapperBench.Supports;
 using Microsoft.Extensions.DependencyInjection;
 using PocoEmit;
-using PocoEmit.Dictionaries;
 using System.Linq.Expressions;
 
 namespace MapperBench;
@@ -18,14 +17,14 @@ public class CustomerConvertBench
     private PocoEmit.IMapper _frozen;
     private PocoEmit.IPocoConverter<Customer, CustomerDTO> _converter;
     private Func<Customer, CustomerDTO> _convertFunc;
-    private Customer _customer = GetCustomer();
+    private static Customer _customer = GetCustomer();
     private Func<Customer, CustomerDTO, ResolutionContext, CustomerDTO> _autoFunc;
     private ResolutionContext _resolutionContext;
     public static readonly Func<User, UserDTO> UserDTOConvert = PocoEmit.Mapper.Default.GetConvertFunc<User, UserDTO>();
     /// <summary>
     /// 
     /// </summary>
-    public Customer Customer
+    public static Customer Customer
         => _customer;
 
     [Benchmark]
@@ -54,13 +53,6 @@ public class CustomerConvertBench
     public CustomerDTO AutoFunc()
     {
         return _autoFunc(_customer, default(CustomerDTO), _resolutionContext);
-    }
-    public string BuildPoco()
-    {
-        Expression<Func<Customer, CustomerDTO>> expression = _poco.BuildConverter<Customer, CustomerDTO>();
-        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
-        Console.WriteLine(code);
-        return code;
     }
     public string BuildAuto()
     {
@@ -118,10 +110,10 @@ public class CustomerConvertBench
         var mapper = PocoEmit.Mapper.Create();
         mapper.UseCollection();
         mapper.ConfigureMap<Customer, CustomerDTO>()
-            .UseCheckAction(ConvertAddressCity);
+            .UseCheckAction((s, t) => ConvertAddressCity(s, t));
         return mapper;
     }
-    private static void ConvertAddressCity(Customer customer, CustomerDTO dto)
+    public static void ConvertAddressCity(Customer customer, CustomerDTO dto)
     {
         dto.AddressCity = customer.Address.City;
     }

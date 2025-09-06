@@ -1,4 +1,5 @@
 using PocoEmit.Builders;
+using PocoEmit.Converters;
 using System;
 using System.Linq.Expressions;
 
@@ -15,6 +16,6 @@ public class DelegateActivator<TSource, TDest>(Expression<Func<TSource, TDest>> 
     , IEmitActivator
 {
     /// <inheritdoc />
-    public Expression New(Expression argument)
+    public Expression New(ComplexContext cacher, Expression argument)
          => Call(argument);
 }

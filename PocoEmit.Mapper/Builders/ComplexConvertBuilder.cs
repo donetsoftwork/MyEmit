@@ -83,7 +83,7 @@ public class ComplexConvertBuilder(IMapperOptions options)
         var activator = _options.GetEmitActivator(key) ?? CreateDefaultActivator(sourceType, destType);
         if (activator is null)
             return null;
-        return new ComplexTypeConverter(activator, _options.GetEmitCopier(key));
+        return new ComplexTypeConverter(sourceType, activator, _options.GetEmitCopier(key));
     }
     /// <inheritdoc />
     public override IEmitConverter BuildForNullable(IEmitConverter original, Type originalSourceType, Type destType)

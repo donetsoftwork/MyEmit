@@ -22,7 +22,10 @@ public class CopyToSelf(IMapperOptions options)
             var reader = readerCacher.Get(writer.Info);
             if (reader is null)
                 continue;
-            converters.Add(new MemberConverter(_options, reader, writer));
+            var converter = _options.GetEmitConverter(reader.ValueType, writer.ValueType);
+            if (converter is null)
+                continue;
+            converters.Add(new MemberConverter(_options, reader, writer, converter));
         }
     }
 }

@@ -56,23 +56,23 @@ public class DictionaryCopier(Type dictionaryType, Type keyType, Type elementTyp
     public bool IgnoreDefault 
         => _ignoreDefault;
     #endregion
-
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(Expression source, Expression dest)
+    public IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
     {
         yield return dest = CheckInstance(dest);
-        yield return _sourceVisitor.Travel(source, (k, v) => CopyElement(dest, k, v, _keyConverter, _elementConverter));
+        yield return _sourceVisitor.Travel(source, (k, v) => CopyElement(cacher, dest, k, v, _keyConverter, _elementConverter));
     }
     /// <summary>
     /// 复制子元素
     /// </summary>
+    /// <param name="cacher"></param>
     /// <param name="dest"></param>
     /// <param name="key"></param>
     /// <param name="element"></param>
     /// <param name="keyConverter"></param>
     /// <param name="elementConverter"></param>
     /// <returns></returns>
-    public Expression CopyElement(Expression dest, Expression key, Expression element, IEmitConverter keyConverter, IEmitConverter elementConverter)
+    public Expression CopyElement(ComplexContext cacher, Expression dest, Expression key, Expression element, IEmitConverter keyConverter, IEmitConverter elementConverter)
     {
         if (_ignoreDefault)
         {

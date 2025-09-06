@@ -138,6 +138,8 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     public static Expression<Func<TSource, TDest>> Build<TSource, TDest>(this IEmitConverter emit)
     {
+        if(emit is IEmitBuilder builder)
+            return builder.Build() as Expression<Func<TSource, TDest>>;
         var source = Expression.Parameter(typeof(TSource), "source");
         var body = emit.Convert(source);
         return Expression.Lambda<Func<TSource, TDest>>(body, source);

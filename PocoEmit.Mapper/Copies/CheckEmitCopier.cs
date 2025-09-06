@@ -1,4 +1,5 @@
 using PocoEmit.Builders;
+using PocoEmit.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -35,12 +36,13 @@ public class CheckEmitCopier(IEmitCopier inner, Expression target, MethodInfo me
     /// <summary>
     /// 复制
     /// </summary>
+    /// <param name="cacher"></param>
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    public override IEnumerable<Expression> Copy(Expression source, Expression dest)
+    public override IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
     {
-        foreach(var item in _inner.Copy(source, dest))
+        foreach(var item in _inner.Copy(cacher, source, dest))
             yield return item;
         yield return CallMethod(source, dest);
     }

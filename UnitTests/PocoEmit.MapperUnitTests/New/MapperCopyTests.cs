@@ -72,5 +72,18 @@ public class MapperCopyTests : MapperConvertTestBase
         Assert.Equal(source.Id, dest.Id);
         Assert.Equal(source.Name, dest.Name);
     }
-    
+    [Fact]
+    public void Copy_DTO3()
+    {
+        var copier = _mapper.GetEmitCopier<Node, NodeDTO>();
+        Assert.NotNull(copier);
+        var expression = copier.Build<Node, NodeDTO>();
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
+        Node node1 = new() { Id = new(1), Name = "node1", SortOrder = 1 };
+        Node node2 = new() { Id = new(2), Name = "node2", SortOrder = 2, Parent = node1 };
+        NodeDTO result = new();
+        _mapper.Copy(node2, result);
+        Assert.NotNull(result);
+    }
 }

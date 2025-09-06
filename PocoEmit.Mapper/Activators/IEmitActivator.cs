@@ -1,3 +1,4 @@
+using PocoEmit.Converters;
 using System;
 using System.Linq.Expressions;
 
@@ -15,7 +16,8 @@ public interface IEmitActivator
     /// <summary>
     /// 激活
     /// </summary>
+    /// <param name="cacher">复杂类型缓存</param>
     /// <param name="argument">参数</param>
     /// <returns></returns>
-    Expression New(Expression argument);
+    Expression New(ComplexContext cacher, Expression argument);
 }

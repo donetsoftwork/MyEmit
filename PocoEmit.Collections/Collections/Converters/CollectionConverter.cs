@@ -19,6 +19,7 @@ namespace PocoEmit.Collections.Converters;
 /// <param name="copier"></param>
 public class CollectionConverter(Type collectionType, Type elementType, ConstructorInfo capacityConstructor, IEmitCounter sourceCount, IEmitCopier copier)
     : CollectionActivator(collectionType, elementType, capacityConstructor, sourceCount)
+    , IEmitComplexConverter
     , IEmitConverter
 {
     #region 配置
@@ -30,13 +31,16 @@ public class CollectionConverter(Type collectionType, Type elementType, Construc
         => _copier;
     #endregion
     /// <inheritdoc />
-    public Expression Convert(Expression source)
+    Expression IEmitConverter.Convert(Expression source)
+        => Convert(new(), source);
+    /// <inheritdoc />
+    public Expression Convert(ComplexContext cacher, Expression source)
     {
         var dest = Expression.Variable(_collectionType, "dest");
 
-        var assign = Expression.Assign(dest, New(source));
+        var assign = Expression.Assign(dest, New(cacher, source));
         var list = new List<Expression>() { assign };
-        list.AddRange(_copier.Copy(source, dest));
+        list.AddRange(_copier.Copy(cacher, source, dest));
         list.Add(dest);
         return Expression.Block([dest], list);
     }
