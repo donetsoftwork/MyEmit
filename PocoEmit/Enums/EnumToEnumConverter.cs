@@ -17,6 +17,7 @@ public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundl
     : IEmitConverter
 {
     #region 配置
+    private readonly PairTypeKey _key = new(sourceBundle.EnumType, destBundle.EnumType);
     private readonly Type _destEnumType = destBundle.EnumType;
     private readonly IEnumBundle _sourceBundle = sourceBundle;
     private readonly IEnumBundle _destBundle = destBundle;
@@ -28,6 +29,9 @@ public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundl
     /// 基础类型转化为目标枚举
     /// </summary>
     private readonly EnumFromUnderConverter _destFromUnderConverter = new(destBundle);
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <summary>
     /// 目标枚举类型
     /// </summary>

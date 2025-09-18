@@ -1,5 +1,5 @@
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
-using PocoEmit.Converters;
 using PocoEmit.Maping;
 using PocoEmit.Members;
 using System;
@@ -12,14 +12,25 @@ namespace PocoEmit.Activators;
 /// <summary>
 /// 含参构造函数激活
 /// </summary>
+/// <param name="options">映射配置</param>
 /// <param name="returnType">返回类型</param>
 /// <param name="constructor">构造函数</param>
 /// <param name="readers">参数</param>
-public class ParameterConstructorActivator(Type returnType, ConstructorInfo constructor, IEmitReader[] readers)
+public class ParameterConstructorActivator(IMapperOptions options, Type returnType, ConstructorInfo constructor, IEmitReader[] readers)
     : ConstructorActivator(returnType, constructor)
+    , IComplexPreview
 {
     #region 配置
+    /// <summary>
+    /// Emit配置
+    /// </summary>
+    private readonly IMapperOptions _options = options;
     private readonly IEmitReader[] _readers = readers;
+    /// <summary>
+    /// Emit配置
+    /// </summary>
+    public IMapperOptions Options
+        => _options;
     /// <summary>
     /// 参数读取器
     /// </summary>
@@ -27,14 +38,23 @@ public class ParameterConstructorActivator(Type returnType, ConstructorInfo cons
         => _readers;
     #endregion
     /// <inheritdoc />
-    public override Expression New(ComplexContext cacher, Expression argument)
-        => Expression.New(_constructor, CreateParameters(cacher, argument));
-    private Expression[] CreateParameters(ComplexContext cacher, Expression source)
+    public IEnumerable<ComplexBundle> Preview(IComplexBundle parent)
+    {
+        foreach (var reader in _readers)
+        {
+            foreach(var item in parent.Visit(reader as ConvertValueReader))
+                yield return item;
+        }
+    }
+    /// <inheritdoc />
+    public override Expression New(IBuildContext context, Expression argument)
+        => Expression.New(_constructor, CreateParameters(context, argument));
+    private Expression[] CreateParameters(IBuildContext context, Expression source)
     {
         var arguments = new Expression[_readers.Length];
         var i = 0;
         foreach (var reader in _readers)
-            arguments[i++] = cacher.Read(reader, source);
+            arguments[i++] = context.Read(reader, source);
         return arguments;
     }
     /// <summary>
@@ -69,7 +89,7 @@ public class ParameterConstructorActivator(Type returnType, ConstructorInfo cons
                 readers[i++] = reader;
             }
         }
-        return new ParameterConstructorActivator(destType, constructor, readers);
+        return new ParameterConstructorActivator(options, destType, constructor, readers);
     }
     /// <summary>
     /// 获取读取器

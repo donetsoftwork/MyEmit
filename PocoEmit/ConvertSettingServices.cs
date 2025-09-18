@@ -25,7 +25,7 @@ public static partial class PocoEmitServices
     public static IPoco UseConvertFunc<TSource, TDest>(this IPoco poco, Expression<Func<TSource, TDest>> convertFunc)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        poco.Configure(key, new DelegateConverter<TSource, TDest>(convertFunc));
+        poco.Configure(key, new FuncConverter((IPocoOptions)poco, key, convertFunc));
         return poco;
     }
     /// <summary>

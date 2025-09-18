@@ -1,5 +1,6 @@
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
+using System;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Enums;
@@ -7,8 +8,9 @@ namespace PocoEmit.Enums;
 /// <summary>
 /// 枚举转化为字符串
 /// </summary>
+/// <param name="enumType"></param>
 /// <param name="fields"></param>
-public class EnumToStringConverter(IEnumField[] fields)
+public class EnumToStringConverter(Type enumType, IEnumField[] fields)
      : IEmitConverter
 {
     /// <summary>
@@ -16,11 +18,15 @@ public class EnumToStringConverter(IEnumField[] fields)
     /// </summary>
     /// <param name="bundle"></param>
     public EnumToStringConverter(IEnumBundle bundle)
-        : this([.. bundle.Fields])
+        : this(bundle.EnumType, [.. bundle.Fields])
     {
     }
     #region 配置
+    private readonly PairTypeKey _key = new(enumType, typeof(string));
     private readonly IEnumField[] _fields = fields;
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <summary>
     /// 字段
     /// </summary>

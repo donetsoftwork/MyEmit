@@ -104,6 +104,6 @@ public static partial class PocoEmitCollectionServices
     /// <param name="saver"></param>
     /// <returns></returns>
     public static Action<TCollection, TElement> Compile<TCollection, TElement>(IEmitElementSaver saver)
-        => Compiler._instance.CompileAction(saver.Build<TCollection, TElement>());
+        => Compiler._instance.CompileDelegate(saver.Build<TCollection, TElement>());
     #endregion
 }

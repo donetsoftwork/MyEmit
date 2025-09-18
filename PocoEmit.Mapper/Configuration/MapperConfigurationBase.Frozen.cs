@@ -4,7 +4,7 @@ using PocoEmit.Copies;
 using PocoEmit.Maping;
 using System;
 using PocoEmit.Builders;
-
+using System.Linq.Expressions;
 
 #if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Generic;
@@ -55,7 +55,11 @@ public abstract partial class MapperConfigurationBase
     /// <summary>
     /// 默认值配置
     /// </summary>
-    private IDictionary<Type, IEmitBuilder> _defaultValueConfiguration;
+    private IDictionary<Type, IBuilder<Expression>> _defaultValueConfiguration;
+        /// <summary>
+    /// 上下文转化缓存
+    /// </summary>
+    private IDictionary<PairTypeKey, Delegate> _contextFuncs;
 #else
     /// <summary>
     /// 复制器缓存
@@ -88,7 +92,11 @@ public abstract partial class MapperConfigurationBase
     /// <summary>
     /// 默认值配置
     /// </summary>
-    private readonly ConcurrentDictionary<Type, IEmitBuilder> _defaultValueConfiguration;
+    private readonly ConcurrentDictionary<Type, IBuilder<Expression>> _defaultValueConfiguration;
+    /// <summary>
+    /// 上下文转化缓存
+    /// </summary>
+    private readonly ConcurrentDictionary<PairTypeKey, Delegate> _contextFuncs;
 #endif
     #endregion
     #region IMapperOptions
@@ -160,10 +168,21 @@ public abstract partial class MapperConfigurationBase
     void IConfigure<Type, bool>.Configure(Type key, bool value)
        => _primitiveTypes[key] = value;
     #endregion
-    #region IConfigure<Type, IEmitBuilder>
+    #region IConfigure<Type, IBuilder<Expression>>
     /// <inheritdoc />
-    void IConfigure<Type, IEmitBuilder>.Configure(Type key, IEmitBuilder value)
+    void IConfigure<Type, IBuilder<Expression>>.Configure(Type key, IBuilder<Expression> value)
         => _defaultValueConfiguration[key] = value;
+    #endregion
+    #region ICacher<PairTypeKey, Delegate>
+    /// <inheritdoc />
+    bool ICacher<PairTypeKey, Delegate>.ContainsKey(PairTypeKey key)
+        => _contextFuncs.ContainsKey(key);
+    /// <inheritdoc />
+    void IStore<PairTypeKey, Delegate>.Set(PairTypeKey key, Delegate value)
+        => _contextFuncs[key] = value;
+    /// <inheritdoc />
+    bool ICacher<PairTypeKey, Delegate>.TryGetValue(PairTypeKey key, out Delegate value)
+        => _contextFuncs.TryGetValue(key, out value);
     #endregion
     #endregion
 #if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
@@ -174,6 +193,7 @@ public abstract partial class MapperConfigurationBase
     {
         base.ToFrozen();
         _copiers = _copiers.ToFrozenDictionary();
+        _contextFuncs = _contextFuncs.ToFrozenDictionary();
     }
 #endif
 }

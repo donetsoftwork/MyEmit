@@ -38,14 +38,14 @@ public class CustomerConvertBench
         //var text = _auto.Map<int, string>(1);
         //var num = _auto.Map<string, int>("1");
         ConsoleColor color = ConsoleColor.Red;
-        LambdaExpression autoExpression = _auto.ConfigurationProvider.BuildExecutionPlan(typeof(ConsoleColor), typeof(MyColor));
-        var autoCode = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(autoExpression);
-        Console.WriteLine(autoCode);
+        //LambdaExpression autoExpression = _auto.ConfigurationProvider.BuildExecutionPlan(typeof(ConsoleColor), typeof(MyColor));
+        //var autoCode = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(autoExpression);
+        //Console.WriteLine(autoCode);
         var autoColor = _auto.Map<ConsoleColor, MyColor>(color);
         Console.WriteLine(autoColor.ToString());
-        LambdaExpression pocoExpression = _poco.BuildConverter<ConsoleColor, MyColor>();
-        var pocoCode = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(pocoExpression);
-        Console.WriteLine(pocoCode);
+        //LambdaExpression pocoExpression = _poco.BuildConverter<ConsoleColor, MyColor>();
+        //var pocoCode = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(pocoExpression);
+        //Console.WriteLine(pocoCode);
         var pocoColor = _poco.Convert<ConsoleColor, MyColor>(color);
         Console.WriteLine(pocoColor.ToString());
     }

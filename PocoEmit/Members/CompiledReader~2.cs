@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
@@ -10,33 +11,32 @@ namespace PocoEmit.Members;
 /// </summary>
 /// <typeparam name="TInstance"></typeparam>
 /// <typeparam name="TValue"></typeparam>
-/// <param name="inner"></param>
+/// <param name="original"></param>
 /// <param name="readFunc"></param>
-public sealed class CompiledReader<TInstance, TValue>(IEmitMemberReader inner, Func<TInstance, TValue> readFunc)
-    : MemberAccessor<MethodInfo>(inner.InstanceType, readFunc.GetMethodInfo(), inner.Name, typeof(TValue))
+public sealed class CompiledReader<TInstance, TValue>(IEmitMemberReader original, Func<TInstance, TValue> readFunc)
+    : MemberAccessor<MethodInfo>(original.InstanceType, readFunc.GetMethodInfo(), original.Name, typeof(TValue))
     , ICompiledReader<TInstance, TValue>
+    , IWrapper<IEmitMemberReader>
 {
     #region 配置
-    private readonly IEmitMemberReader _inner = inner;
-    /// <summary>
-    /// 原始成员读取器
-    /// </summary>
-    public IEmitMemberReader Inner
-        => _inner;
+    private readonly IEmitMemberReader _original = original;
+    /// <inheritdoc />
+    public IEmitMemberReader Original
+        => _original;
     private readonly Func<TInstance, TValue> _readFunc = readFunc;
     /// <inheritdoc />
     public Func<TInstance, TValue> ReadFunc
         => _readFunc;
     /// <inheritdoc />
     MemberInfo IEmitMemberReader.Info
-        => _inner.Info;
+        => _original.Info;
     /// <inheritdoc />
     bool ICompileInfo.Compiled
         => true;
     #endregion
     /// <inheritdoc />
     public Expression Read(Expression instance)
-        => _inner.Read(instance);
+        => _original.Read(instance);
     /// <inheritdoc />
     TValue IMemberReader<TInstance, TValue>.Read(TInstance instance)
         => _readFunc(instance);

@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>Latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -11,10 +12,13 @@
     <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="FastExpressionCompiler" Version="5.3.0" />
     <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.24" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\PocoEmit.Collections\PocoEmit.Collections.csproj" />
+    <ProjectReference Include="..\..\PocoEmit.Mapper\PocoEmit.Mapper.csproj" />
+    <ProjectReference Include="..\..\PocoEmit\PocoEmit.csproj" />
   </ItemGroup>
 
 </Project>

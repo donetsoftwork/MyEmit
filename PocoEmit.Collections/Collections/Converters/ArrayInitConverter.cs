@@ -1,6 +1,7 @@
-using PocoEmit.Configuration;
+using PocoEmit.Complexes;
 using PocoEmit.Converters;
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Collections.Converters;
@@ -13,8 +14,7 @@ namespace PocoEmit.Collections.Converters;
 /// <param name="elementConverter"></param>
 public sealed class ArrayInitConverter(Type arrayType, Type elementType, IEmitConverter elementConverter)
     : EmitCollectionBase(arrayType, elementType)
-    , IEmitComplexConverter
-    , IEmitConverter
+    , IComplexIncludeConverter
 {
     #region 配置
     private readonly IEmitConverter _elementConverter = elementConverter;
@@ -23,22 +23,19 @@ public sealed class ArrayInitConverter(Type arrayType, Type elementType, IEmitCo
     /// </summary>
     public IEmitConverter ElementConverter
         => _elementConverter;
-    /// <inheritdoc />
-    bool ICompileInfo.Compiled
-        => false;
     #endregion
     /// <inheritdoc />
-    Expression IEmitConverter.Convert(Expression source)
-        => Convert(new(), source);
-    /// <inheritdoc />
-    public Expression Convert(ComplexContext cacher, Expression source)
-        => Expression.NewArrayInit(_elementType, CheckElement(cacher, source));
+    public Expression Convert(IBuildContext context, Expression source)
+        => Expression.NewArrayInit(_elementType, CheckElement(context, source));
     /// <summary>
     /// 检查子元素
     /// </summary>
-    /// <param name="cacher"></param>
+    /// <param name="context"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    private Expression CheckElement(ComplexContext cacher, Expression source)
-        => cacher.Convert(_elementConverter, source, _elementType);
+    private Expression CheckElement(IBuildContext context, Expression source)
+        => context.Convert(_elementConverter, source);
+    /// <inheritdoc />
+    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+        => parent.Visit(_elementConverter);
 }

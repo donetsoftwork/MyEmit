@@ -1,6 +1,6 @@
-using PocoEmit.Builders;
 using PocoEmit.Collections.Saves;
 using PocoEmit.Collections.Visitors;
+using PocoEmit.Complexes;
 using PocoEmit.Converters;
 using PocoEmit.Copies;
 using System;
@@ -72,30 +72,32 @@ public class CollectionCopier : EmitCollectionBase
     //public bool Clear 
     //    => _clear;
     #endregion
-
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
+    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+        => parent.Visit(_elementConverter);
+    /// <inheritdoc />
+    public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
     {
-        yield return dest = CheckInstance(dest);
+        dest = CheckInstance(dest);
         if (_clearMethod is not null)
             yield return Expression.Call(dest, _clearMethod);
-        yield return _sourceVisitor.Travel(source, item => CopyElement(cacher, dest, item));
+        yield return _sourceVisitor.Travel(source, item => CopyElement(context, dest, item));
     }
     /// <summary>
     /// 复制子元素
     /// </summary>
-    /// <param name="cacher"></param>
+    /// <param name="context"></param>
     /// <param name="dest"></param>
     /// <param name="item"></param>
     /// <returns></returns>
-    public Expression CopyElement(ComplexContext cacher, Expression dest, Expression item)
+    public Expression CopyElement(IBuildContext context, Expression dest, Expression item)
     {
         var sourceItem = Expression.Parameter(_sourceElementType, "sourceItem");
         var destItem = Expression.Parameter(_elementType, "destItem");
         return Expression.Block(
             [sourceItem, destItem],
             Expression.Assign(sourceItem, item),
-            Expression.Assign(destItem, cacher.Convert(_elementConverter, sourceItem, _elementType)),
+            Expression.Assign(destItem, context.Convert(_elementConverter, sourceItem)),
             _saver.Add(dest, destItem)
             );
     }

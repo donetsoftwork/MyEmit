@@ -1061,7 +1061,7 @@ public class EmitConverterTests
 
     private static Func<TSource, TDest> Compile<TSource, TDest>()
     {
-        EmitConverter converter = new(typeof(TDest));
+        EmitConverter converter = new(new(typeof(TSource), typeof(TDest)));
         var expression = converter.Build<TSource, TDest>();
         //Console.WriteLine(expression.ToString());
         return expression.Compile();

@@ -1,5 +1,7 @@
 using PocoEmit.Builders;
 using PocoEmit.Collections.Visitors;
+using PocoEmit.Complexes;
+using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using PocoEmit.Copies;
 using System;
@@ -57,22 +59,25 @@ public class DictionaryCopier(Type dictionaryType, Type keyType, Type elementTyp
         => _ignoreDefault;
     #endregion
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
+    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+        => parent.Visit(_elementConverter);
+    /// <inheritdoc />
+    public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
     {
-        yield return dest = CheckInstance(dest);
-        yield return _sourceVisitor.Travel(source, (k, v) => CopyElement(cacher, dest, k, v, _keyConverter, _elementConverter));
+        dest = CheckInstance(dest);
+        yield return _sourceVisitor.Travel(source, (k, v) => CopyElement(context, dest, k, v, _keyConverter, _elementConverter));
     }
     /// <summary>
     /// 复制子元素
     /// </summary>
-    /// <param name="cacher"></param>
+    /// <param name="context"></param>
     /// <param name="dest"></param>
     /// <param name="key"></param>
     /// <param name="element"></param>
     /// <param name="keyConverter"></param>
     /// <param name="elementConverter"></param>
     /// <returns></returns>
-    public Expression CopyElement(ComplexContext cacher, Expression dest, Expression key, Expression element, IEmitConverter keyConverter, IEmitConverter elementConverter)
+    public Expression CopyElement(IBuildContext context, Expression dest, Expression key, Expression element, IEmitConverter keyConverter, IEmitConverter elementConverter)
     {
         if (_ignoreDefault)
         {
@@ -82,14 +87,14 @@ public class DictionaryCopier(Type dictionaryType, Type keyType, Type elementTyp
                 var value0 = Expression.Parameter(elementType, "value0");
                 return Expression.Block([value0],
                     Expression.Assign(value0, element),
-                    Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), elementConverter.Convert(value0)))
+                    Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), context.Convert(elementConverter, value0)))
                 );
             }
             else
             {
-                return Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), elementConverter.Convert(element)));
+                return Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), context.Convert(elementConverter, element)));
             }                
         }
-        return Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), elementConverter.Convert(element));
+        return Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), context.Convert(elementConverter, element));
     }
 }

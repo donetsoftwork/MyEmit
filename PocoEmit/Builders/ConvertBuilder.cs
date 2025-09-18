@@ -53,15 +53,16 @@ public class ConvertBuilder(IPocoOptions options)
         // 系统类型转换
         if (TryBuildByConvert(sourceType, destType, ref converter))
             return converter;
-        return BuildOther(sourceType, destType) ?? BuildByEmit(destType);
+        return BuildOther(sourceType, destType) ?? BuildByEmit(sourceType, destType);
     }
     /// <summary>
     /// 通过Emit构建转换器
     /// </summary>
+    /// <param name="sourceType"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    protected static EmitConverter BuildByEmit(Type destType)
-        => new(false, destType);
+    protected static EmitConverter BuildByEmit(Type sourceType, Type destType)
+        => new(false, new(sourceType, destType));
     /// <summary>
     /// 其他类型
     /// </summary>
@@ -81,7 +82,7 @@ public class ConvertBuilder(IPocoOptions options)
     {
         if (sourceType == typeof(object) || destType == typeof(object))
         {
-            converter = BuildByEmit(destType);
+            converter = BuildByEmit(sourceType, destType);
             return true;
         }
         return false;
@@ -148,14 +149,14 @@ public class ConvertBuilder(IPocoOptions options)
     /// <param name="instanceType">类型</param>
     /// <returns>转换器</returns>
     public virtual IEmitConverter BuildForSelf(Type instanceType)
-        => PassConverter.Instance;
+        => new PassConverter(instanceType);
     /// <summary>
     /// 构建字符串转换器
     /// </summary>
     /// <param name="sourceType"></param>
     /// <returns></returns>
     public virtual IEmitConverter BuildForString(Type sourceType)
-        => SelfMethodConverter.ToStringConverter;
+        => SelfMethodConverter.ConvertToString(sourceType);
     /// <summary>
     /// 构建Nullable转换器
     /// </summary>

@@ -10,6 +10,10 @@ public interface IEmitConverter
     : ICompileInfo
 {
     /// <summary>
+    /// 转化类型
+    /// </summary>
+    PairTypeKey Key{ get; }
+    /// <summary>
     /// 转化
     /// </summary>
     /// <param name="source"></param>

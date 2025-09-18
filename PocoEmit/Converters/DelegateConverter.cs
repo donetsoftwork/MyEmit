@@ -1,6 +1,5 @@
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
-using System;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Converters;
@@ -8,11 +7,11 @@ namespace PocoEmit.Converters;
 /// <summary>
 /// 委托表达式类型转化
 /// </summary>
-/// <typeparam name="TSource"></typeparam>
-/// <typeparam name="TDest"></typeparam>
+/// <param name="poco"></param>
+/// <param name="key"></param>
 /// <param name="convertFunc"></param>
-public sealed class DelegateConverter<TSource, TDest>(Expression<Func<TSource, TDest>> convertFunc)
-    : FuncCallBuilder<TSource, TDest>(convertFunc)
+public class FuncConverter(IPocoOptions poco, PairTypeKey key, LambdaExpression convertFunc)
+    : ArgumentFuncCallBuilder(poco, key, convertFunc)
     , IEmitConverter
 {
     #region 配置

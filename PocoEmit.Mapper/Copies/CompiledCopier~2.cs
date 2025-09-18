@@ -1,5 +1,6 @@
+using PocoEmit.Builders;
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
-using PocoEmit.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -11,18 +12,19 @@ namespace PocoEmit.Copies;
 /// </summary>
 /// <typeparam name="TSource"></typeparam>
 /// <typeparam name="TDest"></typeparam>
-/// <param name="inner"></param>
+/// <param name="original"></param>
 /// <param name="copyAction"></param>
-public sealed class CompiledCopier<TSource, TDest>(IEmitCopier inner, Action<TSource, TDest> copyAction)
+public sealed class CompiledCopier<TSource, TDest>(IEmitCopier original, Action<TSource, TDest> copyAction)
     : ICompiledCopier<TSource, TDest>
+    , IWrapper<IEmitCopier>
 {
     #region 配置
-    private readonly IEmitCopier _inner = inner;
+    private readonly IEmitCopier _original = original;
     /// <summary>
     /// 原始复制器
     /// </summary>
-    public IEmitCopier Inner
-        => _inner;
+    public IEmitCopier Original
+        => _original;
     private readonly Action<TSource, TDest> _copyAction = copyAction;
     /// <inheritdoc />
     public Action<TSource, TDest> CopyAction
@@ -32,12 +34,15 @@ public sealed class CompiledCopier<TSource, TDest>(IEmitCopier inner, Action<TSo
         => true;
     #endregion
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
-        => _inner.Copy(cacher, source, dest);
+    public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
+        => _original.Copy(context, source, dest);
     /// <inheritdoc />
     void IPocoCopier<TSource, TDest>.Copy(TSource from, TDest to)
         => _copyAction(from, to);
     /// <inheritdoc />
     void IObjectCopier.CopyObject(object from, object to)
         => _copyAction((TSource)from, (TDest)to);
+    /// <inheritdoc />
+    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+        => _original.Preview(parent);
 }

@@ -41,7 +41,7 @@ public class DictionaryCopyTests : CollectionTestBase
         action(source, result);
         Assert.NotNull(result);
         Assert.Equal(4, result.Count);
-        Assert.True(result.ContainsKey(nameof(User.Name)));
+        Assert.True(result.ContainsKey("UserName"));
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class DictionaryCopyTests : CollectionTestBase
         action(source, dic);
         Assert.NotNull(dic);
         Assert.Equal(4, dic.Count);
-        Assert.True(dic.ContainsKey(nameof(User.Id)));
+        Assert.True(dic.ContainsKey("UserId"));
     }
     [Fact]
     public void CreatetDictionaryCopyAction3()
@@ -76,7 +76,7 @@ public class DictionaryCopyTests : CollectionTestBase
         action(source, dic);
         Assert.NotNull(dic);
         Assert.Equal(4, dic.Count);
-        Assert.True(dic.ContainsKey(nameof(User.Id)));
+        Assert.True(dic.ContainsKey("UserId"));
     }
     [Fact]
     public void CreatetDictionaryCopyAction4()
@@ -93,12 +93,15 @@ public class DictionaryCopyTests : CollectionTestBase
         action(source, dic);
         Assert.NotNull(dic);
         Assert.Equal(4, dic.Count);
-        Assert.True(dic.ContainsKey(nameof(User.Id)));
+        Assert.True(dic.ContainsKey("UserId"));
     }
 
     [Fact]
     public void CreatetDictionaryCopyAction5()
     {
+        var expression = _mapper.BuildDictionaryCopier<Node, NodeId, IDictionary<string, int>>();
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
         var action = _mapper.CreatetDictionaryCopyAction<Node, NodeId, IDictionary<string, int>>();
         Assert.NotNull(action);
         Node node1 = new() { Id = new(1), Name = "node1", SortOrder = 1 };

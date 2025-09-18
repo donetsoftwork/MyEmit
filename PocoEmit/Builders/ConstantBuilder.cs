@@ -8,7 +8,7 @@ namespace PocoEmit.Builders;
 /// </summary>
 /// <param name="constant"></param>
 public class ConstantBuilder(ConstantExpression constant)
-    : IEmitBuilder
+    : IBuilder<ConstantExpression>
 {
     #region 配置
     private readonly ConstantExpression _constant = constant;
@@ -19,7 +19,7 @@ public class ConstantBuilder(ConstantExpression constant)
         => _constant;
     #endregion
     /// <inheritdoc />
-    public Expression Build()
+    public ConstantExpression Build()
         => _constant;
     /// <summary>
     /// 使用常量值

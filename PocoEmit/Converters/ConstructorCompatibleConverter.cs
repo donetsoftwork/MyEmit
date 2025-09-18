@@ -1,3 +1,4 @@
+using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -7,10 +8,11 @@ namespace PocoEmit.Converters;
 /// <summary>
 /// 构造函数兼容转化器
 /// </summary>
+/// <param name="key"></param>
 /// <param name="constructor"></param>
 /// <param name="parameterType"></param>
-public class ConstructorCompatibleConverter(ConstructorInfo constructor, Type parameterType)
-    : ConstructorConverter(constructor)
+public class ConstructorCompatibleConverter(PairTypeKey key, ConstructorInfo constructor, Type parameterType)
+    : ConstructorConverter(key, constructor)
 {
     #region 配置
     private readonly Type _parameterType = parameterType;

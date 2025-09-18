@@ -137,7 +137,7 @@ public partial class MapHelper<TSource, TDest>
     /// <returns></returns>
     public MapHelper<TSource, TDest> UseActivator(Expression<Func<TSource, TDest>> expression)
     {
-        _mapper.Configure(_key, new DelegateActivator<TSource, TDest>(expression));
+        _mapper.Configure(_key, new DelegateActivator<TSource, TDest>((IPocoOptions)_mapper, expression));
         return this;
     }
     /// <summary>
@@ -172,7 +172,7 @@ public partial class MapHelper<TSource, TDest>
     /// <returns></returns>
     public IMapper UseConvertFunc(Expression<Func<TSource, TDest>> convertFunc)
     {
-        _mapper.Configure(_key, new DelegateConverter<TSource, TDest>(convertFunc));
+        _mapper.Configure(_key, new FuncConverter((IPocoOptions)_mapper, _key, convertFunc));
         return _mapper;
     }
     #endregion

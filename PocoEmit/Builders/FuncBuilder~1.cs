@@ -1,4 +1,3 @@
-using System;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Builders;
@@ -6,17 +5,16 @@ namespace PocoEmit.Builders;
 /// <summary>
 /// 委托构建器
 /// </summary>
-/// <typeparam name="TValue"></typeparam>
 /// <param name="func"></param>
-public class FuncBuilder<TValue>(Expression<Func<TValue>> func)
-    : IEmitBuilder
+public class FuncBuilder(LambdaExpression func)
+    : IBuilder<Expression>
 {
     #region 配置
-    private readonly Expression<Func<TValue>> _func = func;
+    private readonly LambdaExpression _func = func;
     /// <summary>
     /// 委托表达式
     /// </summary>
-    public Expression<Func<TValue>> Func 
+    public LambdaExpression Func 
         => _func;
     #endregion
     /// <inheritdoc />

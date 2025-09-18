@@ -1,4 +1,4 @@
-using PocoEmit.Converters;
+using PocoEmit.Complexes;
 using System;
 using System.Linq.Expressions;
 
@@ -22,6 +22,6 @@ public class DelegateActivator<TInstance>(Expression<Func<TInstance>> activator)
         => typeof(TInstance);
     #endregion
     /// <inheritdoc />
-    Expression IEmitActivator.New(ComplexContext cacher, Expression argument)
+    Expression IEmitActivator.New(IBuildContext context, Expression argument)
         => _activator.Body;
 }

@@ -1,4 +1,5 @@
 using PocoEmit.Configuration;
+using System;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Converters;
@@ -6,17 +7,23 @@ namespace PocoEmit.Converters;
 /// <summary>
 /// 相同类型直接跳过转化
 /// </summary>
-public sealed class PassConverter : IEmitConverter
+public sealed class PassConverter(Type sourceType)
+    : IEmitConverter
 {
-    private PassConverter() { }
+    #region 配置
+    private readonly PairTypeKey _key = new(sourceType, sourceType);
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     bool ICompileInfo.Compiled
         => false;
+    #endregion
 
     /// <inheritdoc />
     public Expression Convert(Expression source)
         => source;
-    /// <summary>
-    /// 单例
-    /// </summary>
-    public static readonly PassConverter Instance = new();
+    ///// <summary>
+    ///// 单例
+    ///// </summary>
+    //public static readonly PassConverter Instance = new();
 }

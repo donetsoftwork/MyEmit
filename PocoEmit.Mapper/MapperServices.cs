@@ -39,7 +39,7 @@ public static partial class MapperServices
     public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Expression<Func<TSource, TDest>> activatorFunc)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        mapper.Configure(key, new DelegateActivator<TSource, TDest>(activatorFunc));
+        mapper.Configure(key, new DelegateActivator<TSource, TDest>((IPocoOptions)mapper, activatorFunc));
         return mapper;
     }
     /// <summary>
@@ -79,7 +79,7 @@ public static partial class MapperServices
     public static IMapper UseConvertFunc<TSource, TDest>(this IMapper mapper, Expression<Func<TSource, TDest>> convertFunc)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        mapper.Configure(key, new DelegateConverter<TSource, TDest>(convertFunc));
+        mapper.Configure(key, new FuncConverter((IPocoOptions)mapper, key, convertFunc));
         return mapper;
     }
     #endregion
@@ -106,7 +106,7 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IMapper UseDefault<TValue>(this IMapper mapper, Expression<Func<TValue>> valueFunc)
     {
-        mapper.Configure(typeof(TValue), new FuncBuilder<TValue>(valueFunc));
+        mapper.Configure(typeof(TValue), new FuncBuilder(valueFunc));
         return mapper;
     }
     #endregion
@@ -137,5 +137,5 @@ public static partial class MapperServices
     /// <param name="mapper">映射配置</param>
     /// <returns></returns>
     public static MapHelper<TSource, TDest> ConfigureMap<TSource, TDest>(this IMapper mapper)
-        => new(mapper, StringComparison.OrdinalIgnoreCase);
+        => new(mapper, StringComparison.OrdinalIgnoreCase);    
 }

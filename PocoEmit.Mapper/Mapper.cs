@@ -22,10 +22,15 @@ public sealed class Mapper : MapperConfigurationBase
     /// </summary>
     /// <returns></returns>
     public static IMapper Create()
+        => Create(new MapperOptions());
+    /// <summary>
+    /// 构造映射器
+    /// </summary>
+    /// <returns></returns>
+    public static IMapper Create(MapperOptions options)
     {
-        var options = new MapperOptions();
-        _globalOptions?.Invoke(options);
         var mapper = new Mapper(options);
+        _globalOptions?.Invoke(options);
         _globalConfiguration?.Invoke(mapper);
         return mapper;
     }

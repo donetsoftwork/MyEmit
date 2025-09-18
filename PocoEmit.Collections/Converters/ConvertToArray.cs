@@ -1,5 +1,6 @@
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Converters;
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using System;
 
@@ -27,7 +28,7 @@ public class ConvertToArray(IMapperOptions options)
     /// <param name="isPrimitive"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    public IEmitConverter ToArray(Type sourceType, bool isPrimitive, Type destType)
+    public IComplexIncludeConverter ToArray(Type sourceType, bool isPrimitive, Type destType)
     {
         //不支持多维数组
         if (destType.GetArrayRank() > 1)
@@ -156,13 +157,13 @@ public class ConvertToArray(IMapperOptions options)
         var visitor = container.VisitorCacher.GetByEnumerable(sourceType, bundle);
         if (visitor is null)
             return null;
-        return new CollectionArrayConverter(sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
+        return new(sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
     }
     /// <summary>
     /// 字典转数组
     /// </summary>
     /// <returns></returns>
-    public IEmitConverter DictionaryToArray(Type sourceType, DictionaryBundle bundle, Type destType, Type destElementType)
+    public CollectionArrayConverter DictionaryToArray(Type sourceType, DictionaryBundle bundle, Type destType, Type destElementType)
     {
         if (bundle is null)
             return null;
@@ -177,6 +178,6 @@ public class ConvertToArray(IMapperOptions options)
         var visitor = container.VisitorCacher.GetByDictionary(sourceType, bundle);
         if (visitor is null)
             return null;
-        return new CollectionArrayConverter(sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
+        return new(sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
     }
 }

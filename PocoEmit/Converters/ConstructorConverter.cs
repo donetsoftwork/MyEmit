@@ -7,12 +7,17 @@ namespace PocoEmit.Converters;
 /// <summary>
 /// 构造函数转化器
 /// </summary>
+/// <param name="key"></param>
 /// <param name="constructor"></param>
-public class ConstructorConverter(ConstructorInfo constructor)
+public class ConstructorConverter(PairTypeKey key, ConstructorInfo constructor)
     : IEmitConverter
 {
     #region 配置
+    private readonly PairTypeKey _key = key;
     private readonly ConstructorInfo _constructor = constructor;
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <summary>
     /// 构造函数
     /// </summary>

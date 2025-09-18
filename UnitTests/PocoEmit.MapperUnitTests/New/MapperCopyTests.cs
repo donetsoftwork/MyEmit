@@ -77,7 +77,7 @@ public class MapperCopyTests : MapperConvertTestBase
     {
         var copier = _mapper.GetEmitCopier<Node, NodeDTO>();
         Assert.NotNull(copier);
-        var expression = copier.Build<Node, NodeDTO>();
+        var expression = copier.Build<Node, NodeDTO>(_mapper);
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Assert.NotNull(code);
         Node node1 = new() { Id = new(1), Name = "node1", SortOrder = 1 };

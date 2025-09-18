@@ -18,6 +18,7 @@ public interface IMapperOptions
     , ICacher<PairTypeKey, IEmitCopier>
     , ICacher<Type, bool>
     , IReflectionConstructor
+    , ICacher<PairTypeKey, Delegate>
 {
     /// <summary>
     /// 复制器构造器
@@ -50,7 +51,7 @@ public interface IMapperOptions
     /// </summary>
     /// <param name="destType"></param>
     /// <returns></returns>
-    IEmitBuilder GetDefaultValueBuilder(Type destType);
+    IBuilder<Expression> GetDefaultValueBuilder(Type destType);
     /// <summary>
     /// 构造默认值
     /// </summary>

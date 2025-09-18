@@ -1,3 +1,4 @@
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using PocoEmit.Members;
@@ -45,6 +46,9 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
     public IEmitConverter Converter 
         => _converter;
     #endregion
+    /// <inheritdoc />
+    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+        => parent.Visit(_converter);
     /// <summary>
     /// 获取源成员
     /// </summary>
@@ -52,14 +56,8 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
     /// <returns></returns>
     public Expression GetSourceMember(Expression source)
         => _sourceReader.Read(source);
-    /// <summary>
-    /// 转化成员
-    /// </summary>
-    /// <param name="cacher"></param>
-    /// <param name="sourceMember"></param>
-    /// <param name="dest"></param>
-    /// <returns></returns>
-    public Expression ConvertMember(ComplexContext cacher, Expression sourceMember, Expression dest)
+    /// <inheritdoc />
+    public Expression ConvertMember(IBuildContext context, Expression sourceMember, Expression dest)
     {
         var sourceType = sourceMember.Type;
         var defaultValue = _options.CreateDefault(sourceType);
@@ -67,8 +65,8 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
         {
             // 基础类型直接赋值(忽略null判断)
             if (_options.CheckPrimitive(sourceType))
-                return _destWriter.Write(dest, _converter.Convert(sourceMember));
-            return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, cacher.Convert(_converter, sourceMember, dest.Type)));
+                return _destWriter.Write(dest, context.Convert(_converter, sourceMember));
+            return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, context.Convert(_converter, sourceMember)));
         }
         else
         {
@@ -80,7 +78,7 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
             // 值类型直接赋值(忽略null判断和默认值)
             if (isValueType)
                 return _destWriter.Write(dest, sourceMember);
-            return Expression.IfThenElse(Expression.Equal(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, defaultValue), _destWriter.Write(dest, cacher.Convert(_converter, sourceMember, dest.Type)));
+            return Expression.IfThenElse(Expression.Equal(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, defaultValue), _destWriter.Write(dest, context.Convert(_converter, sourceMember)));
         }
     }
 }

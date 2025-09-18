@@ -49,7 +49,7 @@ public abstract partial class ConfigurationBase
     void IConfigure<PairTypeKey, IEmitConverter>.Configure(PairTypeKey key, IEmitConverter value)
         => _convertConfiguration[key] = value;
     #endregion
-    #region ISettings<PairTypeKey, IEmitTypeConverter>
+    #region ICacher<PairTypeKey, IEmitConverter>
     /// <inheritdoc />
     bool ICacher<PairTypeKey, IEmitConverter>.ContainsKey(PairTypeKey key)
         => _converters.ContainsKey(key);
@@ -60,7 +60,7 @@ public abstract partial class ConfigurationBase
     bool ICacher<PairTypeKey, IEmitConverter>.TryGetValue(PairTypeKey key, out IEmitConverter value)
         => _converters.TryGetValue(key, out value) || _convertConfiguration.TryGetValue(key, out value);
     #endregion
-    #region ISettings<Type, MemberBundle>
+    #region ICacher<Type, MemberBundle>
     /// <inheritdoc />
     bool ICacher<Type, MemberBundle>.ContainsKey(Type key)
         => _memberBundles.ContainsKey(key);

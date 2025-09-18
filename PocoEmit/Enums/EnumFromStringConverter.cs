@@ -25,9 +25,12 @@ public class EnumFromStringConverter(Type enumType, IEnumField[] fields)
     {
     }
     #region 配置
+    private readonly PairTypeKey _key = new(typeof(string), enumType);
     private readonly Type _enumType = enumType;
     private readonly IEnumField[] _fields = fields;
-
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <summary>
     /// 枚举类型
     /// </summary>

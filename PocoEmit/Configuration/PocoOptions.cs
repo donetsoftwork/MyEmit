@@ -23,5 +23,8 @@ public class PocoOptions
     /// 成员集合数量
     /// </summary>
     public int MemberBundleCapacity = 127;
-
+    /// <summary>
+    /// 是Invoke,还是内嵌表达式
+    /// </summary>
+    public bool LambdaInvoke = false;
 }

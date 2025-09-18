@@ -25,7 +25,7 @@ public static partial class MapperServices
     public static IPoco UseCopyAction<TSource, TDest>(this IMapper mapper, Expression<Action<TSource, TDest>> copyAction)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        mapper.Configure(key, new DelegateCopier<TSource, TDest>(copyAction));
+        mapper.Configure(key, new ActionCopier((IMapperOptions)mapper, copyAction));
         return mapper;
     }
     /// <summary>
@@ -94,15 +94,15 @@ public static partial class MapperServices
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="settings"></param>
+    /// <param name="mapper"></param>
     /// <param name="copy"></param>
     /// <returns></returns>
-    public static DelegateCopier<TSource, TDest> SetCopy<TSource, TDest>(this ICacher<PairTypeKey, IEmitCopier> settings, Expression<Action<TSource, TDest>> copy)
+    public static ActionCopier SetCopy<TSource, TDest>(this IMapper mapper, Expression<Action<TSource, TDest>> copy)
         where TDest : class
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        var copier = new DelegateCopier<TSource, TDest>(copy);
-        settings.Set(key, copier);
+        var copier = new ActionCopier((IMapperOptions)mapper, copy);
+        mapper.Set(key, copier);
         return copier;
     }
     /// <summary>
@@ -110,17 +110,18 @@ public static partial class MapperServices
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="settings"></param>
+    /// <param name="mapper"></param>
     /// <param name="copy"></param>
     /// <returns></returns>
-    public static IEmitCopier TrySetCopy<TSource, TDest>(this ICacher<PairTypeKey, IEmitCopier> settings, Expression<Action<TSource, TDest>> copy)
+    public static IEmitCopier TrySetCopy<TSource, TDest>(this IMapper mapper, Expression<Action<TSource, TDest>> copy)
         where TDest : class
     {
+        var option = (IMapperOptions)mapper;
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        if (settings.TryGetValue(key, out var value0) && value0 is not null)
+        if (option.TryGetValue(key, out IEmitCopier value0) && value0 is not null)
             return value0;
-        var copier = new DelegateCopier<TSource, TDest>(copy);
-        settings.Set(key, copier);
+        var copier = new ActionCopier(option, copy);
+        mapper.Set(key, copier);
         return copier;
     }
     #endregion

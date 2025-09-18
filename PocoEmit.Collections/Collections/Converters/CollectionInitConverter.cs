@@ -1,7 +1,9 @@
 using PocoEmit.Collections.Saves;
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Collections.Converters;
@@ -15,12 +17,15 @@ namespace PocoEmit.Collections.Converters;
 /// <param name="elementConverter"></param>
 public sealed class CollectionInitConverter(Type collectionType, Type elementType, IEmitElementSaver saver, IEmitConverter elementConverter)
     : EmitCollectionBase(collectionType, elementType)
-    , IEmitComplexConverter
-    , IEmitConverter
+    , IComplexIncludeConverter
 {
     #region 配置
+    private readonly PairTypeKey _key = new(elementType, collectionType);
     private readonly IEmitElementSaver _saver = saver;
     private readonly IEmitConverter _elementConverter = elementConverter;
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <summary>
     /// 集合元素保存器
     /// </summary>
@@ -31,22 +36,19 @@ public sealed class CollectionInitConverter(Type collectionType, Type elementTyp
     /// </summary>
     public IEmitConverter ElementConverter
         => _elementConverter;
-    /// <inheritdoc />
-    bool ICompileInfo.Compiled
-        => false;
     #endregion
     /// <inheritdoc />
-    Expression IEmitConverter.Convert(Expression source)
-        => Convert(new(), source);
+    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+        => parent.Visit(_elementConverter);
     /// <inheritdoc />
-    public Expression Convert(ComplexContext cacher, Expression source)
-        => Expression.ListInit(Expression.New(_collectionType), Expression.ElementInit(_saver.AddMethod, CheckElement(cacher, source)));
+    public Expression Convert(IBuildContext context, Expression source)
+        => Expression.ListInit(Expression.New(_collectionType), Expression.ElementInit(_saver.AddMethod, CheckElement(context, source)));
     /// <summary>
     /// 检查子元素
     /// </summary>
-    /// <param name="cacher"></param>
+    /// <param name="context"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    private Expression CheckElement(ComplexContext cacher, Expression source)
-        => cacher.Convert(_elementConverter, source, _elementType);
+    private Expression CheckElement(IBuildContext context, Expression source)
+        => context.Convert(_elementConverter, source);
 }

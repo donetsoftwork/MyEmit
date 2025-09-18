@@ -165,6 +165,6 @@ public static partial class PocoEmitCollectionServices
     /// <param name="counter"></param>
     /// <returns></returns>
     public static Func<TCollection, int> Compile<TCollection>(IEmitElementCounter counter)
-        => Compiler._instance.CompileFunc(counter.Build<TCollection>());
+        => Compiler._instance.CompileDelegate(counter.Build<TCollection>());
     #endregion
 }

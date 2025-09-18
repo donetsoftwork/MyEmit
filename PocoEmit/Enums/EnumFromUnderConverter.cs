@@ -16,6 +16,7 @@ public class EnumFromUnderConverter(IEnumBundle bundle)
      : IEmitConverter
 {
     #region 配置
+    private readonly PairTypeKey _key = new(bundle.UnderType, bundle.EnumType);
     private readonly IEnumBundle _bundle = bundle;
     private readonly Type _enumType = bundle.EnumType;
     private readonly Type _underType = bundle.UnderType;
@@ -24,6 +25,9 @@ public class EnumFromUnderConverter(IEnumBundle bundle)
     /// ToObject方法
     /// </summary>    
     private readonly MethodInfo _toObjectMethod = bundle.HasFlag ? ReflectionHelper.GetMethod(typeof(Enum), nameof(Enum.ToObject), [typeof(Type), bundle.UnderType]) : null;
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <summary>
     /// 枚举配置
     /// </summary>

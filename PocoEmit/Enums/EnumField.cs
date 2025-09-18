@@ -12,7 +12,6 @@ public class EnumField(string name, string member, ConstantExpression expression
     #region 配置
     private readonly string _name = name;
     private readonly string _member = member;
-    //private readonly TEnum _value = value;
     private readonly ConstantExpression _expression = expression;
     private readonly ConstantExpression _under = under;
 
@@ -22,11 +21,6 @@ public class EnumField(string name, string member, ConstantExpression expression
     /// <inheritdoc />
     public string Member
         => _member;
-    ///// <summary>
-    ///// 枚举值
-    ///// </summary>
-    //public TEnum Value
-    //    => _value;
     /// <summary>
     /// 枚举值
     /// </summary>

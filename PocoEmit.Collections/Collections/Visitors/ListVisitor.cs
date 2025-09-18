@@ -65,6 +65,7 @@ public class ListVisitor(Type listType, Type elementType, PropertyInfo countProp
         var len = Expression.Variable(typeof(int), "len");
         return Expression.Block(
             [index, len],
+            Expression.Assign(index, Expression.Constant(0)),
             Expression.Assign(len, Expression.Property(list, count)),
             EmitHelper.For(index, len, i => callback(i, Expression.Property(list, item, i)))
         );

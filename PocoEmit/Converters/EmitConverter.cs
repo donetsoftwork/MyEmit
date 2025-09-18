@@ -9,16 +9,16 @@ namespace PocoEmit.Converters;
 /// Emit类型转化
 /// </summary>
 /// <param name="isPrimitiveSource"></param>
-/// <param name="destType"></param>
-public class EmitConverter(bool isPrimitiveSource, Type destType)
+/// <param name="key"></param>
+public class EmitConverter(bool isPrimitiveSource, PairTypeKey key)
     : IEmitConverter
 {
     /// <summary>
     /// Emit类型转化
     /// </summary>
-    /// <param name="destType"></param>
-    public EmitConverter(Type destType)
-        : this(true, destType)
+    /// <param name="key"></param>
+    public EmitConverter(PairTypeKey key)
+        : this(true, key)
     {
     }
     #region 配置
@@ -26,25 +26,22 @@ public class EmitConverter(bool isPrimitiveSource, Type destType)
     /// 源类型是否为基础类型
     /// </summary>
     protected bool _isPrimitiveSource = isPrimitiveSource;
+    private PairTypeKey _key = key;
     /// <summary>
     /// 映射目标类型
     /// </summary>
-    protected readonly Type _destType = destType;
+    protected readonly Type _destType = key.RightType;
     /// <summary>
     /// 源类型是否为基础类型
     /// </summary>
     public bool IsPrimitiveSource
         => _isPrimitiveSource;
-    /// <summary>
-    /// 映射目标类型
-    /// </summary>
-    public Type DestType
-        => _destType;
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <inheritdoc />
     bool ICompileInfo.Compiled
         => false;
-
-
     #endregion
     /// <inheritdoc />
     public virtual Expression Convert(Expression value)

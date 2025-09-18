@@ -1,4 +1,6 @@
+using PocoEmit.Builders;
 using System;
+using System.Linq.Expressions;
 
 namespace PocoEmit.Converters;
 
@@ -10,6 +12,7 @@ namespace PocoEmit.Converters;
 public interface ICompiledConverter<TSource, TDest> 
     : IEmitConverter
     , IPocoConverter<TSource, TDest>
+    , IBuilder<LambdaExpression>
 {
     /// <summary>
     /// 类型转化方法

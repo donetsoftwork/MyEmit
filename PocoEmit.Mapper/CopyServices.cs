@@ -1,4 +1,5 @@
 using PocoEmit.Builders;
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using System;
@@ -32,7 +33,7 @@ public static partial class MapperServices
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled;
-        var compiledCopier = Compile<TSource, TDest>(emitCopier);
+        var compiledCopier = CompileCopier<TSource, TDest>(emitCopier, mapper);
         mapper.Set(key, compiledCopier);
         return compiledCopier;
     }
@@ -53,7 +54,7 @@ public static partial class MapperServices
             return null;
         if (copier.Compiled)
             return copier;
-        var compiled = Inner.Compile(sourceType, destType, copier) as IEmitCopier;
+        var compiled = Inner.Compile(sourceType, destType, copier, mapper) as IEmitCopier;
         if (compiled != null)
             mapper.Set(key, compiled);
         return compiled;
@@ -78,7 +79,7 @@ public static partial class MapperServices
             return null;
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled.CopyAction;
-        var copyAction = CompileAction<TSource, TDest>(emitCopier);
+        var copyAction = CompileAction<TSource, TDest>(emitCopier, mapper);
         mapper.Set(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
         return copyAction;
     }
@@ -132,24 +133,42 @@ public static partial class MapperServices
     public static Expression<Action<TSource, TDest>> BuildCopier<TSource, TDest>(this IMapper mapper)
         where TDest : class
     {
-        return mapper.GetEmitCopier(typeof(TSource), typeof(TDest))
-            .Build<TSource, TDest>();
+        return mapper.GetEmitCopier(new(typeof(TSource), typeof(TDest)))
+            .Build<TSource, TDest>(mapper);
     }
     /// <summary>
     /// 转换委托
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
+    /// <param name="mapper"></param>
     /// <param name="emit"></param>
     /// <returns></returns>
-    public static Expression<Action<TSource, TDest>> Build<TSource, TDest>(this IEmitCopier emit)
+    public static Expression<Action<TSource, TDest>> Build<TSource, TDest>(this IEmitCopier emit, IMapper mapper)
         where TDest : class
     {
         var source = Expression.Parameter(typeof(TSource), "source");
         var dest = Expression.Parameter(typeof(TDest), "dest");
-        var list = emit.Copy(new(), source, dest).ToArray();
-        var body = list.Length == 1 ? list[0] : Expression.Block(list);
-        return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
+        var options = (IMapperOptions)mapper;
+        var context = BuildContext.WithPrepare(options, emit);
+        var list = emit.Copy(context, source, dest);
+
+        var convertContexts = context.ConvertContexts;        
+        if (convertContexts.Count == 1)
+        {
+            var convertContext = convertContexts[0];
+            var body = Expression.Block(
+                [convertContext],
+                [context.InitContext(convertContext), .. list]               
+                );
+            return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
+        }
+        else
+        {
+            var checkList = list.ToArray();
+            var body = checkList.Length == 1 ? checkList[0] : Expression.Block(checkList);
+            return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
+        }        
     }
     #endregion
     /// <summary>
@@ -158,20 +177,22 @@ public static partial class MapperServices
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
     /// <param name="copier"></param>
+    /// <param name="mapper"></param>
     /// <returns></returns>
-    public static Action<TSource, TDest> CompileAction<TSource, TDest>(this IEmitCopier copier)
+    public static Action<TSource, TDest> CompileAction<TSource, TDest>(this IEmitCopier copier, IMapper mapper)
         where TDest : class
-        => Compiler._instance.CompileAction(copier.Build<TSource, TDest>());
+        => Compiler._instance.CompileDelegate(copier.Build<TSource, TDest>(mapper));
     /// <summary>
     /// 编译
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
     /// <param name="copier"></param>
+    /// <param name="mapper"></param>
     /// <returns></returns>
-    internal static CompiledCopier<TSource, TDest> Compile<TSource, TDest>(this IEmitCopier copier)
+    internal static CompiledCopier<TSource, TDest> CompileCopier<TSource, TDest>(this IEmitCopier copier, IMapper mapper)
          where TDest : class
-        => new(copier, CompileAction<TSource, TDest>(copier));
+        => new(copier, CompileAction<TSource, TDest>(copier, mapper));
     /// <summary>
     /// 内部延迟初始化
     /// </summary>
@@ -180,7 +201,7 @@ public static partial class MapperServices
         /// <summary>
         /// 反射Compile方法
         /// </summary>
-        private static readonly MethodInfo CompileMethod = EmitHelper.GetActionMethodInfo<IEmitCopier>(emit => Compile<long, object>(emit))
+        private static readonly MethodInfo CompileMethod = EmitHelper.GetActionMethodInfo<IEmitCopier, IMapper>((emit, mapper) => CompileCopier<long, object>(emit, mapper))
             .GetGenericMethodDefinition();
         /// <summary>
         /// 反射调用编译方法
@@ -188,11 +209,12 @@ public static partial class MapperServices
         /// <param name="sourceType"></param>
         /// <param name="destType"></param>
         /// <param name="copier"></param>
+        /// <param name="mapper"></param>
         /// <returns></returns>
-        internal static object Compile(Type sourceType, Type destType, IEmitCopier copier)
+        internal static object Compile(Type sourceType, Type destType, IEmitCopier copier, IMapper mapper)
         {
             return CompileMethod.MakeGenericMethod(sourceType, destType)
-                .Invoke(null, [copier]);
+                .Invoke(null, [copier, mapper]);
         }
     }
 }

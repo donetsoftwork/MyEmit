@@ -55,6 +55,7 @@ public class ArrayVisitor(Type arrayType, Type elementType)
         var len = Expression.Variable(typeof(int), "len");
         return Expression.Block([index, len],
             Expression.Assign(len, Expression.ArrayLength(array)),
+            Expression.Assign(index, Expression.Constant(0)),
             EmitHelper.For(index, len, i => callback(i, Expression.ArrayAccess(array, i)))
         );
     }

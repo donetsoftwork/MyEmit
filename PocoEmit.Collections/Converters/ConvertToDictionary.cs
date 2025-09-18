@@ -27,11 +27,13 @@ public class ConvertToDictionary(IMapperOptions options)
     /// <param name="destType"></param>
     /// <param name="destBundle"></param>
     /// <returns></returns>
-    public IEmitConverter ToDictionary(Type sourceType, Type destType, DictionaryBundle destBundle)
+    public DictionaryConverter ToDictionary(Type sourceType, Type destType, DictionaryBundle destBundle)
     {
-        IEmitCopier copier = _options.GetCollectionCopier().DictionaryCopier.Create(sourceType, destType, destBundle);
+        IEmitCopier copier = _options.GetCollectionCopier()
+            .DictionaryCopier
+            .Create(sourceType, destType, destBundle);
         if (copier is null)
             return null;
-        return new DictionaryConverter(destType, destBundle.KeyType, destBundle.ValueType, copier);
+        return new(sourceType, destType, destBundle.KeyType, destBundle.ValueType, copier);
     }
 }

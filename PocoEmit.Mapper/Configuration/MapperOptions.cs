@@ -37,4 +37,8 @@ public class MapperOptions : PocoOptions
     /// 默认值配置数量
     /// </summary>
     public int DefaultValueCapacity = 31;
+    /// <summary>
+    /// 上下文转化方法数量
+    /// </summary>
+    public int ContextFuncCapacity = 31;
 }

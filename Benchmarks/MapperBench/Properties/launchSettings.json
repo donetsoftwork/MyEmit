@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MapperBench": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

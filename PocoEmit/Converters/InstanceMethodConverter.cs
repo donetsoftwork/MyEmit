@@ -1,5 +1,6 @@
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -8,15 +9,20 @@ namespace PocoEmit.Converters;
 /// <summary>
 /// Emit本实例方法类型转化
 /// </summary>
+/// <param name="key"></param>
 /// <param name="method"></param>
-public sealed class SelfMethodConverter(MethodInfo method)
+public sealed class SelfMethodConverter(PairTypeKey key, MethodInfo method)
     : IEmitConverter
 {
     #region 配置
+    private readonly PairTypeKey _key = key;
     /// <summary>
     /// 方法
     /// </summary>
     private readonly MethodInfo _method = method;
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <summary>
     /// 方法
     /// </summary>
@@ -36,5 +42,6 @@ public sealed class SelfMethodConverter(MethodInfo method)
     /// <summary>
     /// ToString
     /// </summary>
-    public static readonly SelfMethodConverter ToStringConverter = new(ToStringMethod);
+    public static SelfMethodConverter ConvertToString(Type sourceType) 
+        => new(new(sourceType,typeof(string)), ToStringMethod);
 }

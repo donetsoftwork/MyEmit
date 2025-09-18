@@ -83,7 +83,7 @@ public class ComplexConvertBuilder(IMapperOptions options)
         var activator = _options.GetEmitActivator(key) ?? CreateDefaultActivator(sourceType, destType);
         if (activator is null)
             return null;
-        return new ComplexTypeConverter(sourceType, activator, _options.GetEmitCopier(key));
+        return new ComplexTypeConverter(_options, key, activator, _options.GetEmitCopier(key));
     }
     /// <inheritdoc />
     public override IEmitConverter BuildForNullable(IEmitConverter original, Type originalSourceType, Type destType)
@@ -108,13 +108,13 @@ public class ComplexConvertBuilder(IMapperOptions options)
                 constructor = ReflectionHelper.GetConstructorByParameterType(destType, compatibleSourceType);
                 if (constructor is null)
                     return false;
-                converter = new ConstructorCompatibleConverter(constructor, compatibleSourceType);
+                converter = new ConstructorCompatibleConverter(new(sourceType, destType), constructor, compatibleSourceType);
                 return true;
             }
         }
         else
         {
-            converter = new ConstructorConverter(constructor);
+            converter = new ConstructorConverter(new(sourceType, destType), constructor);
             return true;
         }
         return false;
@@ -148,7 +148,7 @@ public class ComplexConvertBuilder(IMapperOptions options)
             var reader = memberReader;
             if (CheckReader(_options, ref reader, destType) && reader is not null)
             {
-                converter = new MemberReadConverter(reader);
+                converter = new MemberReadConverter(new(sourceType, destType), reader);
                 return true;
             }
         }

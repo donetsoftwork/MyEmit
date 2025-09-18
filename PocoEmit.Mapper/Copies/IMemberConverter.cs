@@ -1,4 +1,4 @@
-using PocoEmit.Converters;
+using PocoEmit.Complexes;
 using PocoEmit.Members;
 using System.Linq.Expressions;
 
@@ -8,6 +8,7 @@ namespace PocoEmit.Copies;
 /// 成员转化器
 /// </summary>
 public interface IMemberConverter
+    : IComplexPreview
 {
     /// <summary>
     /// 获取源成员
@@ -18,12 +19,18 @@ public interface IMemberConverter
     /// <summary>
     /// 转化成员
     /// </summary>
-    /// <param name="cacher"></param>
+    /// <param name="context"></param>
     /// <param name="sourceMember"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    Expression ConvertMember(ComplexContext cacher, Expression sourceMember, Expression dest);
-
+    Expression ConvertMember(IBuildContext context, Expression sourceMember, Expression dest);
+    ///// <summary>
+    ///// 转化成员
+    ///// </summary>
+    ///// <param name="sourceMember"></param>
+    ///// <param name="dest"></param>
+    ///// <returns></returns>
+    //Expression ConvertMember(Expression sourceMember, Expression dest);
     /// <summary>
     /// 源成员读取器
     /// </summary>

@@ -23,10 +23,10 @@ public class ExpressionHelper
             Expression.Assign(Expression.Property(dto, "Name"), Expression.Property(customer, "Name")),
             // dto.Address = addressDTOConvertFunc.Invoke(customer.Address);
             ConvertAddress(addressDTOConvertFunc, customer, dto),
-            // dto.Addresses
-            ConvertAddresses(addressDTOConvertFunc, customer, dto),
             // dto.AddressList
             ConvertAddressList(addressDTOConvertFunc, customer, dto),
+            // dto.Addresses
+            ConvertAddresses(addressDTOConvertFunc, customer, dto),
             // return dto
             dto
         );
@@ -133,6 +133,48 @@ public class ExpressionHelper
         );
     }
     /// <summary>
+/// 表达式替换
+/// </summary>
+/// <param name="old"></param>
+/// <param name="new"></param>
+internal class ReplaceVisitor(Expression old, Expression @new)
+    : ExpressionVisitor
+{
+    #region 配置
+    private readonly Expression _old = old;
+    private readonly Expression _new = @new;
+    /// <summary>
+    /// 待替换的表达式
+    /// </summary>
+    public Expression Old
+        => _old;
+    /// <summary>
+    /// 替换的表达式
+    /// </summary>
+    protected Expression New
+        => _new;
+    #endregion
+    /// <summary>
+    /// 遍历表达式
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    public override Expression Visit(Expression node)
+    {
+        // 替换表达式
+        if (node == _old)
+            return base.Visit(_new);
+        return VisitCore(node);
+    }
+    /// <summary>
+    /// 原始遍历方法
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    protected virtual Expression VisitCore(Expression node)
+        => base.Visit(node);
+}
+    /// <summary>
     /// 定义转化委托 Address -> AddressDTO
     /// </summary>
     /// <returns></returns>
@@ -155,6 +197,27 @@ public class ExpressionHelper
         );
         return Expression.Lambda<Func<Address, AddressDTO>>(body, source);
     }
+}
+/// <summary>
+/// 复合表达式替换
+/// </summary>
+/// <param name="inner"></param>
+/// <param name="old"></param>
+/// <param name="new"></param>
+internal class ComplexReplaceVisitor(ReplaceVisitor inner, Expression old, Expression @new)
+    : ReplaceVisitor(old, @new)
+{
+    #region 配置
+    private readonly ReplaceVisitor _inner = inner;
+    /// <summary>
+    /// 内部替换访问器
+    /// </summary>
+    public ReplaceVisitor Inner 
+        => _inner;
+    #endregion
+    /// <inheritdoc />
+    protected override Expression VisitCore(Expression node)
+        => _inner.Visit(node);
 }
 public class CustomerDTO
 {

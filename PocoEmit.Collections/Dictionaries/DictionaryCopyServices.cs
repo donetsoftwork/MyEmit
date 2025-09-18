@@ -72,7 +72,7 @@ public static partial class PocoDictionaryServices
         where TDictionary : class
     {
         return ((IMapperOptions)mapper).CreateDictionaryCopier(typeof(TInstance), typeof(TTarget), typeof(TDictionary), names, ignoreDefault)
-            .CompileAction<TInstance, TDictionary>();
+            .CompileAction<TInstance, TDictionary>(mapper);
     }
     /// <summary>
     /// 构建复制到字典委托
@@ -87,7 +87,7 @@ public static partial class PocoDictionaryServices
         where TDictionary : class
     {
         return ((IMapperOptions)mapper).CreateDictionaryCopier(typeof(TInstance), null, typeof(TDictionary), names, ignoreDefault)
-            .CompileAction<TInstance, TDictionary>();
+            .CompileAction<TInstance, TDictionary>(mapper);
     }
     #endregion
     #region BuildDictionaryCopier
@@ -105,7 +105,7 @@ public static partial class PocoDictionaryServices
         where TDictionary : class
     {
         return ((IMapperOptions)mapper).CreateDictionaryCopier(typeof(TInstance), typeof(TTarget), typeof(TDictionary), names, ignoreDefault)
-            ?.Build<TInstance, TDictionary>();
+            ?.Build<TInstance, TDictionary>(mapper);
     }
     /// <summary>
     /// 构建复制到字典表达式
@@ -120,7 +120,7 @@ public static partial class PocoDictionaryServices
         where TDictionary : class
     {
         return ((IMapperOptions)mapper).CreateDictionaryCopier(typeof(TInstance), null, typeof(TDictionary), names, ignoreDefault)
-            ?.Build<TInstance, TDictionary>();
+            ?.Build<TInstance, TDictionary>(mapper);
     }
     #endregion
     #region CreateDictionaryCopier

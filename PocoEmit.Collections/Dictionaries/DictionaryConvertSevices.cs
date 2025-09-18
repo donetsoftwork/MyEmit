@@ -1,3 +1,4 @@
+using PocoEmit.Collections.Converters;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
@@ -267,7 +268,7 @@ public static partial class PocoDictionaryServices
     /// <param name="names">成员名</param>
     /// <param name="ignoreDefault">是否忽略默认值</param>
     /// <returns></returns>
-    internal static DictionaryConverter CreateDictionaryConverter(this IMapperOptions options, Type instanceType, Type targetType, Type dictionaryType, IEnumerable<string> names, bool ignoreDefault)
+    internal static WrapConverter CreateDictionaryConverter(this IMapperOptions options, Type instanceType, Type targetType, Type dictionaryType, IEnumerable<string> names, bool ignoreDefault)
     {
         if (options.CheckPrimitive(instanceType) || options.CheckPrimitive(dictionaryType))
             return null;
@@ -284,7 +285,8 @@ public static partial class PocoDictionaryServices
             dictionaryType = typeof(Dictionary<,>).MakeGenericType(bundle.KeyType, bundle.ValueType);
             bundle = CollectionContainer.Instance.DictionaryCacher.Get(dictionaryType);
         }
-        return CreateDictionaryConverter(options, instanceType, targetType, dictionaryType, bundle.KeyType, bundle.ValueType, bundle.Items, names, ignoreDefault);
+        var dictionaryConverter = CreateDictionaryConverter(options, instanceType, targetType, dictionaryType, bundle.KeyType, bundle.ValueType, bundle.Items, names, ignoreDefault);
+        return new(options, instanceType, dictionaryType, dictionaryConverter);
     }
     /// <summary>
     /// 成员转化为字典
@@ -305,7 +307,7 @@ public static partial class PocoDictionaryServices
         DictionaryCopier copier = options.CreateDictionaryCopier(instanceType, targetType, dictionaryType, keyType, elementType, itemProperty, names, ignoreDefault);
         if(copier is null)
             return null;
-        return new(dictionaryType, keyType, elementType, copier);
+        return new(instanceType, dictionaryType, keyType, elementType, copier);
     }
     #endregion
 }

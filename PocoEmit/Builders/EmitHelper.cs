@@ -43,6 +43,7 @@ public static class EmitHelper
         var index = Expression.Variable(typeof(int), "index");
         return Expression.Block(
             [index],
+            Expression.Assign(index, Expression.Constant(0)),
             For(index, count, callBack)
             );
     }
@@ -147,7 +148,7 @@ public static class EmitHelper
     /// <param name="value"></param>
     /// <param name="isPrimitive"></param>
     /// <returns></returns>
-    public static bool CheckComplexSource(Expression value, bool isPrimitive)
+    public static bool CheckComplexSource(Expression value, bool isPrimitive = false)
     {
         ExpressionType type = value.NodeType;
         return type switch
@@ -210,4 +211,6 @@ public static class EmitHelper
         return Expression.Convert(value, valueType);
     }
     #endregion
+    //public static ParameterExpression Copy(ParameterExpression parameter)
+    //    => Expression.Parameter(parameter.Type, parameter.Name);
 }

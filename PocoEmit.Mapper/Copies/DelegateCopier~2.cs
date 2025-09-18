@@ -1,7 +1,6 @@
 using PocoEmit.Builders;
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
-using PocoEmit.Converters;
-using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
@@ -10,17 +9,19 @@ namespace PocoEmit.Copies;
 /// <summary>
 /// 委托复制器
 /// </summary>
-/// <typeparam name="TSource"></typeparam>
-/// <typeparam name="TDest"></typeparam>
+/// <param name="poco"></param>
 /// <param name="copyAction"></param>
-public class DelegateCopier<TSource, TDest>(Expression<Action<TSource, TDest>> copyAction)
-    : ActionCallBuilder<TSource, TDest>(copyAction)
+public class ActionCopier(IPocoOptions poco, LambdaExpression copyAction)
+    : ActionCallBuilder(poco, copyAction)
     , IEmitCopier
 {
     /// <inheritdoc />
     bool ICompileInfo.Compiled
         => false;
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
+    IEnumerable<Expression> IEmitCopier.Copy(IBuildContext context, Expression source, Expression dest)
         => [Call(source, dest)];
+    /// <inheritdoc />
+    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+        => [];
 }

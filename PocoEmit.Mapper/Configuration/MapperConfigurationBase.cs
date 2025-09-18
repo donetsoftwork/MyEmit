@@ -32,7 +32,8 @@ public abstract partial class MapperConfigurationBase
         _checkMembers = new ConcurrentDictionary<PairTypeKey, Delegate>();
         _matchConfiguration = new ConcurrentDictionary<PairTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
         _primitiveTypes = new ConcurrentDictionary<Type, bool>(concurrencyLevel, options.PrimitiveCapacity);
-        _defaultValueConfiguration = new ConcurrentDictionary<Type, IEmitBuilder>(concurrencyLevel, options.DefaultValueCapacity);
+        _defaultValueConfiguration = new ConcurrentDictionary<Type, IBuilder<Expression>>(concurrencyLevel, options.DefaultValueCapacity);
+        _contextFuncs = new ConcurrentDictionary<PairTypeKey, Delegate>(concurrencyLevel, options.ContextFuncCapacity);
         _reflectionConstructor = DefaultReflectionConstructor.Default;
         _defaultMatcher = MemberNameMatcher.Default;
         _recognizer = new Recognizer(_defaultMatcher.NameMatch);
@@ -116,15 +117,15 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     /// <param name="destType"></param>
     /// <returns></returns>
-    public IEmitBuilder GetDefaultValueBuilder(Type destType)
+    public IBuilder<Expression> GetDefaultValueBuilder(Type destType)
     {
-        _defaultValueConfiguration.TryGetValue(destType, out IEmitBuilder builder);
+        _defaultValueConfiguration.TryGetValue(destType, out IBuilder<Expression> builder);
         return builder;
     }
     /// <inheritdoc />
     public Expression CreateDefault(Type destType)
     {
-        if (_defaultValueConfiguration.TryGetValue(destType, out IEmitBuilder builder))
+        if (_defaultValueConfiguration.TryGetValue(destType, out IBuilder<Expression> builder))
             return builder.Build();
         return null;
     }

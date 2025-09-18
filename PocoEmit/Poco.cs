@@ -21,14 +21,19 @@ public sealed class Poco
     /// 简单对象处理对象
     /// </summary>
     /// <returns></returns>
-    public static IPoco Create()
+    public static IPoco Create(PocoOptions options)
     {
-        var options = new PocoOptions();
         _globalOptions?.Invoke(options);
         var poco = new Poco(options);
         _globalConfiguration?.Invoke(poco);
         return poco;
     }
+    /// <summary>
+    /// 简单对象处理对象
+    /// </summary>
+    /// <returns></returns>
+    public static IPoco Create()
+        => Create(new PocoOptions());
     #endregion
     #region Global
     /// <summary>

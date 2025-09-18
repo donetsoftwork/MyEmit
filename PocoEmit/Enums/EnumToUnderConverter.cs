@@ -13,10 +13,14 @@ public class EnumToUnderConverter(IEnumBundle bundle)
      : IEmitConverter
 {
     #region 配置
+    private readonly PairTypeKey _key = new(bundle.EnumType, bundle.UnderType);
     private readonly IEnumBundle _bundle = bundle;
     private readonly Type _underType = bundle.UnderType;
     private readonly IEnumField[] _fields = [.. bundle.Fields];
 
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <summary>
     /// 枚举配置
     /// </summary>

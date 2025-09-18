@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
@@ -9,18 +10,15 @@ namespace PocoEmit.Converters;
 /// </summary>
 /// <typeparam name="TSource"></typeparam>
 /// <typeparam name="TDest"></typeparam>
-/// <param name="inner"></param>
+/// <param name="options"></param>
+/// <param name="key"></param>
+/// <param name="lambda"></param>
 /// <param name="convertFunc"></param>
-public sealed class CompiledConverter<TSource, TDest>(IEmitConverter inner, Func<TSource, TDest> convertFunc)
-    : ICompiledConverter<TSource, TDest>
+public sealed class CompiledConverter<TSource, TDest>(IPocoOptions options, PairTypeKey key, LambdaExpression lambda, Func<TSource, TDest> convertFunc)
+    : ArgumentFuncCallBuilder(options, key, lambda)
+    , ICompiledConverter<TSource, TDest>
 {
     #region 配置
-    private readonly IEmitConverter _inner = inner;
-    /// <summary>
-    /// 原始转化器
-    /// </summary>
-    public IEmitConverter Inner
-        => _inner;
     private readonly Func<TSource, TDest> _convertFunc = convertFunc;
     /// <summary>
     /// 类型转化方法
@@ -33,7 +31,7 @@ public sealed class CompiledConverter<TSource, TDest>(IEmitConverter inner, Func
     #endregion
     /// <inheritdoc />
     public Expression Convert(Expression source)
-        => _inner.Convert(source);
+        => Call(source);
     /// <inheritdoc />
     TDest IPocoConverter<TSource, TDest>.Convert(TSource source)
         => _convertFunc(source);

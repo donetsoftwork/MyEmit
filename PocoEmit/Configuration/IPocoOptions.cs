@@ -4,6 +4,7 @@ using PocoEmit.Converters;
 using PocoEmit.Reflection;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace PocoEmit.Configuration;
 
@@ -27,4 +28,11 @@ public interface IPocoOptions
     /// 反射获取成员
     /// </summary>
     IReflectionMember ReflectionMember { get; }
+    /// <summary>
+    /// 调用
+    /// </summary>
+    /// <param name="lambda"></param>
+    /// <param name="arguments"></param>
+    /// <returns></returns>
+    Expression Call(LambdaExpression lambda, params Expression[] arguments);
 }

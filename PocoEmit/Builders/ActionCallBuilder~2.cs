@@ -1,5 +1,4 @@
-using PocoEmit.Visitors;
-using System;
+using PocoEmit.Configuration;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Builders;
@@ -7,18 +6,23 @@ namespace PocoEmit.Builders;
 /// <summary>
 /// 执行Action表达式
 /// </summary>
-/// <typeparam name="T1"></typeparam>
-/// <typeparam name="T2"></typeparam>
-/// <param name="lambda"></param>
-public class ActionCallBuilder<T1, T2>(Expression<Action<T1, T2>> lambda)
+/// <param name="poco"></param>
+/// <param name="action"></param>
+public class ActionCallBuilder(IPocoOptions poco, LambdaExpression action)
 {
     #region 配置
-    private readonly Expression<Action<T1, T2>> _lambda = lambda;
+    private readonly IPocoOptions _poco = poco;
+    private readonly LambdaExpression _action = action;
+    /// <summary>
+    /// 对象处理
+    /// </summary>
+    public IPocoOptions Poco
+        => _poco;
     /// <summary>
     /// Action表达式
     /// </summary>
-    public Expression<Action<T1, T2>> Lambda
-        => _lambda;
+    public LambdaExpression Action
+        => _action;
     #endregion
     /// <summary>
     /// 通过替换参数来调用Action表达式
@@ -27,9 +31,5 @@ public class ActionCallBuilder<T1, T2>(Expression<Action<T1, T2>> lambda)
     /// <param name="argument2"></param>
     /// <returns></returns>
     public Expression Call(Expression argument1, Expression argument2)
-    {
-        var parameters = _lambda.Parameters;
-        return new ComplexReplaceVisitor(new ReplaceVisitor(parameters[1], argument2),  parameters[0], argument1)
-            .Visit(_lambda.Body);
-    }
+        => _poco.Call(_action, argument1, argument2);
 }

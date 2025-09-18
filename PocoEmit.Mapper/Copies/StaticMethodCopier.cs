@@ -1,4 +1,4 @@
-using PocoEmit.Converters;
+using PocoEmit.Complexes;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -34,7 +34,7 @@ public class MethodCopier(Expression target, MethodInfo method)
         => false;
     #endregion
     /// <inheritdoc />
-    public virtual IEnumerable<Expression> Copy(ComplexContext cacher, Expression source, Expression dest)
+    public virtual IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
         => [CallMethod(source, dest)];
     /// <summary>
     /// 调用方法
@@ -44,4 +44,7 @@ public class MethodCopier(Expression target, MethodInfo method)
     /// <returns></returns>
     protected Expression CallMethod(Expression source, Expression dest)
         => Expression.Call(_target, _method, source, dest);
+    /// <inheritdoc />
+    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+        => [];
 }

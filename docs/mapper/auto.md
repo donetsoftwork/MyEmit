@@ -436,7 +436,7 @@ CustomerDTO _autoMap(Customer source, CustomerDTO destination, ResolutionContext
 
 ### 3.2 以下是PocoEmit.Mapper生成的代码
 ```csharp
-CustomerDTO _pocoConvert(Customer source)
+(Func<Customer, CustomerDTO>)((Customer source) => //CustomerDTO
 {
     CustomerDTO dest = null;
     if ((source != (Customer)null))
@@ -456,17 +456,20 @@ CustomerDTO _pocoConvert(Customer source)
         member1 = source.HomeAddress;
         if ((member1 != null))
         {
-            // { The block result will be assigned to `dest.HomeAddress`
-            AddressDTO dest_1 = null;
-            if ((member1 != (Address)null))
+            dest.HomeAddress = ((Func<Address, AddressDTO>)((Address source_1) => //AddressDTO
             {
-                dest_1 = new AddressDTO();
-                dest_1.Id = member1.Id;
-                dest_1.City = member1.City;
-                dest_1.Country = member1.Country;
-            }
-            dest.HomeAddress = dest_1;
-            // } end of block assignment;
+                AddressDTO dest_1 = null;
+                if ((source_1 != (Address)null))
+                {
+                    dest_1 = new AddressDTO();
+                    dest_1.Id = source_1.Id;
+                    dest_1.City = source_1.City;
+                    dest_1.Country = source_1.Country;
+                }
+                return dest_1;
+            }))
+            .Invoke(
+                member1);
         }
         member2 = source.Addresses;
         if ((member2 != null))
@@ -477,23 +480,27 @@ CustomerDTO _pocoConvert(Customer source)
             int index = default;
             Address sourceItem = null;
             count = member2.Length;
+            index = 0;
             dest_2 = new AddressDTO[count];
             while (true)
             {
                 if ((index < count))
                 {
                     sourceItem = member2[index];
-                    // { The block result will be assigned to `dest_2[index]`
-                    AddressDTO dest_3 = null;
-                    if ((sourceItem != (Address)null))
+                    dest_2[index] = ((Func<Address, AddressDTO>)((Address source_2) => //AddressDTO
                     {
-                        dest_3 = new AddressDTO();
-                        dest_3.Id = sourceItem.Id;
-                        dest_3.City = sourceItem.City;
-                        dest_3.Country = sourceItem.Country;
-                    }
-                    dest_2[index] = dest_3;
-                    // } end of block assignment
+                        AddressDTO dest_3 = null;
+                        if ((source_2 != (Address)null))
+                        {
+                            dest_3 = new AddressDTO();
+                            dest_3.Id = source_2.Id;
+                            dest_3.City = source_2.City;
+                            dest_3.Country = source_2.Country;
+                        }
+                        return dest_3;
+                    }))
+                    .Invoke(
+                        sourceItem);
                     index++;
                 }
                 else
@@ -511,9 +518,9 @@ CustomerDTO _pocoConvert(Customer source)
             // { The block result will be assigned to `dest.WorkAddresses`
             List<AddressDTO> dest_4 = null;
             dest_4 = new List<AddressDTO>(member3.Count);
-            dest_4;
             int index_1 = default;
             int len = default;
+            index_1 = 0;
             len = member3.Count;
             while (true)
             {
@@ -522,17 +529,20 @@ CustomerDTO _pocoConvert(Customer source)
                     Address sourceItem_1 = null;
                     AddressDTO destItem = null;
                     sourceItem_1 = member3[index_1];
-                    // { The block result will be assigned to `destItem`
+                    destItem = ((Func<Address, AddressDTO>)((Address source_3) => //AddressDTO
+                    {
                         AddressDTO dest_5 = null;
-                        if ((sourceItem_1 != (Address)null))
+                        if ((source_3 != (Address)null))
                         {
                             dest_5 = new AddressDTO();
-                            dest_5.Id = sourceItem_1.Id;
-                            dest_5.City = sourceItem_1.City;
-                            dest_5.Country = sourceItem_1.Country;
+                            dest_5.Id = source_3.Id;
+                            dest_5.City = source_3.City;
+                            dest_5.Country = source_3.Country;
                         }
-                        destItem = dest_5;
-                        // } end of block assignment;
+                        return dest_5;
+                    }))
+                    .Invoke(
+                        sourceItem_1);
                     dest_4.Add(destItem);
                     index_1++;
                 }
@@ -545,12 +555,12 @@ CustomerDTO _pocoConvert(Customer source)
             dest.WorkAddresses = dest_4;
             // } end of block assignment;
         }
-        CustomerConvertBench.ConvertAddressCity(
+        default(CustomerTests.c)/*NOTE: Provide the non-default value for the Constant of compiler-generated type!*/.<ConfigurePocoMapper>b__4_0(
             source,
             dest);
     }
     return dest;
-}
+});
 ```
 
 ### 3.3 简单对比如下

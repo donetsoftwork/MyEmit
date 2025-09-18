@@ -5,6 +5,7 @@ using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
 using System;
+using System.Linq.Expressions;
 
 namespace PocoEmit;
 
@@ -20,7 +21,7 @@ public interface IMapper
     , IConfigure<PairTypeKey, IEmitActivator>
     , IConfigure<PairTypeKey, Delegate>
     , IConfigure<Type, bool>
-    , IConfigure<Type, IEmitBuilder>
+    , IConfigure<Type, IBuilder<Expression>>    
 {
     /// <summary>
     /// 获取成员匹配

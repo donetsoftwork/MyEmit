@@ -1,3 +1,4 @@
+using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,7 +11,8 @@ namespace PocoEmit.Converters;
 /// <param name="target"></param>
 /// <param name="method"></param>
 /// <param name="sourceType"></param>
-public class MethodConverter(Expression target, MethodInfo method, Type sourceType)
+/// <param name="destType"></param>
+public class MethodConverter(Expression target, MethodInfo method, Type sourceType, Type destType)
     : IEmitConverter
 {
     /// <summary>
@@ -19,7 +21,7 @@ public class MethodConverter(Expression target, MethodInfo method, Type sourceTy
     /// <param name="target"></param>
     /// <param name="method"></param>
     public MethodConverter(Expression target, MethodInfo method)
-        : this(target, method, method.GetParameters()[0].ParameterType)
+        : this(target, method, method.GetParameters()[0].ParameterType, method.ReturnType)
     {
     }
     #region 配置
@@ -42,11 +44,17 @@ public class MethodConverter(Expression target, MethodInfo method, Type sourceTy
     /// summary
     /// </summary>
     protected readonly Type _sourceType = sourceType;
+    private readonly PairTypeKey _key = new(sourceType, destType);    
     /// <summary>
     /// 映射源类型
     /// </summary>
     public Type SourceType
         => _sourceType;
+    /// <summary>
+    /// 转化类型
+    /// </summary>
+    public PairTypeKey Key
+        => _key;
     /// <inheritdoc />
     public virtual bool Compiled
         => false;

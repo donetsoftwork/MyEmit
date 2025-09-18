@@ -7,15 +7,15 @@ namespace PocoEmit.Members;
 /// <summary>
 /// 表达式适配成员读取器
 /// </summary>
-public class BuilderReaderAdapter(IEmitBuilder builder)
+public class BuilderReaderAdapter(IBuilder<Expression> builder)
     : IEmitReader
 {
     #region 配置
-    private readonly IEmitBuilder _builder = builder;
+    private readonly IBuilder<Expression> _builder = builder;
     /// <summary>
     /// 表达式构建器
     /// </summary>
-    public IEmitBuilder Builder
+    public IBuilder<Expression> Builder
         => _builder;
 
     bool ICompileInfo.Compiled

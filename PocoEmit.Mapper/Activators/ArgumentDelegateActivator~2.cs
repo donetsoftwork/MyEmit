@@ -1,5 +1,6 @@
 using PocoEmit.Builders;
-using PocoEmit.Converters;
+using PocoEmit.Complexes;
+using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
 
@@ -10,12 +11,16 @@ namespace PocoEmit.Activators;
 /// </summary>
 /// <typeparam name="TSource"></typeparam>
 /// <typeparam name="TDest"></typeparam>
+/// <param name="poco"></param>
 /// <param name="activator"></param>
-public class DelegateActivator<TSource, TDest>(Expression<Func<TSource, TDest>> activator)
-    : FuncCallBuilder<TSource, TDest>(activator)
+public class DelegateActivator<TSource, TDest>(IPocoOptions poco, Expression<Func<TSource, TDest>> activator)
+    : ArgumentFuncCallBuilder(poco, new(typeof(TSource), typeof(TDest)), activator)
     , IEmitActivator
 {
     /// <inheritdoc />
-    public Expression New(ComplexContext cacher, Expression argument)
+    Type IEmitActivator.ReturnType
+        => typeof(TDest);
+    /// <inheritdoc />
+    public Expression New(IBuildContext context, Expression argument)
          => Call(argument);
 }

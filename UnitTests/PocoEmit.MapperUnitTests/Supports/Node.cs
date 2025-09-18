@@ -8,13 +8,10 @@ public class Node
 
     public int SortOrder { get; set; }
 }
-
 public class NodeId(int value)
 {
     public int Value { get;  } = value;
 }
-
-
 public class NodeDTO
 {
     public NodeDTO Parent { get; set; }

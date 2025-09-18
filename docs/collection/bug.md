@@ -4,7 +4,7 @@
 为此我整理了以下case给大家分享
 
 ## 1. 可行性调研
->* 用表达式把一个对象转化为另一个对象
+>* 用表达式把对象转化为另一个类型的对象
 >* 当一个类含有多个同类型属性时,把相同类型转化提取为公共方法
 >* LambdaExpression可以用来定义复用的公共方法
 >* 一切看起来都很完美,但是居然翻车了！！！
@@ -21,6 +21,10 @@ public class Customer
     public Address[] Addresses { get; set; }
     public List<Address> AddressList { get; set; }
 }
+public class Address
+{
+    public string City { get; set; }
+}
 ~~~
 
 ~~~csharp
@@ -31,12 +35,16 @@ public class CustomerDTO
     public AddressDTO[] Addresses { get; set; }
     public List<AddressDTO> AddressList { get; set; }
 }
+public class AddressDTO
+{
+    public string City { get; set; }
+}
 ~~~
 
 ### 2.2 定义公共方法把Address转化为AddressDTO
 ~~~csharp
 /// <summary>
-/// 定义转化 Address -> AddressDTO
+/// 转化 Address -> AddressDTO
 /// </summary>
 /// <returns></returns>
 public static Expression<Func<Address, AddressDTO>> CreateAddressDTO()
@@ -63,7 +71,7 @@ public static Expression<Func<Address, AddressDTO>> CreateAddressDTO()
 ### 2.3 调用公共方法
 ~~~csharp
 /// <summary>
-/// 定义转化委托 Customer -> CustomerDTO
+/// 转化 Customer -> CustomerDTO
 /// </summary>
 /// <returns></returns>
 public static Expression<Func<Customer, CustomerDTO>> CreateCustomerDTO()
@@ -74,7 +82,6 @@ public static Expression<Func<Customer, CustomerDTO>> CreateCustomerDTO()
     var customer = Expression.Parameter(customerType, "customer");
     // CustomerDTO dto;
     var dto = Expression.Parameter(dtoType, "dto");
-    // 可以复用的功能方法
     var addressDTOConvertFunc = CreateAddressDTO();
     var body = Expression.Block(
         [dto],
@@ -93,11 +100,117 @@ public static Expression<Func<Customer, CustomerDTO>> CreateCustomerDTO()
     );
     return Expression.Lambda<Func<Customer, CustomerDTO>>(body, customer);
 }
+/// <summary>
+/// 转化 customer.Address -> dto.Address
+/// </summary>
+/// <param name="addressDTOConvertFunc">共用方法</param>
+/// <param name="customer"></param>
+/// <param name="dto"></param>
+/// <returns></returns>
+public static Expression ConvertAddress(Expression<Func<Address, AddressDTO>> addressDTOConvertFunc, ParameterExpression customer, ParameterExpression dto)
+{
+    // dto.Address = addressDTOConvertFunc.Invoke(customer.Address);
+    return Expression.Assign(Expression.Property(dto, "Address"), Expression.Invoke(addressDTOConvertFunc, Expression.Property(customer, "Address")));        
+}
+/// <summary>
+/// 转化 customer.Address -> dto.Address
+/// </summary>
+/// <param name="addressDTOConvertFunc">共用方法</param>
+/// <param name="customer"></param>
+/// <param name="dto"></param>
+/// <returns></returns>
+public static BlockExpression ConvertAddresses(Expression<Func<Address, AddressDTO>> addressDTOConvertFunc, ParameterExpression customer, ParameterExpression dto)
+{
+    // Address[] addresses;
+    var addresses = Expression.Parameter(typeof(Address[]), "addresses");
+    // int length;
+    var length = Expression.Variable(typeof(int), "length");
+    // AddressDTO[] dtoList;
+    var dtoList = Expression.Parameter(typeof(AddressDTO[]), "dtoList");
+    //// Address item;
+    //var item = Expression.Parameter(typeof(Address), "item");
+    var forLabel = Expression.Label("forLabel");
+    // int i;
+    var i = Expression.Variable(typeof(int), "i");
+    return Expression.Block(
+        [addresses, dtoList, length, i],
+        // addresses = customer.Addresses;
+        Expression.Assign(addresses, Expression.Property(customer, "Addresses")),
+        // length = addresses.Length;
+        Expression.Assign(length, Expression.ArrayLength(addresses)),
+        // dtoList = new AddressDTO[length];
+        Expression.Assign(dtoList, Expression.NewArrayBounds(typeof(AddressDTO), length)),
+        // dto.Addresses = dtoList;
+        Expression.Assign(Expression.Property(dto, "Addresses"), dtoList),
+
+        Expression.Loop(
+            Expression.IfThenElse(
+                // i < length
+                Expression.LessThan(i, length),                    
+                Expression.Block(
+                    // dtoList[i] = addressDTOConvertFunc.Invoke(addressList[i]);
+                    Expression.Assign(Expression.ArrayAccess(dtoList, i), Expression.Invoke(addressDTOConvertFunc, Expression.ArrayAccess(addresses, i))),
+                    // i++;
+                    Expression.PostIncrementAssign(i)
+                ),
+                Expression.Break(forLabel)
+            ),
+            forLabel)
+    );
+}
+/// <summary>
+/// 转化 customer.AddressList -> dto.AddressList
+/// </summary>
+/// <param name="addressDTOConvertFunc">共用方法</param>
+/// <param name="customer"></param>
+/// <param name="dto"></param>
+/// <returns></returns>
+public static BlockExpression ConvertAddressList(Expression<Func<Address, AddressDTO>> addressDTOConvertFunc, ParameterExpression customer, ParameterExpression dto)
+{
+    // List<Address> addressList;
+    var addressList = Expression.Parameter(typeof(List<Address>), "addressList");
+
+    // List<AddressDTO> dtoList;
+    var dtoList = Expression.Parameter(typeof(List<AddressDTO>), "dtoList");
+    // int count;
+    var count = Expression.Variable(typeof(int), "count");
+    //// Address item;
+    //var item = Expression.Parameter(typeof(Address), "item");
+    var forLabel = Expression.Label("forLabel");
+    var i = Expression.Variable(typeof(int), "i");
+    return Expression.Block(
+        [addressList, dtoList, count, i],
+        // addressList = customer.AddressList;
+        Expression.Assign(addressList, Expression.Property(customer, "AddressList")),
+        // dtoList = new List<AddressDTO>();
+        Expression.Assign(dtoList, Expression.New(typeof(List<AddressDTO>))),
+        // dto.AddressList = dtoList;
+        Expression.Assign(Expression.Property(dto, "AddressList"), dtoList),
+        // addressCount = addressList.Count;
+        Expression.Assign(count, Expression.Property(addressList, "Count")),
+        Expression.Loop(
+            Expression.IfThenElse(
+                // i < addressCount
+                Expression.LessThan(i, count),
+                // dtoList.Add(addressDTOConvertFunc.Invoke(addressList[i++]));
+                Expression.Call(
+                    dtoList, 
+                    typeof(List<AddressDTO>).GetMethod("Add")!, 
+                    Expression.Invoke(addressDTOConvertFunc, Expression.MakeIndex(addressList, typeof(List<Address>).GetProperty("Item"), [Expression.PostIncrementAssign(i)]))),
+                Expression.Break(forLabel)
+            ),
+            forLabel)
+    );
+}
 ~~~
 
-以上看上去是不是很完美！！！
-但是马上就要翻车了...
-
+#### 2.3.1 代码解读
+>* CreateCustomerDTO转化Customer为CustomerDTO
+>* ConvertAddress转化Customer.Address为CustomerDTO.Address调用了CreateAddressDTO
+>* ConvertAddresses转化Customer.Addresses为CustomerDTO.Addresses调用了CreateAddressDTO
+>* ConvertAddressList转化Customer.AddressList为CustomerDTO.AddressList调用了CreateAddressDTO
+>* 以上看上去是不是很完美！！！
+>* 但是马上就要翻车了...
 
 ### 2.4 测试一下
 ~~~csharp
@@ -119,7 +232,47 @@ var dto = func(_customer);
 >* 如果说LambdaExpression不能复用,为什么Address和Addresses共用LambdaExpression能成功
 >* 而且如果删掉Addresses属性AddressList就能转化成功
 
-### 2.5 换成FastExpressionCompiler再测试一下
+
+### 2.5 交换ConvertAddresses和ConvertAddressList前后顺序再测试
+~~~csharp
+public static Expression<Func<Customer, CustomerDTO>> CreateCustomerDTO()
+{
+    var customerType = typeof(Customer);
+    var dtoType = typeof(CustomerDTO);
+    // Customer customer;
+    var customer = Expression.Parameter(customerType, "customer");
+    // CustomerDTO dto;
+    var dto = Expression.Parameter(dtoType, "dto");
+    var addressDTOConvertFunc = CreateAddressDTO();
+    var body = Expression.Block(
+        [dto],
+        // dto = new AddressDTO();
+        Expression.Assign(dto, Expression.New(dtoType)),
+        // dto.Name = customer.Name;
+        Expression.Assign(Expression.Property(dto, "Name"), Expression.Property(customer, "Name")),
+        // dto.Address = addressDTOConvertFunc.Invoke(customer.Address);
+        ConvertAddress(addressDTOConvertFunc, customer, dto),
+        // dto.AddressList
+        ConvertAddressList(addressDTOConvertFunc, customer, dto),
+        // dto.Addresses
+        ConvertAddresses(addressDTOConvertFunc, customer, dto),
+        // return dto
+        dto
+    );
+    return Expression.Lambda<Func<Customer, CustomerDTO>>(body, customer);
+}
+~~~
+
+#### 2.5.1 得到以下结果
+~~~json
+{"Name":"jxj","Address":{"City":"gz"},"Addresses":[null],"AddressList":[{"City":"bj"}]}
+~~~
+
+>* 无论列表还是数组,谁在前成功！！！
+>* 是不是有点无语了
+
+
+### 2.6 换成FastExpressionCompiler再测试一下
 ~~~csharp
 var expression = CreateCustomerDTO();
 var func = FastExpressionCompiler.ExpressionCompiler.CompileFast<Func<Customer, CustomerDTO>>(expression);
@@ -133,12 +286,18 @@ Customer _customer = new()
 var dto = func(_customer);
 // {"Name":"jxj","Address":{"City":"gz"},"Addresses":[{"City":"sh"}],"AddressList":[{"City":"bj"}]}
 ~~~
-
 换成FastExpressionCompiler全部成功,这是不是实锤是微软的bug
 
 
 ## 3. 附两个note对比示例
->* [expression_fast.dib](https://github.com/donetsoftwork/MyEmit/tree/main/Notes/expression_fast.dib)是微软转化失败示例
->* [expression_fast.dib](https://github.com/donetsoftwork/MyEmit/tree/main/Notes/expression_fast.dib)是FastExpressionCompiler转化成功示例
+>* [expression_sys.dib](https://gitee.com/donetsoftwork/MyEmit/tree/main/Notes/expression_sys.dib)是微软转化失败示例
+>* [expression_fast.dib](https://gitee.com/donetsoftwork/MyEmit/tree/main/Notes/expression_fast.dib)是FastExpressionCompiler转化成功示例
 >* 大家可以下载本地执行
+>* 用vscode打开就能执行(需要Jupyter Notebook插件)
 
+现在很纠结是不是要换方案了,还是要依赖第三方FastExpressionCompiler ...
+
+源码托管地址: https://github.com/donetsoftwork/MyEmit ，欢迎大家直接查看源码。
+gitee同步更新:https://gitee.com/donetsoftwork/MyEmit
+
+如果大家喜欢请动动您发财的小手手帮忙点一下Star。

@@ -73,7 +73,7 @@ public static partial class PocoCollectionServices
         where TCollection : class
     {
         return CreateCollectionCopier((IMapperOptions)mapper, typeof(TInstance), typeof(TCollection))
-            .CompileAction<TInstance, TCollection>();
+            .CompileAction<TInstance, TCollection>(mapper);
     }
     #endregion
     #region BuildCollectionCopier
@@ -89,7 +89,7 @@ public static partial class PocoCollectionServices
     {
         var collectionType = typeof(TCollection);
         return CreateCollectionCopier((IMapperOptions)mapper, typeof(TInstance), collectionType)
-            ?.Build<TInstance, TCollection>();
+            ?.Build<TInstance, TCollection>(mapper);
     }
     #endregion
     #region CreateCollectionCopier

@@ -30,16 +30,4 @@ public interface IEnumBundle
     /// <param name="name"></param>
     /// <returns></returns>
     IEnumField GetFieldByName(string name);
-    ///// <summary>
-    ///// 映射枚举字段
-    ///// </summary>
-    ///// <param name="destBundle"></param>
-    ///// <returns></returns>
-    //IEnumerable<EnumFieldPair> Map(EnumBundle destBundle);
-    ///// <summary>
-    ///// 映射位域枚举字段
-    ///// </summary>
-    ///// <param name="destBundle"></param>
-    ///// <returns></returns>
-    //IEnumerable<EnumFieldPair> Map(FlagEnumBundle destBundle);
 }

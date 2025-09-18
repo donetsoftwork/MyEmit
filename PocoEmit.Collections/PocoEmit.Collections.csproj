@@ -6,16 +6,13 @@
     <PackageId>PocoEmit.Collections</PackageId>
     <Description>Emit操作集合</Description>
     <PackageTags>Emit;Poco;Mapper;Map</PackageTags>
-    <Version>$(VersionBase).1-alpha</Version>
+    <Version>$(VersionBase).0-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RootNamespace>PocoEmit</RootNamespace>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.6'">
     <PackageReference Include="System.Reflection" Version="4.3.0" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Collections\ElementTypeHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="readme.md" Pack="true" PackagePath="\" />

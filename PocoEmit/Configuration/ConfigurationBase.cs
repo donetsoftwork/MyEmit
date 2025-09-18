@@ -2,9 +2,11 @@ using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Converters;
 using PocoEmit.Reflection;
+using PocoEmit.Visitors;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace PocoEmit.Configuration;
@@ -30,6 +32,7 @@ public abstract partial class ConfigurationBase
         _convertBuilder = new ConvertBuilder(this);
         _converterFactory = new(this);
         _memberCacher = new TypeMemberCacher(this);
+        _lambdaInvoke = options.LambdaInvoke;
     }
     #region 配置
     /// <summary>
@@ -56,6 +59,7 @@ public abstract partial class ConfigurationBase
     /// 写成员缓存
     /// </summary>
     private WriteActionCacher _writerActionCacher = null;
+    private bool _lambdaInvoke = true;
     /// <inheritdoc />
     public IEnumerable<IEmitConverter> Converters
         => _converters.Values;
@@ -78,6 +82,11 @@ public abstract partial class ConfigurationBase
     /// </summary>
     public TypeMemberCacher MemberCacher
         => _memberCacher;
+    /// <summary>
+    /// 是Invoke,还是内嵌表达式
+    /// </summary>
+    public bool LambdaInvoke
+        => _lambdaInvoke;
     #endregion
     #region 功能
     /// <inheritdoc />
@@ -89,5 +98,22 @@ public abstract partial class ConfigurationBase
     /// <inheritdoc />
     public IEmitConverter GetEmitConverter(PairTypeKey key)
         => _converterFactory.Get(key);
+    /// <summary>
+    /// 调用
+    /// </summary>
+    /// <param name="lambda"></param>
+    /// <param name="arguments"></param>
+    /// <returns></returns>
+    public Expression Call(LambdaExpression lambda, params Expression[] arguments)
+    {
+        if (_lambdaInvoke) 
+            return Expression.Invoke(lambda, arguments);
+        var body = lambda.Body;
+        // 通过参数替换调用
+        var replaceVisitor = ReplaceVisitor.Create(true, lambda.Parameters, arguments);
+        if (replaceVisitor is null)
+            return body;
+        return replaceVisitor.Visit(body);
+    }
     #endregion
 }

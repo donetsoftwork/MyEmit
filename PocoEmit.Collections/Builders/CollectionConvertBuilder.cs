@@ -1,6 +1,9 @@
 using PocoEmit.Collections.Bundles;
+using PocoEmit.Collections.Converters;
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
+using PocoEmit.Dictionaries;
 using System;
 using System.Collections.Generic;
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
@@ -59,22 +62,27 @@ public class CollectionConvertBuilder(IMapperOptions options)
         {
             if(sourceIsPrimitive)
                 return null;
-            return ToDictionary(sourceType, isInterface, destType, destDictionaryBundle);
+            var dictionary = ToDictionary(sourceType, isInterface, destType, destDictionaryBundle);
+            return new WrapConverter(_options, sourceType, destType, dictionary);
         }
         if (isInterface)
             return ToInterface(container, sourceType, destIsPrimitive, destType);
         else if (container.CollectionCacher.Validate(destType, out var destCollectionBundle))
-            return ToCollection(sourceType, sourceIsPrimitive, destType, destCollectionBundle);
+        {
+            var collection = ToCollection(sourceType, sourceIsPrimitive, destType, destCollectionBundle);
+            return new WrapConverter(_options, sourceType, destType, collection);
+        }
 
         if (!destIsPrimitive && TryBuildByConstructor(sourceType, destType, ref converter))
             return converter;
         if (destIsPrimitive || isInterface)
             return null;
         var key = new PairTypeKey(sourceType, destType);
+
         var activator = _options.GetEmitActivator(key) ?? CreateDefaultActivator(sourceType, destType);
         if (activator is null)
             return null;
-        return new ComplexTypeConverter(sourceType, activator, _options.GetEmitCopier(key));
+        return new ComplexTypeConverter(_options, key, activator, _options.GetEmitCopier(key));
     }
     /// <summary>
     /// 转化为集合接口
@@ -84,7 +92,7 @@ public class CollectionConvertBuilder(IMapperOptions options)
     /// <param name="sourceIsPrimitive"></param>
     /// <param name="destInterface"></param>
     /// <returns></returns>
-    private IEmitConverter ToInterface(CollectionContainer container, Type sourceType, bool sourceIsPrimitive, Type destInterface)
+    private WrapConverter ToInterface(CollectionContainer container, Type sourceType, bool sourceIsPrimitive, Type destInterface)
     {
         var genericImplType = ConvertToCollection.CheckGenericImplType(destInterface);
         if (genericImplType is not null)
@@ -93,7 +101,8 @@ public class CollectionConvertBuilder(IMapperOptions options)
             if (destEnumerableBundle is null)
                 return null;
             var collectionType = genericImplType.MakeGenericType(destEnumerableBundle.ElementType);
-            return ToCollection(sourceType, sourceIsPrimitive, collectionType, container.CollectionCacher.Get(collectionType));
+            var converter = ToCollection(sourceType, sourceIsPrimitive, collectionType, container.CollectionCacher.Get(collectionType));
+            return new WrapConverter(_options, sourceType, destInterface, converter);
         }
         return null;
     }
@@ -104,8 +113,11 @@ public class CollectionConvertBuilder(IMapperOptions options)
     /// <param name="isPrimitive"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    private IEmitConverter ToArray(Type sourceType, bool isPrimitive, Type destType)
-        => _arrayConverter.ToArray(sourceType, isPrimitive, destType);
+    private WrapConverter ToArray(Type sourceType, bool isPrimitive, Type destType)
+    {
+        var array = _arrayConverter.ToArray(sourceType, isPrimitive, destType);
+        return new(_options, sourceType, destType, array);
+    }
     /// <summary>
     /// 转化为集合
     /// </summary>
@@ -114,7 +126,7 @@ public class CollectionConvertBuilder(IMapperOptions options)
     /// <param name="destType"></param>
     /// <param name="destBundle"></param>
     /// <returns></returns>
-    private IEmitConverter ToCollection(Type sourceType, bool sourceIsPrimitive, Type destType, CollectionBundle destBundle)
+    private IComplexIncludeConverter ToCollection(Type sourceType, bool sourceIsPrimitive, Type destType, CollectionBundle destBundle)
     {
         if(sourceIsPrimitive)
             return _collectionConverter.ElementToCollection(sourceType, destType, destBundle);
@@ -128,10 +140,10 @@ public class CollectionConvertBuilder(IMapperOptions options)
     /// <param name="destType"></param>
     /// <param name="destBundle"></param>
     /// <returns></returns>
-    private IEmitConverter ToDictionary(Type sourceType, bool isInterface, Type destType, DictionaryBundle destBundle)
+    private DictionaryConverter ToDictionary(Type sourceType, bool isInterface, Type destType, DictionaryBundle destBundle)
     {
         if (isInterface)
             destType = typeof(Dictionary<,>).MakeGenericType(destBundle.KeyType, destBundle.ValueType);
-        return _dictionaryConverter.ToDictionary(sourceType, destType, destBundle);
+        return _dictionaryConverter.ToDictionary(sourceType, destType, destBundle);        
     }
 }

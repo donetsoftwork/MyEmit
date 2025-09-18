@@ -90,11 +90,31 @@ public class MapperConvertTests : MapperConvertTestBase
     }
 
     [Fact]
-    public void Convert_DTO3()
+    public void Convert_NodeDTO()
     {
         Node node1 = new() { Id = new(1), Name = "node1", SortOrder = 1 };
         Node node2 = new() { Id = new(2), Name = "node2", SortOrder = 2, Parent = node1 };
         var result = _mapper.Convert<Node, NodeDTO>(node2);
         Assert.NotNull(result);
+        Assert.Equal(node2.Id.Value, result.Id);
+        var parent = result.Parent;
+        Assert.NotNull(parent);
+        Assert.Equal(node1.Id.Value, parent.Id);
+    }
+    [Fact]
+    public void Convert_FastNodeDTO()
+    {
+        Node node1 = new() { Id = new(1), Name = "node1", SortOrder = 1 };
+        Node node2 = new() { Id = new(2), Name = "node2", SortOrder = 2, Parent = node1 };
+        var expression = _mapper.BuildConverter<Node, NodeDTO>();
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
+        var func = FastExpressionCompiler.ExpressionCompiler.CompileFast(expression);
+        var result = func(node2);
+        Assert.NotNull(result);
+        Assert.Equal(node2.Id.Value, result.Id);
+        var parent = result.Parent;
+        Assert.NotNull(parent);
+        Assert.Equal(node1.Id.Value, parent.Id);
     }
 }

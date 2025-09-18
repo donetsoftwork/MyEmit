@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
@@ -12,14 +13,14 @@ namespace PocoEmit.Converters;
 /// <param name="originalSourceType"></param>
 /// <param name="destType"></param>
 public sealed class CompatibleConverter(bool isPrimitiveSource, IEmitConverter original, Type originalSourceType, Type destType)
-    : EmitConverter(isPrimitiveSource, destType), IEmitConverter
+    : EmitConverter(isPrimitiveSource, new(originalSourceType, destType))
+    , IEmitConverter
+    , IWrapper<IEmitConverter>
 {
     #region 配置
     private readonly IEmitConverter _original = original;
     private readonly Type _originalSourceType = originalSourceType;
-    /// <summary>
-    /// 源转换器
-    /// </summary>
+    /// <inheritdoc />
     public IEmitConverter Original
         => _original;
     /// <summary>

@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
@@ -10,9 +11,10 @@ namespace PocoEmit.Members;
 /// 转化实体类型读成员
 /// </summary>
 /// <param name="converter"></param>
-/// <param name="inner"></param>
-public class ConvertInstanceReader(IEmitConverter converter, IEmitMemberReader inner)
+/// <param name="original"></param>
+public class ConvertInstanceReader(IEmitConverter converter, IEmitMemberReader original)
     : IEmitMemberReader
+    , IWrapper<IEmitMemberReader>
 {
     #region 配置
     private readonly IEmitConverter _converter = converter;
@@ -21,29 +23,27 @@ public class ConvertInstanceReader(IEmitConverter converter, IEmitMemberReader i
     /// </summary>
     public IEmitConverter Converter
         => _converter;
-    private readonly IEmitMemberReader _inner = inner;
-    /// <summary>
-    /// 内部成员
-    /// </summary>
-    public IEmitMemberReader Inner
-        => _inner;
+    private readonly IEmitMemberReader _original = original;
+    /// <inheritdoc />
+    public IEmitMemberReader Original
+        => _original;
     /// <inheritdoc />
     public Type InstanceType
-        => _inner.InstanceType;
+        => _original.InstanceType;
     /// <inheritdoc />
     public string Name 
-        => _inner.Name;
+        => _original.Name;
     /// <inheritdoc />
     public Type ValueType 
-        => _inner.ValueType;
+        => _original.ValueType;
     /// <inheritdoc />
     MemberInfo IEmitMemberReader.Info
-        => _inner.Info;
+        => _original.Info;
     /// <inheritdoc />
     bool ICompileInfo.Compiled
         => false;
     #endregion
     /// <inheritdoc />
     public Expression Read(Expression instance)
-        => _inner.Read(_converter.Convert(instance));
+        => _original.Read(_converter.Convert(instance));
 }

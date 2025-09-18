@@ -8,18 +8,18 @@ namespace PocoEmit.Visitors;
 /// <param name="inner"></param>
 /// <param name="old"></param>
 /// <param name="new"></param>
-internal class ComplexReplaceVisitor(ReplaceVisitor inner, Expression old, Expression @new)
+public class ComplexReplaceVisitor(CheckVisitor inner, ParameterExpression old, Expression @new)
     : ReplaceVisitor(old, @new)
 {
     #region 配置
-    private readonly ReplaceVisitor _inner = inner;
+    private readonly CheckVisitor _inner = inner;
     /// <summary>
     /// 内部替换访问器
     /// </summary>
-    public ReplaceVisitor Inner 
+    public CheckVisitor Inner 
         => _inner;
     #endregion
     /// <inheritdoc />
-    protected override Expression VisitCore(Expression node)
-        => _inner.Visit(node);
+    public override Expression Visit(Expression node)
+        => _inner.Visit(base.Visit(node));
 }

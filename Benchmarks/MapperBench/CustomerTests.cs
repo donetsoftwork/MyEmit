@@ -1,6 +1,8 @@
+using FastExpressionCompiler;
 using MapperBench.Supports;
 using PocoEmit;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace MapperBench;
 
@@ -27,6 +29,8 @@ public class CustomerTests
     {
         Expression<Func<Customer, CustomerDTO>> expression = _poco.BuildConverter<Customer, CustomerDTO>();
         var func = expression.Compile();
+        var methodInfo = func.GetMethodInfo();
+        var debugInfo = func.TryGetDebugInfo();
         return func(CustomerConvertBench.Customer);
     }
 

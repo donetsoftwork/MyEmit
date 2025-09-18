@@ -29,7 +29,7 @@ public static partial class PocoEmitServices
             return null;
         if (emitConverter.Compiled && emitConverter is IPocoConverter<TSource, TDest> converter)
             return converter;
-        var compiledConverter = Compile<TSource, TDest>(emitConverter);
+        var compiledConverter = CompileConverter<TSource, TDest>((IPocoOptions)poco, key, emitConverter);
         poco.Set(key, compiledConverter);
         return compiledConverter;
     }
@@ -43,14 +43,21 @@ public static partial class PocoEmitServices
     /// <param name="destType"></param>
     /// <returns></returns>
     public static object GetObjectConverter(this IPoco poco, Type sourceType, Type destType)
+        => GetObjectConverter(poco, new PairTypeKey(sourceType, destType));
+    /// <summary>
+    /// 获取弱类型转化(IObjectConverter)
+    /// </summary>
+    /// <param name="poco"></param>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public static object GetObjectConverter(this IPoco poco, PairTypeKey key)
     {
-        var key = new PairTypeKey(sourceType, destType);
         var converter = poco.GetEmitConverter(key);
         if (converter is null)
             return null;
         if (converter.Compiled)
             return converter;
-        var compiled = Inner.Compile(sourceType, destType, converter) as IEmitConverter;
+        var compiled = Inner.Compile((IPocoOptions)poco, key, converter) as IEmitConverter;
         if (compiled != null)
             poco.Set(key, compiled);
         return compiled;
@@ -73,10 +80,9 @@ public static partial class PocoEmitServices
             return null;
         if (emitConverter.Compiled && emitConverter is ICompiledConverter<TSource, TDest> compiled)
             return compiled.ConvertFunc;
-        var convertFunc = emitConverter.CompileFunc<TSource, TDest>();
-        var compiledConverter = new CompiledConverter<TSource, TDest>(emitConverter, convertFunc);
-        poco.Set(key, compiledConverter);
-        return convertFunc;
+        compiled = CompileConverter<TSource, TDest>((IPocoOptions)poco, key, emitConverter);
+        poco.Set(key, compiled);
+        return compiled.ConvertFunc;
     }
     #endregion
     #region Convert
@@ -138,7 +144,7 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     public static Expression<Func<TSource, TDest>> Build<TSource, TDest>(this IEmitConverter emit)
     {
-        if(emit is IEmitBuilder builder)
+        if(emit is IBuilder<LambdaExpression> builder)
             return builder.Build() as Expression<Func<TSource, TDest>>;
         var source = Expression.Parameter(typeof(TSource), "source");
         var body = emit.Convert(source);
@@ -152,39 +158,44 @@ public static partial class PocoEmitServices
     /// <param name="converter"></param>
     /// <returns></returns>
     public static Func<TSource, TDest> CompileFunc<TSource, TDest>(this IEmitConverter converter)
-        => Compiler._instance.CompileFunc(converter.Build<TSource, TDest>());
+        => Compiler._instance.CompileDelegate(converter.Build<TSource, TDest>());
     /// <summary>
     /// 编译
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
+    /// <param name="poco"></param>
+    /// <param name="key"></param>
     /// <param name="emitConverter"></param>
     /// <returns></returns>
-    internal static CompiledConverter<TSource, TDest> Compile<TSource, TDest>(this IEmitConverter emitConverter)
-        => new(emitConverter, emitConverter.CompileFunc<TSource, TDest>());
+    internal static CompiledConverter<TSource, TDest> CompileConverter<TSource, TDest>(this IPocoOptions poco, PairTypeKey key, IEmitConverter emitConverter)
+    {
+        var lambda = emitConverter.Build<TSource, TDest>();
+        var func = Compiler._instance.CompileDelegate(lambda);
+        return new(poco, key, lambda, func);
+    }
     #endregion
     /// <summary>
     /// 内部延迟初始化
     /// </summary>
     class Inner
     {
-
         /// <summary>
         /// 反射Compile方法
         /// </summary>
-        private static readonly MethodInfo ConvertCompilerMethod = EmitHelper.GetActionMethodInfo<IEmitConverter>(poco => Compile<long, object>(poco))
+        private static readonly MethodInfo ConvertCompilerMethod = EmitHelper.GetActionMethodInfo<IPocoOptions>(poco => CompileConverter<long, object>(poco, null, null))
             .GetGenericMethodDefinition();
         /// <summary>
         /// 反射调用编译方法
         /// </summary>
-        /// <param name="sourceType"></param>
-        /// <param name="destType"></param>
-        /// <param name="emit"></param>
+        /// <param name="poco"></param>
+        /// <param name="key"></param>
+        /// <param name="emitConverter"></param>
         /// <returns></returns>
-        internal static object Compile(Type sourceType, Type destType, IEmitConverter emit)
+        internal static object Compile(IPocoOptions poco, PairTypeKey key, IEmitConverter emitConverter)
         {
-            return ConvertCompilerMethod.MakeGenericMethod(sourceType, destType)
-                .Invoke(null, [emit]);
+            return ConvertCompilerMethod.MakeGenericMethod(key.LeftType, key.RightType)
+                .Invoke(null, [poco, key, emitConverter]);
         }
     }
 }

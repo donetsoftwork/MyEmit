@@ -12,17 +12,19 @@ namespace PocoEmit.Members;
 /// 成员转集合
 /// </summary>
 /// <param name="options"></param>
+/// <param name="sourceType"></param>
 /// <param name="collectionType"></param>
 /// <param name="elementType"></param>
 /// <param name="saver"></param>
 /// <param name="bundle"></param>
 /// <param name="names"></param>
-public class MemberCollectionConverter(IMapperOptions options, Type collectionType, Type elementType, IEmitElementSaver saver, IDictionary<string, IEmitMemberReader> bundle, ICollection<string> names)
+public class MemberCollectionConverter(IMapperOptions options,Type sourceType, Type collectionType, Type elementType, IEmitElementSaver saver, IDictionary<string, IEmitMemberReader> bundle, ICollection<string> names)
     : EmitCollectionBase(collectionType, elementType)
     , IEmitConverter
 {
     #region 配置
     private readonly IMapperOptions _options = options;
+    private readonly PairTypeKey _key = new(sourceType, collectionType);
     private readonly IEmitElementSaver _saver = saver;
     private readonly IDictionary<string, IEmitMemberReader> _bundle = bundle;
     private readonly ICollection<string> _names = names;
@@ -31,6 +33,9 @@ public class MemberCollectionConverter(IMapperOptions options, Type collectionTy
     /// </summary>
     public IMapperOptions Options
         => _options;
+    /// <inheritdoc />
+    public PairTypeKey Key
+        => _key;
     /// <summary>
     /// 集合元素保存器
     /// </summary>
