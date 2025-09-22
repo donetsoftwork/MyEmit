@@ -19,6 +19,9 @@ public class FromListTests : CollectionTestBase
         User[] sourceItems = [new User { Id = 1, Name = "Jxj" }, new User { Id = 2, Name = "张三" }];
         var source = new UserArray { Name = "VIP", Users = sourceItems };
         var result = new UserDTOIProducerConsumerCollection();
+        var expression = _mapper.BuildCopier<UserArray, UserDTOIProducerConsumerCollection>();
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
         _mapper.Copy(source, result);
         Assert.Equal(source.Name, result.Name);
         var resultItems = result.Users;

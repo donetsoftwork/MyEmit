@@ -12,13 +12,20 @@ namespace PocoEmit.Converters;
 /// <typeparam name="TDest"></typeparam>
 /// <param name="options"></param>
 /// <param name="key"></param>
+/// <param name="original"></param>
 /// <param name="lambda"></param>
 /// <param name="convertFunc"></param>
-public sealed class CompiledConverter<TSource, TDest>(IPocoOptions options, PairTypeKey key, LambdaExpression lambda, Func<TSource, TDest> convertFunc)
+public sealed class CompiledConverter<TSource, TDest>(IPocoOptions options, PairTypeKey key, IEmitConverter original, LambdaExpression lambda, Func<TSource, TDest> convertFunc)
     : ArgumentFuncCallBuilder(options, key, lambda)
     , ICompiledConverter<TSource, TDest>
 {
     #region 配置
+    private readonly IEmitConverter _original = original;
+    /// <summary>
+    /// 原始转化器
+    /// </summary>
+    public IEmitConverter Original
+        => _original;
     private readonly Func<TSource, TDest> _convertFunc = convertFunc;
     /// <summary>
     /// 类型转化方法

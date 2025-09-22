@@ -130,7 +130,7 @@ public static class EmitHelper
         return null;
     }
     ///// <summary>
-    ///// 从表达式提取方法
+    ///// 从表达式提取成员
     ///// </summary>
     ///// <param name="expression"></param>
     ///// <returns></returns>

@@ -4,6 +4,7 @@ using PocoEmit.Collections.Counters;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
+using PocoEmit.Resolves;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -49,18 +50,27 @@ public class ArrayConverter(Type sourceType, Type sourceElementType, Type destTy
     /// <inheritdoc />
     public Expression Convert(IBuildContext context, Expression source)
     {
-        var dest = Expression.Variable(_collectionType, "dest");        
+        var dest = Expression.Variable(_collectionType, "dest");
         var count = Expression.Variable(typeof(int), "count");
         var index = Expression.Variable(typeof(int), "index");
         var sourceItem = Expression.Variable(_sourceElementType, "sourceItem");
-        return Expression.Block(
-            [count, dest, index, sourceItem],
+
+        var list = new List<Expression>() {
             Expression.Assign(count, Expression.ArrayLength(source)),
             Expression.Assign(index, Expression.Constant(0)),
-            Expression.Assign(dest, New(count)),
+            Expression.Assign(dest, New(count))
+        };
+        var cache = context.SetCache(_key, source, dest);
+        if (cache is not null)
+            list.Add(cache);
+        return Expression.Block(
+        [count, dest, index, sourceItem],
+        [
+            ..list,
             EmitHelper.For(index, count, i => CopyElement(context, source, dest, i, sourceItem, _elementConverter)),
             dest
-        );
+        ]
+    );
     }
     /// <summary>
     /// 复制子元素

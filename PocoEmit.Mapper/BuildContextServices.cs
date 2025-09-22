@@ -1,11 +1,8 @@
-using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using PocoEmit.Members;
 using PocoEmit.Resolves;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace PocoEmit;
@@ -21,12 +18,12 @@ public static partial class MapperServices
     /// <param name="context"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    public static IEnumerable<ParameterExpression> GetConvertContexts(this IBuildContext context, PairTypeKey key)
+    public static ParameterExpression GetConvertContextParameter(this IBuildContext context, PairTypeKey key)
     {
         var bundle = context.GetBundle(key);
         if (bundle is null || !bundle.IsCircle)
-            return [];
-        return context.ConvertContexts;
+            return null;
+        return context.ConvertContextParameter;
     }
     /// <summary>
     /// 读取检查复杂类型
@@ -56,11 +53,11 @@ public static partial class MapperServices
         var key = converter.Key;
         if (context.TryGetLambda(key, out LambdaExpression lambda))
             return ConvertByLambda(context, key, lambda, source);
-        var convertContexts = context.ConvertContexts;
-        if (convertContexts.Count == 1)
+        var convertContextParameter = context.ConvertContextParameter;
+        if (convertContextParameter is not null)
         {
             var bundle = context.GetBundle(key);
-            if(bundle is not null && bundle.IsCircle)
+            if(bundle is not null && bundle.HasCircle)
             {
                 var sourceType = key.LeftType;
                 var destType = key.RightType;
@@ -69,16 +66,15 @@ public static partial class MapperServices
                     return Expression.Condition(
                         Expression.Equal(source, Expression.Constant(null, sourceType)),
                         Expression.Default(destType),
-                        CallContextConvert(context, key, convertContexts[0], source)
+                        CallContextConvert(context, key, convertContextParameter, source)
                     );
                 }
                 else
                 {
-                    return CallContextConvert(context, key, convertContexts[0], source);
+                    return CallContextConvert(context, key, convertContextParameter, source);
                 }
             }
-        }
-        
+        }        
         if (converter is IComplexIncludeConverter complexConverter)
         {
             return complexConverter.Convert(context, source);
@@ -98,9 +94,12 @@ public static partial class MapperServices
     /// <returns></returns>
     internal static Expression CallContextConvert(this IBuildContext context, PairTypeKey key, ParameterExpression convertContext, Expression source)
     {
-        if(context.TryGetContextLambda(key, out LambdaExpression contextLambda))
+        var achieved = context.GetAchieve(key);
+        var contextLambda = achieved.Lambda;
+        if (contextLambda is null)
+            return ConvertContext.CallConvert(convertContext, key, Expression.Constant(achieved, typeof(IContextConverter)), source);
+        else
             return Expression.Invoke(contextLambda, convertContext, source);
-        return ConvertContext.CallConvert(convertContext, key, source);
     }
     /// <summary>
     /// 使用表达式转化
@@ -135,14 +134,33 @@ public static partial class MapperServices
     /// <returns></returns>
     internal static IBuildContext Enter(this IBuildContext parent, PairTypeKey key)
     {
-        var convertContexts = parent.ConvertContexts;
-        if (convertContexts.Count == 0)
+        var convertContextParameter = parent.ConvertContextParameter;
+        if (convertContextParameter is null)
             return parent;
         var bundle = parent.GetBundle(key);
         if (bundle is null)
-            return parent;
-        if (bundle.IsCircle || bundle.HasCircle)
-            return new CurrentContext(parent.Context, [ConvertContext.CreateParameter()]);
-        return parent;
+            return new CurrentContext(parent.Context, null);
+        if (bundle.HasCircle)
+            return new CurrentContext(parent.Context, ConvertContext.CreateParameter());
+        return new CurrentContext(parent.Context, null);
+    }
+    /// <summary>
+    /// 设置缓存
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="key"></param>
+    /// <param name="source"></param>
+    /// <param name="dest"></param>
+    /// <returns></returns>
+    internal static Expression SetCache(this IBuildContext context, PairTypeKey key, Expression source, Expression dest)
+    {
+        var parameter = context.ConvertContextParameter;
+        if (parameter is not null)
+        {
+            var bundle = context.GetBundle(key);
+            if (bundle is not null && bundle.IsCircle)
+                return ConvertContext.CallSetCache(parameter, key, source, dest);
+        }
+        return null;
     }
 }

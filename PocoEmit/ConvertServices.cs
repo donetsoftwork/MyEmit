@@ -78,7 +78,7 @@ public static partial class PocoEmitServices
         var emitConverter = poco.GetEmitConverter(key);
         if (emitConverter is null)
             return null;
-        if (emitConverter.Compiled && emitConverter is ICompiledConverter<TSource, TDest> compiled)
+        if (emitConverter.Compiled && emitConverter is CompiledConverter<TSource, TDest> compiled)
             return compiled.ConvertFunc;
         compiled = CompileConverter<TSource, TDest>((IPocoOptions)poco, key, emitConverter);
         poco.Set(key, compiled);
@@ -172,7 +172,7 @@ public static partial class PocoEmitServices
     {
         var lambda = emitConverter.Build<TSource, TDest>();
         var func = Compiler._instance.CompileDelegate(lambda);
-        return new(poco, key, lambda, func);
+        return new(poco, key, emitConverter, lambda, func);
     }
     #endregion
     /// <summary>

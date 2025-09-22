@@ -10,7 +10,9 @@ namespace PocoEmit.Complexes;
 /// <param name="context"></param>
 /// <param name="key"></param>
 /// <param name="converter"></param>
-public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter converter)
+/// <param name="depth"></param>
+/// <param name="isCollection"></param>
+public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter converter, int depth, bool isCollection)
     : IComplexBundle
 {
     #region 配置
@@ -20,8 +22,10 @@ public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter
     private readonly BuildContext _context = context;
     private readonly PairTypeKey _key = key;
     private readonly IEmitConverter _converter = converter;
+    private int _depth = depth;
     private bool _isCircle = false;
     private bool _hasCircle = false;
+    private readonly bool _isCollection = isCollection;
     /// <summary>
     /// 包含类型
     /// </summary>
@@ -46,6 +50,11 @@ public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter
     public IEmitConverter Converter
         => _converter;
     /// <summary>
+    /// 是否集合类型
+    /// </summary>
+    public bool IsCollection
+    => _isCollection;
+    /// <summary>
     /// 是否循环引用
     /// </summary>
     public bool IsCircle
@@ -54,7 +63,7 @@ public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter
     /// 是否包含循环引用
     /// </summary>
     public bool HasCircle
-        => _isCircle;
+        => _hasCircle || _isCircle;
     /// <summary>
     /// 包含类型
     /// </summary>
@@ -65,6 +74,21 @@ public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter
     /// </summary>
     public Dictionary<ComplexBundle, int> Uses
         => _uses;
+    /// <summary>
+    /// 引用深度
+    /// </summary>
+    public int Depth 
+        => _depth;
+
+    /// <summary>
+    /// 修正深度
+    /// </summary>
+    /// <param name="depth"></param>
+    public void CheckDepth(int depth)
+    {
+        if (depth < _depth)
+            _depth = depth;
+    }
     #endregion
     /// <summary>
     /// 获取转化器
@@ -94,6 +118,8 @@ public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter
     {
         if (_isCircle)
             return true;
+        //if(_isCollection)
+        //    return false;
         return CheckIsCircle(this, [], _includes);
     }
     /// <summary>
@@ -148,15 +174,10 @@ public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter
         }
         return false;
     }
-    /// <summary>
-    /// 增加包含类型
-    /// </summary>
-    /// <param name="item"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    public ComplexBundle Accept(PairTypeKey item, IEmitConverter converter)
+    /// <inheritdoc />
+    public ComplexBundle Accept(PairTypeKey item, IEmitConverter converter, bool isCollection)
     {
-        var bundle = _context.GetBundleOrCreate(item, converter);
+        var bundle = _context.GetBundleOrCreate(item, converter, _depth + 2, isCollection);
         if (bundle is null)
             return null;
         if (Include(bundle))

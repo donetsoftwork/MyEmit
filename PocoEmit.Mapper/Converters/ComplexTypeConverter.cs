@@ -3,7 +3,7 @@ using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
-using PocoEmit.Resolves;
+using PocoEmit.Visitors;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -76,8 +76,11 @@ public class ComplexTypeConverter(IMapperOptions options, PairTypeKey key, IEmit
     public Expression Convert(IBuildContext context, Expression source)
     {
         var lambda = BuildWithContext(context);
-        var parameters = context.GetConvertContexts(_key);
-        return _options.Call(lambda, [.. parameters, source]);
+        var parameter = context.GetConvertContextParameter(_key);
+        if (parameter is null)
+            return _options.Call(lambda, source);
+        else
+            return Expression.Invoke(lambda, parameter, source);
     }
     /// <inheritdoc />
     public LambdaExpression Build(IBuildContext context)
@@ -90,14 +93,26 @@ public class ComplexTypeConverter(IMapperOptions options, PairTypeKey key, IEmit
 
         var destType = _key.RightType;
         var source = Expression.Variable(_sourceType, "source");
-        List<Expression> list = [];   
-        var convertContexts = context.ConvertContexts;
-        if (convertContexts.Count == 1)
-            list.Add(context.InitContext(convertContexts[0]));
-        list.Add(_options.Call(contextLambda, [.. convertContexts, source]));
-
+        
+        Expression body;
+        var convertContextParameter = context.ConvertContextParameter;
+        if (convertContextParameter is null)
+        {
+            body = CleanVisitor.Clean(_options.Call(contextLambda, source));
+        }
+        else
+        {
+            var dest = Expression.Variable(destType, "dest");
+            body = Expression.Block(
+                [convertContextParameter, dest],
+                context.InitContext(convertContextParameter),
+                Expression.Assign(dest, Expression.Invoke(contextLambda, convertContextParameter, source)),
+                EmitDispose.Dispose(convertContextParameter),
+                dest
+            );
+        }        
         var funcType = Expression.GetFuncType(_sourceType, destType);
-        return Expression.Lambda(funcType, Expression.Block([.. convertContexts], list), source);
+        return Expression.Lambda(funcType, body, source);
     }
     /// <summary>
     /// 构造上下文
@@ -106,7 +121,9 @@ public class ComplexTypeConverter(IMapperOptions options, PairTypeKey key, IEmit
     /// <returns></returns>
     public LambdaExpression BuildWithContext(IBuildContext context)
     {
-        if (context.TryGetContextLambda(_key, out LambdaExpression contextLambda))
+        var achieved = context.GetAchieve(_key);
+        var contextLambda = achieved?.Lambda;
+        if (contextLambda is not null)
             return contextLambda;
         var destType = _key.RightType;
         var source = Expression.Variable(_sourceType, "source");
@@ -126,31 +143,24 @@ public class ComplexTypeConverter(IMapperOptions options, PairTypeKey key, IEmit
         {
             list.AddRange(ConvertCore(currentContext, source, dest));
         }
-        list.Add(dest);
-        var convertContexts = currentContext.ConvertContexts;
-        if (convertContexts.Count > 0)
+        var convertContextParameter = currentContext.ConvertContextParameter;
+        if (convertContextParameter is null)
         {
-            var convertContext = convertContexts[0];
-            var bundle = context.GetBundle(_key);
-            if (bundle.IsCircle)
-            {
-                var funcType = Expression.GetFuncType(convertContext.Type, _sourceType, destType);
-                return Expression.Lambda(funcType, Expression.Block([dest], list), [convertContext, source]);
-            }
-            else
-            {
-                var body = Expression.Block(
-                    [convertContext, dest],
-                    [context.InitContext(convertContext), .. list]
-                    );
-                return Expression.Lambda(Expression.GetFuncType([_sourceType, destType]), body, [source]);
-            }
+            var body = Expression.Block([dest], [..list, dest]);
+            return Expression.Lambda(Expression.GetFuncType([_sourceType, destType]), body, [source]);
+        }
+        var bundle = context.GetBundle(_key);
+        if (bundle.HasCircle)
+        {
+            var funcType = Expression.GetFuncType(convertContextParameter.Type, _sourceType, destType);
+            var body = CleanVisitor.Clean(Expression.Block([dest], [.. list, dest]));
+            return Expression.Lambda(funcType, body, [convertContextParameter, source]);
         }
         else
         {
-            return Expression.Lambda(Expression.GetFuncType([_sourceType, destType]), Expression.Block([dest], list), [source]);
+            var body = Expression.Block([dest], [.. list, dest]);
+            return Expression.Lambda(Expression.GetFuncType([_sourceType, destType]), body, [source]);
         }
-
     }
     #endregion
     /// <summary>
@@ -160,24 +170,23 @@ public class ComplexTypeConverter(IMapperOptions options, PairTypeKey key, IEmit
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    private List<Expression> ConvertCore(IBuildContext context, Expression source, Expression dest)
+    protected List<Expression> ConvertCore(IBuildContext context, Expression source, Expression dest)
     {
         var list = new List<Expression>
         {
             Expression.Assign(dest, _destActivator.New(context, source))
         };
-        var convertContexts = context.ConvertContexts;
-        if (convertContexts.Count == 1)
-            list.Add(ConvertContext.CallSetCache(convertContexts[0], _key, source, dest));
-
+        var cache = context.SetCache(_key, source, dest);
+        if(cache is not null)
+            list.Add(cache);
         if (_copier is not null)
-            list.AddRange(_copier.Copy(context, source, dest));
+            list.AddRange(CleanVisitor.Clean(_copier.Copy(context, source, dest)));
         return list;
     }
     /// <inheritdoc />
     public IEnumerable<ComplexBundle> Preview(IComplexBundle parent)
     {
-        var bundle = parent.Accept(_key, this);
+        var bundle = parent.Accept(_key, this, false);
         if (bundle is null)
             yield break;
         yield return bundle;

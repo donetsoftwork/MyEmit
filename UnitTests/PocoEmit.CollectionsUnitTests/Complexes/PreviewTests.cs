@@ -1,6 +1,8 @@
 using PocoEmit.CollectionsUnitTests.Supports;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
+using PocoEmit.Resolves;
 
 namespace PocoEmit.CollectionsUnitTests.Complexes;
 
@@ -46,7 +48,7 @@ public class PreviewTests : CollectionTestBase
         _ = context.Visit<Node, NodeDTO>()
             .ToArray();
         context.CheckCircle();
-        Assert.Equal(2, context.Collections.Count());
+        Assert.Equal(3, context.Collections.Count());
         var node = context.GetBundle<Node, NodeDTO>();
         Assert.NotNull(node);
         Assert.True(node.IsCircle);
@@ -62,7 +64,7 @@ public class PreviewTests : CollectionTestBase
         _ = context.Visit<Tree, TreeDTO>()
             .ToArray();
         context.CheckCircle();
-        Assert.Equal(3, context.Collections.Count());
+        Assert.Equal(5, context.Collections.Count());
         var branch = context.GetBundle<TreeBranch, TreeBranchDTO>();
         Assert.NotNull(branch);
         Assert.True(branch.IsCircle);
@@ -78,7 +80,7 @@ public class PreviewTests : CollectionTestBase
         _ = context.Visit<Tree2, TreeDTO2>()
             .ToArray();
         context.CheckCircle();
-        Assert.Equal(3, context.Collections.Count());
+        Assert.Equal(5, context.Collections.Count());
         var branch = context.GetBundle<TreeBranch2, TreeBranchDTO2>();
         Assert.NotNull(branch);
         Assert.True(branch.IsCircle);
@@ -95,7 +97,7 @@ public class PreviewTests : CollectionTestBase
         _ = context.Visit<TreeBranch2, TreeBranchDTO2>()
             .ToArray();
         context.CheckCircle();
-        Assert.Equal(3, context.Collections.Count());
+        Assert.Equal(5, context.Collections.Count());
         var branch = context.GetBundle<TreeBranch2, TreeBranchDTO2>();
         Assert.NotNull(branch);
         Assert.True(branch.IsCircle);
@@ -240,6 +242,7 @@ public class PreviewTests : CollectionTestBase
         var func = FastExpressionCompiler.ExpressionCompiler.CompileFast(expression);
         TreeBranchDTO dto = func(trunk);
         Assert.NotNull(dto);
+        //var dto2 = ToDTO(trunk);
         var branches = dto.Branches;
         Assert.NotNull(branches);
         Assert.Equal(trunk.Branches.Length, branches.Length);
@@ -249,7 +252,7 @@ public class PreviewTests : CollectionTestBase
         Assert.NotNull(dtoLeaves);
         Assert.Equal(branch1.Leaves.Length, dtoLeaves.Length);
 
-    }
+    }    
     [Fact]
     public void ConvertFastTreeBranch2()
     {

@@ -5,6 +5,7 @@ using PocoEmit.Resolves;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace PocoEmit.Complexes;
 
@@ -18,12 +19,12 @@ public class BuildContext(IMapperOptions options)
 {
     #region 配置
     private readonly IMapperOptions _options = options;
-    private readonly ConstantExpression _mapper = Expression.Constant(options, typeof(IMapperOptions));
     private readonly Dictionary<PairTypeKey, ComplexBundle> _collections = [];
     private readonly Dictionary<PairTypeKey, ComplexBundle> _readies = [];
     private readonly Dictionary<PairTypeKey, LambdaExpression> _lambdas = [];
-    private readonly Dictionary<PairTypeKey, LambdaExpression> _contextLambdas = [];
-    private readonly List<ParameterExpression> _convertContexts = [];
+    private readonly Dictionary<PairTypeKey, ContextAchieved> _contextAchieves = [];
+    private ParameterExpression _convertContextParameter = null;
+    private MethodInfo _createConvertContextMethod = null;
     /// <summary>
     /// Emit配置
     /// </summary>
@@ -45,15 +46,15 @@ public class BuildContext(IMapperOptions options)
     public IEnumerable<LambdaExpression> Lambdas
         => _lambdas.Values;
     /// <summary>
-    /// 上下文表达式
+    /// 上下文构建结果
     /// </summary>
-    public IEnumerable<LambdaExpression> ContextLambdas
-        => _contextLambdas.Values;
+    public IEnumerable<ContextAchieved> ContextAchieves
+        => _contextAchieves.Values;
     /// <summary>
     /// 环状引用上下文
     /// </summary>
-    public List<ParameterExpression> ConvertContexts
-        => _convertContexts;
+    public ParameterExpression ConvertContextParameter
+        => _convertContextParameter;
     /// <inheritdoc />
     public BuildContext Context
         => this;
@@ -72,22 +73,24 @@ public class BuildContext(IMapperOptions options)
     /// <inheritdoc />
     public bool TryGetLambda(PairTypeKey key, out LambdaExpression lambda)
         => _lambdas.TryGetValue(key, out lambda);
-    /// <inheritdoc />
-    public bool TryGetContextLambda(PairTypeKey key, out LambdaExpression lambda)
-        => _contextLambdas.TryGetValue(key, out lambda);
     /// <summary>
-    /// 保存上下文表达式
+    /// 获取上下文构建结果
     /// </summary>
     /// <param name="key"></param>
-    /// <param name="lambda"></param>
-    public bool SetContextLambda(PairTypeKey key, LambdaExpression lambda)
+    /// <returns></returns>
+    public ContextAchieved GetAchieve(PairTypeKey key)
     {
-        if(lambda.Parameters.Count == 2)
+        if(_contextAchieves.TryGetValue(key, out var achieved))
+            return achieved;
+        var bundle = GetBundle(key);
+        if(bundle is null)
+            return null;
+        if(bundle.HasCircle)
         {
-            _contextLambdas[key] = lambda;
-            return true;
+            _options.TryGetValue(key, out IContextConverter converter);
+            return _contextAchieves[key] = ContextAchieved.CreateByConverter(converter);
         }
-        return false;
+        return null;
     }
     #endregion
     #region bundle
@@ -96,14 +99,18 @@ public class BuildContext(IMapperOptions options)
     /// </summary>
     /// <param name="key"></param>
     /// <param name="converter"></param>
+    /// <param name="depth"></param>
+    /// <param name="isCollection"></param>
     /// <returns></returns>
-    public ComplexBundle GetBundleOrCreate(PairTypeKey key, IEmitConverter converter)
+    public ComplexBundle GetBundleOrCreate(PairTypeKey key, IEmitConverter converter, int depth, bool isCollection)
     {
         // 忽略基础类型
         if (_options.CheckPrimitive(key.LeftType))
             return null;
-        if (!_collections.TryGetValue(key, out var bundle))
-            _collections.Add(key, bundle = new(this, key, converter));
+        if (_collections.TryGetValue(key, out var bundle))
+            bundle.CheckDepth(depth);
+        else
+            _collections.Add(key, bundle = new(this, key, converter, depth, isCollection));
         // 已编译忽略
         if (converter.Compiled)
             return null;
@@ -164,34 +171,47 @@ public class BuildContext(IMapperOptions options)
     public void Prepare()
     {
         // 检查循环引用
-        if (CheckCircle())
-        {
-            // 处理上下文常量
-            CheckConvertContextParameter();
-        }
-        // 预构建
-        PrepareBuild();
+        CheckCircle();
+        // 无循环引用构建
+        BuildNoCircle();
         if (_collections.Count == 0)
             return;
-
-        // 自循环构建
-        BuildSelfCircle();
-        // 互依赖构建
-        BuildTwins();
-        // 环形构建
+        // 环形引用构建
         BuildCircle();
     }
     /// <summary>
     /// 检查循环引用
     /// </summary>
-    public bool CheckCircle()
+    public void CheckCircle()
     {
+        int circleCount = 0;
+        ComplexBundle circle = null;
         foreach (var bundle in _collections.Values)
-            bundle.CheckIsCircle();
-        bool hasCircle = false;
+        {
+            if (bundle.CheckIsCircle())
+            {
+                circle = bundle;
+                circleCount++;
+            }
+        }
         foreach (var bundle in _collections.Values)
-            hasCircle |= bundle.CheckHasCircle();
-        return hasCircle;
+            bundle.CheckHasCircle();
+        switch(circleCount)
+        {
+            case 0:
+                return;
+            case 1:
+                if(circle is not null)
+                {
+                    var key = circle.Key;
+                    _createConvertContextMethod = ConvertContext.GetCreateSingleMethod(key.LeftType, key.RightType);
+                }
+                break;
+            default:     
+                break;
+        }
+        _convertContextParameter = ConvertContext.CreateParameter();
+        _createConvertContextMethod ??= ConvertContext.CreateMethod;
     }
     /// <summary>
     /// 构建并准备
@@ -208,49 +228,76 @@ public class BuildContext(IMapperOptions options)
     }
     /// <inheritdoc />
     public Expression InitContext(ParameterExpression context)
-        => ConvertContext.InitParameter(context, _mapper);
-    #region PrepareBuild
+        => Expression.Assign(context, Expression.Call(null, _createConvertContextMethod));
+    #region BuildNoInclude
     /// <summary>
-    /// 预构建
+    /// 无包含构建
     /// </summary>
-    private void PrepareBuild()
+    private void BuildNoInclude()
     {
         var list = _collections.Values
             .Where(bundle => bundle.Includes.Count == 0)
+            .OrderByDescending(bundle => bundle.Depth)
+            .ToArray();
+        if (list.Length == 0)
+            return;
+        var unexpected = false;
+        foreach (var bundle in list)
+        {
+            // 构建完成移除被调用,简化依赖关系
+            if (BuildNoCircle(bundle))
+                OnFinish(bundle);
+            else
+                unexpected = true;
+        }
+        // 异常情况避免死循环
+        if (unexpected)
+            return;
+        // 重复预构建,简化依赖关系
+        BuildNoInclude();
+    }
+    #endregion
+    #region BuildNoCircle
+    /// <summary>
+    /// 无循环引用构建
+    /// </summary>
+    private void BuildNoCircle()
+    {
+        BuildNoInclude();
+        var list = _collections.Values
+            .Where(bundle => !bundle.HasCircle)
+            .OrderByDescending(bundle => bundle.Depth)
+            .OrderBy(bundle => bundle.Includes.Count)
             .ToArray();
         if (list.Length == 0)
             return;
         foreach (var bundle in list)
         {
             // 构建完成移除被调用,简化依赖关系
-            if (PrepareBuild(bundle))
+            if (BuildNoCircle(bundle))
                 OnFinish(bundle);
-            else
-                return;
         }
-        // 重复预构建,简化依赖关系
-        PrepareBuild();
     }
     /// <summary>
-    /// 预构建
+    /// 无循环引用构建
     /// </summary>
     /// <param name="bundle"></param>
-    private bool PrepareBuild(ComplexBundle bundle)
+    private bool BuildNoCircle(ComplexBundle bundle)
     {
         var key = bundle.Key;
-        var lambda = BuildLambdaByConverter(key, bundle.Converter);
+        var lambda = BuildLambdaByNoCircle(key, bundle.Converter);
         if (lambda is null)
             return false;
         _lambdas[key] = lambda;
         return true;
     }
     /// <summary>
-    /// 构建表达式
+    /// 构建无循环引用表达式
     /// </summary>
     /// <param name="key"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    private LambdaExpression BuildLambdaByConverter(PairTypeKey key, IEmitConverter converter)
+    private LambdaExpression BuildLambdaByNoCircle(PairTypeKey key, IEmitConverter converter)
     {
         LambdaExpression lambda = null;
         if (converter is IEmitComplexConverter complexConverter)
@@ -262,7 +309,6 @@ public class BuildContext(IMapperOptions options)
         }
         else if (converter.Compiled && converter is IBuilder<LambdaExpression> builder)
         {
-
             lambda = builder.Build();
         }
         else if (converter is FuncConverter funcConverter)
@@ -272,15 +318,36 @@ public class BuildContext(IMapperOptions options)
         return lambda;
     }
     #endregion
-    #region ConvertContextParameters
+    #region BuildCircle
     /// <summary>
-    /// 处理上下文变量
+    /// 环形引用构建
     /// </summary>
-    private void CheckConvertContextParameter()
+    public void BuildCircle()
     {
-        _convertContexts.Add(ConvertContext.CreateParameter());
+        // 自循环构建
+        BuildSelfCircle();
+        var list = _collections.Values
+            .Where(bundle => bundle.HasCircle && !bundle.IsCollection)
+            .OrderByDescending(bundle => bundle.Depth)
+            .OrderBy(bundle =>  bundle.Includes.Count)
+            .ToArray();
+        foreach (var bundle in list)
+            BuildCircle(bundle);
+        BuilCircleCollection();
     }
-    #endregion
+    /// <summary>
+    /// 构建包含环形的集合
+    /// </summary>
+    public void BuilCircleCollection()
+    {
+        var list = _collections.Values
+             .Where(bundle => bundle.HasCircle && bundle.IsCollection)
+            .OrderByDescending(bundle => bundle.Depth)
+            .OrderBy(bundle => bundle.Includes.Count)
+            .ToArray();
+        foreach (var bundle in list)
+            BuildCircle(bundle);
+    }
     #region BuildSelfCircle
     /// <summary>
     /// 自循环构建
@@ -288,83 +355,45 @@ public class BuildContext(IMapperOptions options)
     public void BuildSelfCircle()
     {
         var list = _collections.Values
-            .Where(bundle => bundle.Includes.Count == 1)
+            .Where(bundle => bundle.IsCircle && !bundle.IsCollection && bundle.Includes.Count == 1)
+            .OrderByDescending(bundle => bundle.Depth)
             .ToArray();
         if (list.Length == 0)
             return;
+        var unexpected = false;
         foreach (var bundle in list)
         {
-            if(BuildSelfCircle(bundle))
+            if (BuildCircle(bundle))
                 OnFinish(bundle);
             else
-                return;
+                unexpected = true;
         }
+        // 异常情况避免死循环
+        if (unexpected)
+            return;
         // 重复自循环构建,简化依赖关系
         BuildSelfCircle();
     }
+    #endregion
     /// <summary>
-    /// 自循环构建
+    /// 环形构建
     /// </summary>
     /// <param name="bundle"></param>
-    public bool BuildSelfCircle(ComplexBundle bundle)
+    public bool BuildCircle(ComplexBundle bundle)
     {
-        var contextLambda = BuildCircleLambda(bundle);
-        if (contextLambda is null)
-            return false;
         var key = bundle.Key;
-        if (SetContextLambda(key, contextLambda))
+        var achieved = GetAchieve(key);
+        if (achieved is null)
+            return false;
+        if(achieved.Func is null)
         {
-            var func = Compiler.Instance.CompileDelegate(contextLambda);
-            _options.Set(key, func);
+            var contextLambda = BuildCircleLambda(bundle);
+            if (contextLambda is null)
+                return false;
+            achieved.Build(contextLambda);
+            _options.Set(key, achieved);
         }
         return true;
-    }
-    #endregion
-    #region BuildSelfCircle
-    /// <summary>
-    /// 构建互依赖
-    /// </summary>
-    public void BuildTwins()
-    {
-
-    }
-    /// <summary>
-    /// 构建互依赖
-    /// </summary>
-    /// <param name="front"></param>
-    /// <param name="back"></param>
-    public void BuildTwins(ComplexBundle front, ComplexBundle back)
-    {
-
-    }
-    #endregion
-    #region BuildCircle
-    /// <summary>
-    /// 环形构建
-    /// </summary>
-    public void BuildCircle()
-    {
-        var list = _collections.Values
-            .Where(bundle => bundle.IsCircle)
-            .ToArray();
-        foreach (var bundle in list)
-            BuildCircle(bundle);
-    }
-    /// <summary>
-    /// 环形构建
-    /// </summary>
-    /// <param name="bundle"></param>
-    public void BuildCircle(ComplexBundle bundle)
-    {
-        var contextLambda = BuildCircleLambda(bundle);
-        if (contextLambda is null)
-            return;
-        var key = bundle.Key;
-        if (SetContextLambda(key, contextLambda))
-        {
-            var func = Compiler.Instance.CompileDelegate(contextLambda);
-            _options.Set(key, func);
-        }
     }
     /// <summary>
     /// 构建环形表达式
@@ -372,15 +401,15 @@ public class BuildContext(IMapperOptions options)
     /// <param name="bundle"></param>
     public LambdaExpression BuildCircleLambda(ComplexBundle bundle)
     {
-        if (bundle.IsCircle && bundle.Converter is IEmitComplexConverter complexConverter)
+        if (bundle.HasCircle && bundle.Converter is IEmitComplexConverter complexConverter)
             return complexConverter.BuildWithContext(this);
         return null;
     }
     #endregion
     #region IComplexBundle
     /// <inheritdoc />
-    ComplexBundle IComplexBundle.Accept(PairTypeKey item, IEmitConverter converter)
-        => GetBundleOrCreate(item, converter);
+    ComplexBundle IComplexBundle.Accept(PairTypeKey item, IEmitConverter converter, bool isCollection)
+        => GetBundleOrCreate(item, converter, 2, isCollection);
     /// <summary>
     /// 获取转化器
     /// </summary>

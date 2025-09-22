@@ -117,7 +117,7 @@ public class ConvertExpressionBuilder(ParameterExpression source, ParameterExpre
             };
             body = Expression.Block([dest], list);
         }
-        return Expression.Lambda(Expression.GetFuncType(sourceType, destType), body, source);
+        return Expression.Lambda(Expression.GetFuncType(sourceType, destType), CleanVisitor.Clean(body), source);
     }
     #endregion
 }

@@ -4,32 +4,51 @@ using MapperBench;
 using MapperBench.Supports;
 using System.Linq.Expressions;
 
-
+#region CustomerConvertBench
 //CustomerConvertBench convertBench = new();
 //convertBench.Setup();
 //convertBench.Test();
 //var auto = convertBench.BuildAuto();
+//var autoFunc = convertBench.AutoFunc();
+//var converter = convertBench.Converter();
+//var pocoFunc = convertBench.PocoFunc();
+//var frozen = convertBench.Frozen();
 //var poco = CustomerTests.BuildPoco();
-//var dto1 = convertBench.Auto();
-//var dto2 = convertBench.Poco();
-//var dto3 = convertBench.AutoFunc();
-//convertBench.Customer.Name = "changed";
-//var dto12 = convertBench.Auto();
-//var dto22 = convertBench.Convert();
+#endregion
 
+#region TreeBench
 //TreeBench treeBench = new();
 //treeBench.Setup();
 ////treeBench.PocoFunc();
 //var auto = treeBench.BuildAuto();
 //var poco = treeBench.BuildPoco();
-
+//var invoke = treeBench.BuildInvoke();
+#endregion
+#region TreeBench2
+//TreeBench2 treeBench2 = new();
+//treeBench2.Setup();
+////treeBench2.PocoFunc();
+//var auto = treeBench2.BuildAuto();
+//var poco = treeBench2.BuildPoco();
+//var invoke = treeBench2.BuildInvoke();
+#endregion
+#region UserConvertBench
 //UserConvertBench userConvertBench = new();
 //userConvertBench.Setup();
 //userConvertBench.BuildPoco();
-//NodeTests nodeTest = new();
-////nodeTest.AutoMap();
-//nodeTest.BuildAuto();
-
+#endregion
+#region NodeBench
+//NodeBench nodeBench = new();
+//nodeBench.Setup();
+//var auto = nodeBench.BuildAuto();
+//var poco = nodeBench.BuildPoco();
+#endregion
+#region MenuBench
+//MenuBench menuBench = new();
+//menuBench.Setup();
+//var auto = menuBench.BuildAuto();
+//var poco = menuBench.BuildPoco();
+#endregion
 //var dto5 = CustomerTests.BySys();
 //var dto6 = CustomerTests.ByFast();
 //var dto4 = CustomerTests.CustomerToDTO(CustomerConvertBench.Customer);
@@ -37,6 +56,8 @@ using System.Linq.Expressions;
 //BenchmarkRunner.Run<CustomerConvertBench>();
 //BenchmarkRunner.Run<UserConvertBench>();
 //BenchmarkRunner.Run<ToDictionaryBench>();
-BenchmarkRunner.Run<TreeBench>();
-
+//BenchmarkRunner.Run<TreeBench>();
+BenchmarkRunner.Run<TreeBench2>();
+//BenchmarkRunner.Run<NodeBench>();
+//BenchmarkRunner.Run<MenuBench>();
 

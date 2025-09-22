@@ -13,6 +13,7 @@ public interface ICompiledConverter<TSource, TDest>
     : IEmitConverter
     , IPocoConverter<TSource, TDest>
     , IBuilder<LambdaExpression>
+    , IWrapper<IEmitConverter>
 {
     /// <summary>
     /// 类型转化方法

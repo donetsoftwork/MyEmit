@@ -100,7 +100,8 @@ public class CollectionConvertBuilder(IMapperOptions options)
             var destEnumerableBundle = container.EnumerableCacher.Get(destInterface);
             if (destEnumerableBundle is null)
                 return null;
-            var collectionType = genericImplType.MakeGenericType(destEnumerableBundle.ElementType);
+            var destElementType = destEnumerableBundle.ElementType;
+            var collectionType = genericImplType.MakeGenericType(destElementType);
             var converter = ToCollection(sourceType, sourceIsPrimitive, collectionType, container.CollectionCacher.Get(collectionType));
             return new WrapConverter(_options, sourceType, destInterface, converter);
         }

@@ -2,7 +2,7 @@ using AutoMapper;
 using AutoMapper.Internal;
 using BenchmarkDotNet.Attributes;
 using MapperBench.Supports;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PocoEmit;
 using System.Linq.Expressions;
 
@@ -11,12 +11,11 @@ namespace MapperBench;
 [MemoryDiagnoser, SimpleJob(launchCount: 2, warmupCount: 10, iterationCount: 10, invocationCount: 20000000)]
 public class CustomerConvertBench
 {
-    private ServiceCollection _services = new();
     private AutoMapper.IMapper _auto;
     private PocoEmit.IMapper _poco;
     private PocoEmit.IMapper _frozen;
     private PocoEmit.IPocoConverter<Customer, CustomerDTO> _converter;
-    private Func<Customer, CustomerDTO> _convertFunc;
+    private Func<Customer, CustomerDTO> _pocoFunc;
     private static Customer _customer = GetCustomer();
     private Func<Customer, CustomerDTO, ResolutionContext, CustomerDTO> _autoFunc;
     private ResolutionContext _resolutionContext;
@@ -54,12 +53,13 @@ public class CustomerConvertBench
     {
         return _autoFunc(_customer, default(CustomerDTO), _resolutionContext);
     }
-    public string BuildAuto()
+    public CustomerDTO BuildAuto()
     {
-        LambdaExpression expression = _auto.ConfigurationProvider.BuildExecutionPlan(typeof(Customer), typeof(CustomerDTO));        
+        LambdaExpression expression = _auto.ConfigurationProvider.BuildExecutionPlan(typeof(Customer), typeof(CustomerDTO));
         string code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Console.WriteLine(code);
-        return code;
+        return Auto();
+
     }
     [Benchmark(Baseline = true)]
     public CustomerDTO Poco()
@@ -81,15 +81,14 @@ public class CustomerConvertBench
     [Benchmark]
     public CustomerDTO PocoFunc()
     {
-        return _convertFunc(_customer);
+        return _pocoFunc(_customer);
     }
 
     [GlobalSetup]
     public void Setup()
     {
-        ConfigureAutoMapper(_services);
-        var serviceProvider = _services.BuildServiceProvider();
-        _auto = serviceProvider.GetRequiredService<AutoMapper.IMapper>();     
+        _auto = ConfigureAutoMapper()
+            .CreateMapper();
         {
             var configuration = _auto.ConfigurationProvider.Internal();
             var mapRequest = new MapRequest(new TypePair(typeof(Customer), typeof(CustomerDTO)));
@@ -103,14 +102,14 @@ public class CustomerConvertBench
         _poco = ConfigurePocoMapper();
         _frozen = ConfigurePocoFrozen();
         _converter = _poco.GetConverter<Customer, CustomerDTO>();
-        _convertFunc = _poco.GetConvertFunc<Customer, CustomerDTO>();
+        _pocoFunc = _poco.GetConvertFunc<Customer, CustomerDTO>();
     }
     private static PocoEmit.IMapper ConfigurePocoMapper()
     {
         var mapper = PocoEmit.Mapper.Create();
         mapper.UseCollection();
         mapper.ConfigureMap<Customer, CustomerDTO>()
-            .UseCheckAction((s, t) => ConvertAddressCity(s, t));
+            .UseCheckAction(ConvertAddressCity);
         return mapper;
     }
     public static void ConvertAddressCity(Customer customer, CustomerDTO dto)
@@ -126,10 +125,9 @@ public class CustomerConvertBench
             configuration.ToFrozen();
         return mapper;
     }
-    private static void ConfigureAutoMapper(ServiceCollection services)
+    private static MapperConfiguration ConfigureAutoMapper()
     {
-        services.AddLogging();
-        services.AddAutoMapper(CreateMap);
+        return new MapperConfiguration(CreateMap, LoggerFactory.Create(_ => { }));
     }
     private static void CreateMap(IMapperConfigurationExpression cfg)
     {

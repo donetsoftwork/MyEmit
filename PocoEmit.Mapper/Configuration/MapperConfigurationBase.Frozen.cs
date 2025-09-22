@@ -5,6 +5,8 @@ using PocoEmit.Maping;
 using System;
 using PocoEmit.Builders;
 using System.Linq.Expressions;
+using PocoEmit.Converters;
+
 
 #if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 using System.Collections.Generic;
@@ -59,7 +61,7 @@ public abstract partial class MapperConfigurationBase
         /// <summary>
     /// 上下文转化缓存
     /// </summary>
-    private IDictionary<PairTypeKey, Delegate> _contextFuncs;
+    private IDictionary<PairTypeKey, IContextConverter> _contextConverters;
 #else
     /// <summary>
     /// 复制器缓存
@@ -96,7 +98,7 @@ public abstract partial class MapperConfigurationBase
     /// <summary>
     /// 上下文转化缓存
     /// </summary>
-    private readonly ConcurrentDictionary<PairTypeKey, Delegate> _contextFuncs;
+    private readonly ConcurrentDictionary<PairTypeKey, IContextConverter> _contextConverters;
 #endif
     #endregion
     #region IMapperOptions
@@ -173,16 +175,16 @@ public abstract partial class MapperConfigurationBase
     void IConfigure<Type, IBuilder<Expression>>.Configure(Type key, IBuilder<Expression> value)
         => _defaultValueConfiguration[key] = value;
     #endregion
-    #region ICacher<PairTypeKey, Delegate>
+    #region ICacher<PairTypeKey, IContextConverter>
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, Delegate>.ContainsKey(PairTypeKey key)
-        => _contextFuncs.ContainsKey(key);
+    bool ICacher<PairTypeKey, IContextConverter>.ContainsKey(PairTypeKey key)
+        => _contextConverters.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<PairTypeKey, Delegate>.Set(PairTypeKey key, Delegate value)
-        => _contextFuncs[key] = value;
+    void IStore<PairTypeKey, IContextConverter>.Set(PairTypeKey key, IContextConverter value)
+        => _contextConverters[key] = value;
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, Delegate>.TryGetValue(PairTypeKey key, out Delegate value)
-        => _contextFuncs.TryGetValue(key, out value);
+    bool ICacher<PairTypeKey, IContextConverter>.TryGetValue(PairTypeKey key, out IContextConverter value)
+        => _contextConverters.TryGetValue(key, out value);
     #endregion
     #endregion
 #if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
@@ -193,7 +195,7 @@ public abstract partial class MapperConfigurationBase
     {
         base.ToFrozen();
         _copiers = _copiers.ToFrozenDictionary();
-        _contextFuncs = _contextFuncs.ToFrozenDictionary();
+        _contextConverters = _contextConverters.ToFrozenDictionary();
     }
 #endif
 }

@@ -1,6 +1,7 @@
+using AutoMapper;
 using BenchmarkDotNet.Attributes;
 using MapperBench.Supports;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PocoEmit;
 using PocoEmit.Dictionaries;
 
@@ -10,7 +11,6 @@ namespace MapperBench;
 //[MemoryDiagnoser, SimpleJob(launchCount: 2, warmupCount: 10, iterationCount: 10, invocationCount: 100)]
 public class ToDictionaryBench
 {
-    private ServiceCollection _services = new();
     private AutoMapper.IMapper _auto;
     private PocoEmit.IMapper _poco;
     private PocoEmit.IMapper _collection;
@@ -68,11 +68,14 @@ public class ToDictionaryBench
         mapper.UseCollection();
         return mapper;
     }
-    private static void ConfigureAutoMapper(IServiceCollection services)
+    private static MapperConfiguration ConfigureAutoMapper()
     {
-        services.AddLogging();
-        services.AddAutoMapper(cfg => cfg.CreateMap<User, Dictionary<string, object>>()
+        return new MapperConfiguration(CreateMap, LoggerFactory.Create(_ => { }));
+    }
+    private static void CreateMap(IMapperConfigurationExpression cfg)
+    {
+        cfg.CreateMap<User, Dictionary<string, object>>()
             .ForMember(dest => dest["Id"], opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest["Name"], opt => opt.MapFrom(src => src.Name)));
+            .ForMember(dest => dest["Name"], opt => opt.MapFrom(src => src.Name));
     }
 }

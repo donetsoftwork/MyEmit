@@ -1,6 +1,7 @@
 using PocoEmit.Activators;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
+using PocoEmit.Converters;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
 using PocoEmit.Reflection;
@@ -18,7 +19,7 @@ public interface IMapperOptions
     , ICacher<PairTypeKey, IEmitCopier>
     , ICacher<Type, bool>
     , IReflectionConstructor
-    , ICacher<PairTypeKey, Delegate>
+    , ICacher<PairTypeKey, IContextConverter>
 {
     /// <summary>
     /// 复制器构造器

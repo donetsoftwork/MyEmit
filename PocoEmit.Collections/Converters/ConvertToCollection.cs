@@ -63,7 +63,7 @@ public class ConvertToCollection(IMapperOptions options)
         // 容量构造函数存在才需要获取sourceCount
         if (capacityConstructor is not null)
             sourceCount = CollectionContainer.Instance.CountCacher.GetByArray(sourceType, sourceElementType);
-        return new CollectionConverter(destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
+        return new CollectionConverter(sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     /// <summary>
     /// 字典转集合
@@ -84,7 +84,7 @@ public class ConvertToCollection(IMapperOptions options)
         // 容量构造函数存在才需要获取sourceCount
         if (capacityConstructor is not null)
             sourceCount = CollectionContainer.Instance.CountCacher.GetByDictionary(sourceType, sourceBundle);
-        return new CollectionConverter(destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
+        return new CollectionConverter(sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     /// <summary>
     /// 列表转集合
@@ -105,7 +105,7 @@ public class ConvertToCollection(IMapperOptions options)
         // 容量构造函数存在才需要获取sourceCount
         if (capacityConstructor is not null)
             sourceCount = CollectionContainer.Instance.CountCacher.GetByCollection(sourceType, sourceBundle);
-        return new CollectionConverter(destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
+        return new CollectionConverter(sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     /// <summary>
     /// 迭代转集合
@@ -126,7 +126,7 @@ public class ConvertToCollection(IMapperOptions options)
         // 容量构造函数存在才需要获取sourceCount
         if (capacityConstructor is not null)
             sourceCount = CollectionContainer.Instance.CountCacher.GetByEnumerable(sourceType, sourceBundle.ElementType);
-        return new CollectionConverter(destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
+        return new CollectionConverter(sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     ///// <summary>
     ///// 其他情况

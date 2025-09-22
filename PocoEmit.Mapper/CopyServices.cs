@@ -2,6 +2,7 @@ using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
+using PocoEmit.Visitors;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -151,22 +152,22 @@ public static partial class MapperServices
         var dest = Expression.Parameter(typeof(TDest), "dest");
         var options = (IMapperOptions)mapper;
         var context = BuildContext.WithPrepare(options, emit);
-        var list = emit.Copy(context, source, dest);
+        var list = CleanVisitor.Clean(emit.Copy(context, source, dest));
 
-        var convertContexts = context.ConvertContexts;        
-        if (convertContexts.Count == 1)
-        {
-            var convertContext = convertContexts[0];
-            var body = Expression.Block(
-                [convertContext],
-                [context.InitContext(convertContext), .. list]               
-                );
-            return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
-        }
-        else
+        var convertContextParameter = context.ConvertContextParameter;        
+        if (convertContextParameter is null)
         {
             var checkList = list.ToArray();
             var body = checkList.Length == 1 ? checkList[0] : Expression.Block(checkList);
+            return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
+
+        }
+        else
+        {
+            var body = Expression.Block(
+                [convertContextParameter],
+                [context.InitContext(convertContextParameter), .. list, EmitDispose.Dispose(convertContextParameter)]
+            );
             return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
         }        
     }

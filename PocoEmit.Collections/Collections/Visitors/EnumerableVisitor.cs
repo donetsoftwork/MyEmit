@@ -90,42 +90,8 @@ public class EnumerableVisitor(Type collectionType, Type elementType, MethodInfo
                          Expression.Break(breakLabel)
                      ),
                     breakLabel),
-                Dispose(enumeratorType, enumerator)
+                EmitDispose.Dispose(enumerator)
             )
         );
     }
-    /// <summary>
-    /// 释放迭代器
-    /// </summary>
-    /// <param name="enumeratorType"></param>
-    /// <param name="enumerator"></param>
-    /// <returns></returns>
-    public static Expression Dispose(Type enumeratorType, Expression enumerator)
-    {
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        var isDispose = enumeratorType.GetTypeInfo().IsAssignableFrom(typeof(IDisposable).GetTypeInfo());
-#else
-        var isDispose = enumeratorType.IsAssignableFrom(typeof(IDisposable));
-#endif
-        if (isDispose)
-        {
-            return Expression.Call(enumerator, _disposeMethod);
-        }
-        else
-        {
-            var disposable = Expression.Variable(typeof(IDisposable), "disposable");
-            return Expression.Block(
-                [disposable],
-                Expression.Assign(disposable, Expression.TypeAs(enumerator, typeof(IDisposable))),
-                Expression.IfThen(Expression.NotEqual(disposable, Expression.Constant(null)), Expression.Call(disposable, _disposeMethod))
-            );
-        }
-    }
-
-    #region MethodInfo
-    /// <summary>
-    /// 获取Dispose方法
-    /// </summary>
-    private static readonly MethodInfo _disposeMethod = ReflectionHelper.GetMethod(typeof(IDisposable), "Dispose");
-    #endregion
 }

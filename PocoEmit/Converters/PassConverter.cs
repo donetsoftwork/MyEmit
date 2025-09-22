@@ -18,12 +18,7 @@ public sealed class PassConverter(Type sourceType)
     bool ICompileInfo.Compiled
         => false;
     #endregion
-
     /// <inheritdoc />
     public Expression Convert(Expression source)
         => source;
-    ///// <summary>
-    ///// 单例
-    ///// </summary>
-    //public static readonly PassConverter Instance = new();
 }

@@ -1,5 +1,6 @@
 using PocoEmit.Activators;
 using PocoEmit.Builders;
+using PocoEmit.Converters;
 using PocoEmit.Copies;
 using PocoEmit.Maping;
 using PocoEmit.Reflection;
@@ -33,7 +34,7 @@ public abstract partial class MapperConfigurationBase
         _matchConfiguration = new ConcurrentDictionary<PairTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
         _primitiveTypes = new ConcurrentDictionary<Type, bool>(concurrencyLevel, options.PrimitiveCapacity);
         _defaultValueConfiguration = new ConcurrentDictionary<Type, IBuilder<Expression>>(concurrencyLevel, options.DefaultValueCapacity);
-        _contextFuncs = new ConcurrentDictionary<PairTypeKey, Delegate>(concurrencyLevel, options.ContextFuncCapacity);
+        _contextConverters = new ConcurrentDictionary<PairTypeKey, IContextConverter>(concurrencyLevel, options.ContextConverterCapacity);
         _reflectionConstructor = DefaultReflectionConstructor.Default;
         _defaultMatcher = MemberNameMatcher.Default;
         _recognizer = new Recognizer(_defaultMatcher.NameMatch);

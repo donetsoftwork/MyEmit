@@ -22,19 +22,26 @@ public static partial class MapperServices
         var key = converter.Key;
         if (converter.Compiled)
         {
-            // 已编译,不再解析引用
-            parent.Accept(key, converter);
+            if(converter is IWrapper<IEmitConverter> wrapper)
+            {
+                foreach (var item in Visit(parent, wrapper.Original))
+                    yield return item;
+            }
+            else
+            {
+                // 不再解析
+                parent.Accept(key, converter, false);
+            }      
         }
         else if(converter is IComplexPreview preview)
         {
-            //if(parent.Context.Options.TryGetValue()
             foreach (var item in preview.Preview(parent))
                 yield return item;
         }
         else if(converter is FuncConverter)
         {
             // 已解析表达式,不再解析
-            parent.Accept(key, converter);
+            parent.Accept(key, converter, false);
         }
         else if (converter is IWrapper<IEmitConverter> wrapper)
         {

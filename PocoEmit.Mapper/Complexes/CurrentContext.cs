@@ -1,5 +1,4 @@
 using PocoEmit.Configuration;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Complexes;
@@ -7,12 +6,14 @@ namespace PocoEmit.Complexes;
 /// <summary>
 /// 当前构建器上下文
 /// </summary>
-public class CurrentContext(BuildContext context, List<ParameterExpression> convertContexts)
+/// <param name="context"></param>
+/// <param name="convertContextParameter"></param>
+public class CurrentContext(BuildContext context, ParameterExpression convertContextParameter)
     : IBuildContext
 {
     #region 配置
     private readonly BuildContext _context = context;
-    private readonly List<ParameterExpression> _convertContexts = convertContexts;
+    private readonly ParameterExpression _convertContextParameter = convertContextParameter;
     /// <summary>
     /// 构建器上下文
     /// </summary>
@@ -21,8 +22,8 @@ public class CurrentContext(BuildContext context, List<ParameterExpression> conv
     /// <summary>
     /// 执行上下文
     /// </summary>
-    public List<ParameterExpression> ConvertContexts
-        => _convertContexts;
+    public ParameterExpression ConvertContextParameter
+        => _convertContextParameter;
     #endregion
     #region IBuildContext
     /// <inheritdoc />
@@ -38,10 +39,7 @@ public class CurrentContext(BuildContext context, List<ParameterExpression> conv
     bool IBuildContext.TryGetLambda(PairTypeKey key, out LambdaExpression lambda)
         => _context.TryGetLambda(key, out lambda);
     /// <inheritdoc />
-    bool IBuildContext.TryGetContextLambda(PairTypeKey key, out LambdaExpression lambda)
-        => _context.TryGetContextLambda(key, out lambda);
-    /// <inheritdoc />
-    bool IBuildContext.SetContextLambda(PairTypeKey key, LambdaExpression lambda)
-        => _context.SetContextLambda(key, lambda);
+    ContextAchieved IBuildContext.GetAchieve(PairTypeKey key)
+        =>_context.GetAchieve(key);
     #endregion
 }
