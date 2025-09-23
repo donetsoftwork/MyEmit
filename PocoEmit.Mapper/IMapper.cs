@@ -28,7 +28,7 @@ public interface IMapper
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    IMemberMatch GetMemberMatch(PairTypeKey key);
+    IMemberMatch GetMemberMatch(in PairTypeKey key);
     /// <summary>
     /// 识别器
     /// </summary>
@@ -39,6 +39,6 @@ public interface IMapper
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    IEmitCopier GetEmitCopier(PairTypeKey key);
+    IEmitCopier GetEmitCopier(in PairTypeKey key);
     #endregion
 }

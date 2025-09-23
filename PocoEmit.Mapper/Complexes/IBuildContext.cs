@@ -21,7 +21,7 @@ public interface IBuildContext
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    ComplexBundle GetBundle(PairTypeKey key);
+    ComplexBundle GetBundle(in PairTypeKey key);
     /// <summary>
     /// 调用
     /// </summary>
@@ -41,11 +41,11 @@ public interface IBuildContext
     /// <param name="key"></param>
     /// <param name="lambda"></param>
     /// <returns></returns>
-    bool TryGetLambda(PairTypeKey key, out LambdaExpression lambda);
+    bool TryGetLambda(in PairTypeKey key, out LambdaExpression lambda);
     /// <summary>
     /// 获取上下文构建结果
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    ContextAchieved GetAchieve(PairTypeKey key);
+    ContextAchieved GetAchieve(in PairTypeKey key);
 }

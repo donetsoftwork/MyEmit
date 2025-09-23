@@ -22,7 +22,7 @@ internal class EnumerableCacher(CollectionContainer container)
         => _container;
     #endregion
     /// <inheritdoc />
-    protected override EnumerableBundle CreateNew(Type key)
+    protected override EnumerableBundle CreateNew(in Type key)
     {
         if (!ReflectionHelper.HasGenericType(key, typeof(IEnumerable<>)))
             return null;

@@ -31,7 +31,7 @@ public abstract class CacheBase<TKey, TValue>(ICacher<TKey, TValue> cacher)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual TValue Get(TKey key)
+    public virtual TValue Get(in TKey key)
     {
         if (_cacher.TryGetValue(key, out TValue value))
             return value;
@@ -49,18 +49,18 @@ public abstract class CacheBase<TKey, TValue>(ICacher<TKey, TValue> cacher)
         return value;
     }
     /// <inheritdoc />
-    public bool ContainsKey(TKey key)
+    public bool ContainsKey(in TKey key)
         => _cacher.ContainsKey(key);
     /// <inheritdoc />
-    public bool TryGetValue(TKey key, out TValue value)
+    public bool TryGetValue(in TKey key, out TValue value)
         => _cacher.TryGetValue(key, out value);
     /// <inheritdoc />
-    public void Set(TKey key, TValue value)
+    public void Set(in TKey key, TValue value)
         => _cacher.Set(key, value);
     /// <summary>
     /// 构造新值
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    protected abstract TValue CreateNew(TKey key);
+    protected abstract TValue CreateNew(in TKey key);
 }

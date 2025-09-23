@@ -9,7 +9,7 @@ namespace PocoEmit.Converters;
 /// </summary>
 /// <param name="key"></param>
 /// <param name="constructor"></param>
-public class ConstructorConverter(PairTypeKey key, ConstructorInfo constructor)
+public class ConstructorConverter(in PairTypeKey key, ConstructorInfo constructor)
     : IEmitConverter
 {
     #region 配置

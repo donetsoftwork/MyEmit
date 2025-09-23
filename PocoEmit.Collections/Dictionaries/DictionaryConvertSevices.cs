@@ -275,16 +275,6 @@ public static partial class PocoDictionaryServices
         var bundle = CollectionContainer.Instance.DictionaryCacher.Get(dictionaryType);
         if (bundle == null)
             return null;
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-        var isInterface = dictionaryType.GetTypeInfo().IsInterface;
-#else
-        var isInterface = dictionaryType.IsInterface;
-#endif
-        if (isInterface)
-        {
-            dictionaryType = typeof(Dictionary<,>).MakeGenericType(bundle.KeyType, bundle.ValueType);
-            bundle = CollectionContainer.Instance.DictionaryCacher.Get(dictionaryType);
-        }
         var dictionaryConverter = CreateDictionaryConverter(options, instanceType, targetType, dictionaryType, bundle.KeyType, bundle.ValueType, bundle.Items, names, ignoreDefault);
         return new(options, instanceType, dictionaryType, dictionaryConverter);
     }
@@ -303,6 +293,13 @@ public static partial class PocoDictionaryServices
     /// <returns></returns>
     internal static DictionaryConverter CreateDictionaryConverter(this IMapperOptions options, Type instanceType, Type targetType, Type dictionaryType, Type keyType, Type elementType, PropertyInfo itemProperty, IEnumerable<string> names, bool ignoreDefault)
     {
+#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+        var isInterface = dictionaryType.GetTypeInfo().IsInterface;
+#else
+        var isInterface = dictionaryType.IsInterface;
+#endif
+        if (isInterface)
+            dictionaryType = typeof(Dictionary<,>).MakeGenericType(keyType, elementType);
         targetType ??= elementType;
         DictionaryCopier copier = options.CreateDictionaryCopier(instanceType, targetType, dictionaryType, keyType, elementType, itemProperty, names, ignoreDefault);
         if(copier is null)

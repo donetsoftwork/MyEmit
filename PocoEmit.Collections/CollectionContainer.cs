@@ -9,11 +9,6 @@ using System.Collections.Concurrent;
 using PocoEmit.Collections.Saves;
 using PocoEmit.Collections.Bundles;
 
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-using System.Collections.Generic;
-using System.Collections.Frozen;
-#endif
-
 namespace PocoEmit;
 
 /// <summary>
@@ -66,44 +61,7 @@ public sealed partial class CollectionContainer
     private readonly CollectionCacher _collectionCacher;
     private readonly ListCacher _listCacher;
     private readonly DictionaryCacher _dictionaryCacher;
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-    /// <summary>
-    /// 集合数量缓存
-    /// </summary>
-    private IDictionary<PairTypeKey, IEmitElementCounter> _counters;
-    /// <summary>
-    /// 集合访问者缓存
-    /// </summary>
-    private IDictionary<Type, IEmitElementVisitor> _visitors;
-    /// <summary>
-    /// 索引读取器缓存
-    /// </summary>
-    private IDictionary<Type, IEmitIndexMemberReader> _readIndexs;
-    /// <summary>
-    /// 索引访问者缓存(主要用于字典遍历)
-    /// </summary>
-    private IDictionary<Type, IElementIndexVisitor> _indexVisitors;
-    /// <summary>
-    /// 元素保存器
-    /// </summary>
-    private IDictionary<PairTypeKey, IEmitElementSaver> _savers;
-    /// <summary>
-    /// 迭代类成员
-    /// </summary>
-    private IDictionary<Type, EnumerableBundle> _enumerables;
-    /// <summary>
-    /// 集合类成员
-    /// </summary>
-    private IDictionary<Type, CollectionBundle> _collections;
-    /// <summary>
-    /// 列表类成员
-    /// </summary>
-    private IDictionary<Type, ListBundle> _lists;
-    /// <summary>
-    /// 字典类成员
-    /// </summary>
-    private IDictionary<Type, DictionaryBundle> _dictionaries;
-#else
+
     /// <summary>
     /// 集合数量缓存
     /// </summary>
@@ -140,106 +98,104 @@ public sealed partial class CollectionContainer
     /// 字典类成员
     /// </summary>
     private readonly ConcurrentDictionary<Type, DictionaryBundle> _dictionaries;
-
-#endif
     #endregion
     #region ICacher<Type, IEmitElementCounter>
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IEmitElementCounter>.ContainsKey(PairTypeKey key)
+    bool ICacher<PairTypeKey, IEmitElementCounter>.ContainsKey(in PairTypeKey key)
         => _counters.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IEmitElementCounter>.TryGetValue(PairTypeKey key, out IEmitElementCounter value)
+    bool ICacher<PairTypeKey, IEmitElementCounter>.TryGetValue(in PairTypeKey key, out IEmitElementCounter value)
         => _counters.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<PairTypeKey, IEmitElementCounter>.Set(PairTypeKey key, IEmitElementCounter value)
+    void IStore<PairTypeKey, IEmitElementCounter>.Set(in PairTypeKey key, IEmitElementCounter value)
         => _counters[key] = value;
     #endregion
     #region ICacher<Type, ICollectionVisitor>
     /// <inheritdoc />
-    bool ICacher<Type, IEmitElementVisitor>.ContainsKey(Type key)
+    bool ICacher<Type, IEmitElementVisitor>.ContainsKey(in Type key)
         => _visitors.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, IEmitElementVisitor>.TryGetValue(Type key, out IEmitElementVisitor value)
+    bool ICacher<Type, IEmitElementVisitor>.TryGetValue(in Type key, out IEmitElementVisitor value)
         => _visitors.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, IEmitElementVisitor>.Set(Type key, IEmitElementVisitor value)
+    void IStore<Type, IEmitElementVisitor>.Set(in Type key, IEmitElementVisitor value)
         => _visitors[key] = value;
     #endregion
     #region ICacher<Type, IEmitIndexMemberReader>
     /// <inheritdoc />
-    bool ICacher<Type, IEmitIndexMemberReader>.ContainsKey(Type key)
+    bool ICacher<Type, IEmitIndexMemberReader>.ContainsKey(in Type key)
         => _readIndexs.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, IEmitIndexMemberReader>.TryGetValue(Type key, out IEmitIndexMemberReader value)
+    bool ICacher<Type, IEmitIndexMemberReader>.TryGetValue(in Type key, out IEmitIndexMemberReader value)
         => _readIndexs.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, IEmitIndexMemberReader>.Set(Type key, IEmitIndexMemberReader value)
+    void IStore<Type, IEmitIndexMemberReader>.Set(in Type key, IEmitIndexMemberReader value)
         => _readIndexs[key] = value;
     #endregion
     #region ICacher<Type, IElementIndexVisitor>
     /// <inheritdoc />
-    bool ICacher<Type, IElementIndexVisitor>.ContainsKey(Type key)
+    bool ICacher<Type, IElementIndexVisitor>.ContainsKey(in Type key)
         => _indexVisitors.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, IElementIndexVisitor>.TryGetValue(Type key, out IElementIndexVisitor value)
+    bool ICacher<Type, IElementIndexVisitor>.TryGetValue(in Type key, out IElementIndexVisitor value)
         => _indexVisitors.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, IElementIndexVisitor>.Set(Type key, IElementIndexVisitor value)
+    void IStore<Type, IElementIndexVisitor>.Set(in Type key, IElementIndexVisitor value)
         => _indexVisitors[key] = value;
     #endregion
     #region ICacher<Type, IEmitElementSaver>
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IEmitElementSaver>.ContainsKey(PairTypeKey key)
+    bool ICacher<PairTypeKey, IEmitElementSaver>.ContainsKey(in PairTypeKey key)
         => _savers.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IEmitElementSaver>.TryGetValue(PairTypeKey key, out IEmitElementSaver value)
+    bool ICacher<PairTypeKey, IEmitElementSaver>.TryGetValue(in PairTypeKey key, out IEmitElementSaver value)
         => _savers.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<PairTypeKey, IEmitElementSaver>.Set(PairTypeKey key, IEmitElementSaver value)
+    void IStore<PairTypeKey, IEmitElementSaver>.Set(in PairTypeKey key, IEmitElementSaver value)
         => _savers[key] = value;
     #endregion
     #region ICacher<Type, EnumerableBundle>
     /// <inheritdoc />
-    bool ICacher<Type, EnumerableBundle>.ContainsKey(Type key)
+    bool ICacher<Type, EnumerableBundle>.ContainsKey(in Type key)
         => _enumerables.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, EnumerableBundle>.TryGetValue(Type key, out EnumerableBundle value)
+    bool ICacher<Type, EnumerableBundle>.TryGetValue(in Type key, out EnumerableBundle value)
         => _enumerables.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, EnumerableBundle>.Set(Type key, EnumerableBundle value)
+    void IStore<Type, EnumerableBundle>.Set(in Type key, EnumerableBundle value)
         => _enumerables[key] = value;
     #endregion
     #region ICacher<Type, CollectionBundle>
     /// <inheritdoc />
-    bool ICacher<Type, CollectionBundle>.ContainsKey(Type key)
+    bool ICacher<Type, CollectionBundle>.ContainsKey(in Type key)
         => _collections.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, CollectionBundle>.TryGetValue(Type key, out CollectionBundle value)
+    bool ICacher<Type, CollectionBundle>.TryGetValue(in Type key, out CollectionBundle value)
         => _collections.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, CollectionBundle>.Set(Type key, CollectionBundle value)
+    void IStore<Type, CollectionBundle>.Set(in Type key, CollectionBundle value)
         => _collections[key] = value;
     #endregion
     #region ICacher<Type, ListBundle>
     /// <inheritdoc />
-    bool ICacher<Type, ListBundle>.ContainsKey(Type key)
+    bool ICacher<Type, ListBundle>.ContainsKey(in Type key)
         => _lists.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, ListBundle>.TryGetValue(Type key, out ListBundle value)
+    bool ICacher<Type, ListBundle>.TryGetValue(in Type key, out ListBundle value)
         => _lists.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, ListBundle>.Set(Type key, ListBundle value)
+    void IStore<Type, ListBundle>.Set(in Type key, ListBundle value)
         => _lists[key] = value;
     #endregion
     #region ICacher<Type, DictionaryBundle>
     /// <inheritdoc />
-    bool ICacher<Type, DictionaryBundle>.ContainsKey(Type key)
+    bool ICacher<Type, DictionaryBundle>.ContainsKey(in Type key)
         => _dictionaries.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, DictionaryBundle>.TryGetValue(Type key, out DictionaryBundle value)
+    bool ICacher<Type, DictionaryBundle>.TryGetValue(in Type key, out DictionaryBundle value)
         => _dictionaries.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, DictionaryBundle>.Set(Type key, DictionaryBundle value)
+    void IStore<Type, DictionaryBundle>.Set(in Type key, DictionaryBundle value)
         => _dictionaries[key] = value;
     #endregion
     /// <summary>
@@ -293,21 +249,6 @@ public sealed partial class CollectionContainer
     /// </summary>
     public static CollectionContainer Instance
         => Inner.Instance;
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-    /// <summary>
-    /// 设置为不可变
-    /// </summary>
-    public void ToFrozen()
-    {
-        _counters = _counters.ToFrozenDictionary();
-        _visitors = _visitors.ToFrozenDictionary();
-        _readIndexs = _readIndexs.ToFrozenDictionary();
-        _indexVisitors = _indexVisitors.ToFrozenDictionary();
-        _savers = _savers.ToFrozenDictionary();
-        _enumerables = _enumerables.ToFrozenDictionary();
-        _dictionaries = _dictionaries.ToFrozenDictionary();
-    }
-#endif
     #region 配置
     /// <summary>
     /// 全局启用集合功能(转化和复制)

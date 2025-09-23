@@ -30,16 +30,16 @@ public class CurrentContext(BuildContext context, ParameterExpression convertCon
     Expression IBuildContext.InitContext(ParameterExpression context)
         =>_context.InitContext(context);
     /// <inheritdoc />
-    ComplexBundle IBuildContext.GetBundle(PairTypeKey key)
+    ComplexBundle IBuildContext.GetBundle(in PairTypeKey key)
         => _context.GetBundle(key);
     /// <inheritdoc />
     public Expression Call(LambdaExpression lambda, params Expression[] arguments)
         => _context.Call(lambda, arguments);
     /// <inheritdoc />
-    bool IBuildContext.TryGetLambda(PairTypeKey key, out LambdaExpression lambda)
+    bool IBuildContext.TryGetLambda(in PairTypeKey key, out LambdaExpression lambda)
         => _context.TryGetLambda(key, out lambda);
     /// <inheritdoc />
-    ContextAchieved IBuildContext.GetAchieve(PairTypeKey key)
+    ContextAchieved IBuildContext.GetAchieve(in PairTypeKey key)
         =>_context.GetAchieve(key);
     #endregion
 }

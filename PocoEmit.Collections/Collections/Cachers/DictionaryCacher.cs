@@ -21,7 +21,7 @@ internal class DictionaryCacher(CollectionContainer container)
         => _container;
     #endregion
     /// <inheritdoc />
-    protected override DictionaryBundle CreateNew(Type key)
+    protected override DictionaryBundle CreateNew(in Type key)
     {
         if (!ReflectionHelper.HasGenericType(key, typeof(IDictionary<,>)))
             return null;

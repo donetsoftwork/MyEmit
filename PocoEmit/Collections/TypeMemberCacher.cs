@@ -20,7 +20,7 @@ public sealed class TypeMemberCacher(IPocoOptions poco)
     #endregion
     #region CacheBase
     /// <inheritdoc />
-    protected override MemberBundle CreateNew(Type key)
+    protected override MemberBundle CreateNew(in Type key)
         => _poco.ReflectionMember.GetMembers(key);
     #endregion    
 }

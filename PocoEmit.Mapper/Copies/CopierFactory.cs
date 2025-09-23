@@ -22,7 +22,7 @@ public class CopierFactory(IMapperOptions options)
     #endregion
     #region CacheBase
     /// <inheritdoc />
-    protected override IEmitCopier CreateNew(PairTypeKey key)
+    protected override IEmitCopier CreateNew(in PairTypeKey key)
     {
         var destType = key.RightType;
         // 数组不支持复制
@@ -60,7 +60,7 @@ public class CopierFactory(IMapperOptions options)
     /// <param name="key"></param>
     /// <param name="original"></param>
     /// <returns></returns>
-    private IEmitCopier CheckMembers(PairTypeKey key, IEmitCopier original)
+    private IEmitCopier CheckMembers(in PairTypeKey key, IEmitCopier original)
     {
         var checker = _options.GetCheckMembers(key);
         if(checker is null)

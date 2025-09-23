@@ -23,7 +23,7 @@ internal class CountCacher(CollectionContainer container)
         => _container;
     #endregion
     /// <inheritdoc />
-    protected override IEmitElementCounter CreateNew(PairTypeKey key)
+    protected override IEmitElementCounter CreateNew(in PairTypeKey key)
         => CrateByType(_container, key.LeftType, key.RightType);
     /// <summary>
     /// 按类型获取集合数量

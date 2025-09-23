@@ -26,7 +26,7 @@ public class CopyToCollection(IMapperOptions options)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public IEmitCopier ToCollection(PairTypeKey key)
+    public IEmitCopier ToCollection(in PairTypeKey key)
         => Create(key.LeftType, key.RightType, true);
     /// <summary>
     /// 构造复制器

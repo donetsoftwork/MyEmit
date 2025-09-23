@@ -87,20 +87,12 @@ public static partial class MapperServices
     /// <param name="parent"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    public static IEnumerable<ComplexBundle> Visit(this IComplexBundle parent, PairTypeKey key)
+    public static IEnumerable<ComplexBundle> Visit(this IComplexBundle parent, in PairTypeKey key)
     {
         var converter = parent.GetConverter(key);
         if (converter is null)
-            yield break;
-        foreach (var item in Visit(parent, converter))
-        {
-            if (item is null)
-                continue;
-            yield return item;
-            var itemKey = item.Key;
-            foreach (var item2 in Visit(item, itemKey))
-                yield return item2;
-        }
+            return [];
+        return Visit(parent, converter);
     }
     /// <summary>
     /// 预览检测

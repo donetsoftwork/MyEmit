@@ -61,7 +61,7 @@ public class BuildContext(IMapperOptions options)
     #endregion
     #region IBuildContext
     /// <inheritdoc />
-    public ComplexBundle GetBundle(PairTypeKey key)
+    public ComplexBundle GetBundle(in PairTypeKey key)
     {
         if (_collections.TryGetValue(key, out var bundle) || _readies.TryGetValue(key, out bundle))
             return bundle;
@@ -71,14 +71,14 @@ public class BuildContext(IMapperOptions options)
     public Expression Call(LambdaExpression lambda, params Expression[] arguments)
         => _options.Call(lambda, arguments);
     /// <inheritdoc />
-    public bool TryGetLambda(PairTypeKey key, out LambdaExpression lambda)
+    public bool TryGetLambda(in PairTypeKey key, out LambdaExpression lambda)
         => _lambdas.TryGetValue(key, out lambda);
     /// <summary>
     /// 获取上下文构建结果
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public ContextAchieved GetAchieve(PairTypeKey key)
+    public ContextAchieved GetAchieve(in PairTypeKey key)
     {
         if(_contextAchieves.TryGetValue(key, out var achieved))
             return achieved;
@@ -102,7 +102,7 @@ public class BuildContext(IMapperOptions options)
     /// <param name="depth"></param>
     /// <param name="isCollection"></param>
     /// <returns></returns>
-    public ComplexBundle GetBundleOrCreate(PairTypeKey key, IEmitConverter converter, int depth, bool isCollection)
+    public ComplexBundle GetBundleOrCreate(in PairTypeKey key, IEmitConverter converter, int depth, bool isCollection)
     {
         // 忽略基础类型
         if (_options.CheckPrimitive(key.LeftType))
@@ -130,7 +130,7 @@ public class BuildContext(IMapperOptions options)
     /// </summary>
     /// <param name="key"></param>
     /// <param name="bundle"></param>
-    private void RemoveUsed(PairTypeKey key, ComplexBundle bundle)
+    private void RemoveUsed(in PairTypeKey key, ComplexBundle bundle)
     {
         _collections.Remove(key);
         // 移除被调用,简化依赖关系
@@ -297,7 +297,7 @@ public class BuildContext(IMapperOptions options)
     /// <param name="key"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    private LambdaExpression BuildLambdaByNoCircle(PairTypeKey key, IEmitConverter converter)
+    private LambdaExpression BuildLambdaByNoCircle(in PairTypeKey key, IEmitConverter converter)
     {
         LambdaExpression lambda = null;
         if (converter is IEmitComplexConverter complexConverter)
@@ -408,14 +408,14 @@ public class BuildContext(IMapperOptions options)
     #endregion
     #region IComplexBundle
     /// <inheritdoc />
-    ComplexBundle IComplexBundle.Accept(PairTypeKey item, IEmitConverter converter, bool isCollection)
+    ComplexBundle IComplexBundle.Accept(in PairTypeKey item, IEmitConverter converter, bool isCollection)
         => GetBundleOrCreate(item, converter, 2, isCollection);
     /// <summary>
     /// 获取转化器
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public IEmitConverter GetConverter(PairTypeKey key)
+    public IEmitConverter GetConverter(in PairTypeKey key)
         => _options.GetEmitConverter(key);
     #endregion
 }

@@ -6,10 +6,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using PocoEmit.Enums;
 
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-using System.Collections.Frozen;
-#endif
-
 namespace PocoEmit.Collections;
 
 /// <summary>
@@ -44,19 +40,11 @@ public partial class MemberContainer
         _enumCacher = new EnumCacher(this);
     }
     #region 配置
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-    private IDictionary<PropertyInfo, PropertyAccessor> _propertyAccessors;
-    private IDictionary<FieldInfo, FieldAccessor> _fieldAccessors;
-    private IDictionary<MemberInfo, IEmitMemberReader> _memberReaders;
-    private IDictionary<MemberInfo, IEmitMemberWriter> _memberWriters;
-    private IDictionary<Type, IEnumBundle> _IEnumBundles;
-#else
     private readonly ConcurrentDictionary<PropertyInfo, PropertyAccessor> _propertyAccessors;
     private readonly ConcurrentDictionary<FieldInfo, FieldAccessor> _fieldAccessors;    
     private readonly ConcurrentDictionary<MemberInfo, IEmitMemberReader> _memberReaders;
     private readonly ConcurrentDictionary<MemberInfo, IEmitMemberWriter> _memberWriters;
     private readonly ConcurrentDictionary<Type, IEnumBundle> _IEnumBundles;
-#endif
     private readonly PropertyCacher _propertyCacher;
     private readonly FieldCacher _fieldCacher;
     private readonly MemberReaderCacher _memberReaderCacher;
@@ -96,72 +84,59 @@ public partial class MemberContainer
     #endregion
     #region ICacher<PropertyInfo, PropertyAccessor>
     /// <inheritdoc />
-    bool ICacher<PropertyInfo, PropertyAccessor>.ContainsKey(PropertyInfo key)
+    bool ICacher<PropertyInfo, PropertyAccessor>.ContainsKey(in PropertyInfo key)
         => _propertyAccessors.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<PropertyInfo, PropertyAccessor>.TryGetValue(PropertyInfo key, out PropertyAccessor value)
+    bool ICacher<PropertyInfo, PropertyAccessor>.TryGetValue(in PropertyInfo key, out PropertyAccessor value)
         => _propertyAccessors.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<PropertyInfo, PropertyAccessor>.Set(PropertyInfo key, PropertyAccessor value)
+    void IStore<PropertyInfo, PropertyAccessor>.Set(in PropertyInfo key, PropertyAccessor value)
     => _propertyAccessors[key] = value;
     #endregion
     #region ICacher<FieldInfo, FieldAccessor>
     /// <inheritdoc />
-    bool ICacher<FieldInfo, FieldAccessor>.ContainsKey(FieldInfo key)
+    bool ICacher<FieldInfo, FieldAccessor>.ContainsKey(in FieldInfo key)
         => _fieldAccessors.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<FieldInfo, FieldAccessor>.TryGetValue(FieldInfo key, out FieldAccessor value)
+    bool ICacher<FieldInfo, FieldAccessor>.TryGetValue(in FieldInfo key, out FieldAccessor value)
         => _fieldAccessors.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<FieldInfo, FieldAccessor>.Set(FieldInfo key, FieldAccessor value)
+    void IStore<FieldInfo, FieldAccessor>.Set(in FieldInfo key, FieldAccessor value)
         => _fieldAccessors[key] = value;
     #endregion
     #region ISettings<MemberInfo, IMemberReader>
     /// <inheritdoc />
-    bool ICacher<MemberInfo, IEmitMemberReader>.ContainsKey(MemberInfo key)
+    bool ICacher<MemberInfo, IEmitMemberReader>.ContainsKey(in MemberInfo key)
         => _memberReaders.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<MemberInfo, IEmitMemberReader>.Set(MemberInfo key, IEmitMemberReader value)
+    void IStore<MemberInfo, IEmitMemberReader>.Set(in MemberInfo key, IEmitMemberReader value)
         => _memberReaders[key] = value;
     /// <inheritdoc />
-    bool ICacher<MemberInfo, IEmitMemberReader>.TryGetValue(MemberInfo key, out IEmitMemberReader value)
+    bool ICacher<MemberInfo, IEmitMemberReader>.TryGetValue(in MemberInfo key, out IEmitMemberReader value)
         => _memberReaders.TryGetValue(key, out value);
     #endregion
     #region ISettings<MemberInfo, IMemberWriter>
     /// <inheritdoc />
-    bool ICacher<MemberInfo, IEmitMemberWriter>.ContainsKey(MemberInfo key)
+    bool ICacher<MemberInfo, IEmitMemberWriter>.ContainsKey(in MemberInfo key)
         => _memberWriters.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<MemberInfo, IEmitMemberWriter>.Set(MemberInfo key, IEmitMemberWriter value)
+    void IStore<MemberInfo, IEmitMemberWriter>.Set(in MemberInfo key, IEmitMemberWriter value)
         => _memberWriters[key] = value;
     /// <inheritdoc />
-    bool ICacher<MemberInfo, IEmitMemberWriter>.TryGetValue(MemberInfo key, out IEmitMemberWriter value)
+    bool ICacher<MemberInfo, IEmitMemberWriter>.TryGetValue(in MemberInfo key, out IEmitMemberWriter value)
         => _memberWriters.TryGetValue(key, out value);
     #endregion
     #region ISettings<Type, IEnumBundle>
     /// <inheritdoc />
-    bool ICacher<Type, IEnumBundle>.ContainsKey(Type key)
+    bool ICacher<Type, IEnumBundle>.ContainsKey(in Type key)
         => _IEnumBundles.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<Type, IEnumBundle>.Set(Type key, IEnumBundle value)
+    void IStore<Type, IEnumBundle>.Set(in Type key, IEnumBundle value)
         => _IEnumBundles[key] = value;
     /// <inheritdoc />
-    bool ICacher<Type, IEnumBundle>.TryGetValue(Type key, out IEnumBundle value)
+    bool ICacher<Type, IEnumBundle>.TryGetValue(in Type key, out IEnumBundle value)
         => _IEnumBundles.TryGetValue(key, out value);
     #endregion
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-    /// <summary>
-    /// 设置为不可变
-    /// </summary>
-    public void ToFrozen()
-    {
-        _fieldAccessors = _fieldAccessors.ToFrozenDictionary();
-        _propertyAccessors = _propertyAccessors.ToFrozenDictionary();
-        _memberReaders = _memberReaders.ToFrozenDictionary();
-        _memberWriters = _memberWriters.ToFrozenDictionary();
-        _IEnumBundles = _IEnumBundles.ToFrozenDictionary();
-    }
-#endif
     #region 配置
     /// <summary>
     /// 配置

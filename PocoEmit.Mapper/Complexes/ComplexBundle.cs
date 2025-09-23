@@ -12,7 +12,7 @@ namespace PocoEmit.Complexes;
 /// <param name="converter"></param>
 /// <param name="depth"></param>
 /// <param name="isCollection"></param>
-public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter converter, int depth, bool isCollection)
+public class ComplexBundle(BuildContext context, in PairTypeKey key, IEmitConverter converter, int depth, bool isCollection)
     : IComplexBundle
 {
     #region 配置
@@ -95,7 +95,7 @@ public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public IEmitConverter GetConverter(PairTypeKey key)
+    public IEmitConverter GetConverter(in PairTypeKey key)
         => _context.GetConverter(key);
     /// <summary>
     /// 包含
@@ -175,7 +175,7 @@ public class ComplexBundle(BuildContext context, PairTypeKey key, IEmitConverter
         return false;
     }
     /// <inheritdoc />
-    public ComplexBundle Accept(PairTypeKey item, IEmitConverter converter, bool isCollection)
+    public ComplexBundle Accept(in PairTypeKey item, IEmitConverter converter, bool isCollection)
     {
         var bundle = _context.GetBundleOrCreate(item, converter, _depth + 2, isCollection);
         if (bundle is null)

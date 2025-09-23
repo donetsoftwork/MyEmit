@@ -22,7 +22,7 @@ internal class SaveCacher(CollectionContainer container)
         => _container;
     #endregion
     /// <inheritdoc />
-    protected override IEmitElementSaver CreateNew(PairTypeKey key)
+    protected override IEmitElementSaver CreateNew(in PairTypeKey key)
     {
         var collectionType = key.LeftType;
         var elementType = key.RightType;

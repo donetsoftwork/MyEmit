@@ -12,5 +12,5 @@ public interface IConfigure<TKey, TValue>
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    void Configure(TKey key, TValue value);
+    void Configure(in TKey key, TValue value);
 }

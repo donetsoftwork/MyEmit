@@ -21,7 +21,7 @@ internal class IndexVisitorCacher(CollectionContainer container)
         => _container;
     #endregion
     /// <inheritdoc />
-    protected override IElementIndexVisitor CreateNew(Type key)
+    protected override IElementIndexVisitor CreateNew(in Type key)
         => CreateByType(_container, key);
     /// <summary>
     /// 按类型构造集合访问者

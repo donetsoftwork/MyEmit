@@ -18,7 +18,7 @@ public static partial class MapperServices
     /// <param name="context"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    public static ParameterExpression GetConvertContextParameter(this IBuildContext context, PairTypeKey key)
+    public static ParameterExpression GetConvertContextParameter(this IBuildContext context, in PairTypeKey key)
     {
         var bundle = context.GetBundle(key);
         if (bundle is null || !bundle.IsCircle)
@@ -92,7 +92,7 @@ public static partial class MapperServices
     /// <param name="convertContext"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    internal static Expression CallContextConvert(this IBuildContext context, PairTypeKey key, ParameterExpression convertContext, Expression source)
+    internal static Expression CallContextConvert(this IBuildContext context, in PairTypeKey key, ParameterExpression convertContext, Expression source)
     {
         var achieved = context.GetAchieve(key);
         var contextLambda = achieved.Lambda;
@@ -109,7 +109,7 @@ public static partial class MapperServices
     /// <param name="lambda"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    internal static Expression ConvertByLambda(this IBuildContext context, PairTypeKey key, LambdaExpression lambda, Expression source)
+    internal static Expression ConvertByLambda(this IBuildContext context, in PairTypeKey key, LambdaExpression lambda, Expression source)
     {
         var sourceType = key.LeftType;
         var destType = key.RightType;
@@ -132,7 +132,7 @@ public static partial class MapperServices
     /// <param name="parent"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    internal static IBuildContext Enter(this IBuildContext parent, PairTypeKey key)
+    internal static IBuildContext Enter(this IBuildContext parent, in PairTypeKey key)
     {
         var convertContextParameter = parent.ConvertContextParameter;
         if (convertContextParameter is null)
@@ -152,7 +152,7 @@ public static partial class MapperServices
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    internal static Expression SetCache(this IBuildContext context, PairTypeKey key, Expression source, Expression dest)
+    internal static Expression SetCache(this IBuildContext context, in PairTypeKey key, Expression source, Expression dest)
     {
         var parameter = context.ConvertContextParameter;
         if (parameter is not null)

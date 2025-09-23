@@ -94,7 +94,7 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual IEmitCopier GetEmitCopier(PairTypeKey key)
+    public virtual IEmitCopier GetEmitCopier(in PairTypeKey key)
         => _copierFactory.Get(key);
     /// <summary>
     /// 是否基础类型
@@ -107,7 +107,7 @@ public abstract partial class MapperConfigurationBase
     public virtual ConstructorInfo GetConstructor(Type instanceType)
         => _reflectionConstructor.GetConstructor(instanceType);
     /// <inheritdoc />
-    public IEmitActivator GetEmitActivator(PairTypeKey key)
+    public IEmitActivator GetEmitActivator(in PairTypeKey key)
     {
         if (_argumentActiveConfiguration.TryGetValue(key, out IEmitActivator activator) || _activeConfiguration.TryGetValue(key.RightType, out activator))
             return activator;

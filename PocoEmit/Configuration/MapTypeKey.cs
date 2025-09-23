@@ -2,23 +2,18 @@ using System;
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
 using System.Reflection;
 #endif
+#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 
 namespace PocoEmit.Configuration;
-#if NET7_0_OR_GREATER
-/// <summary>
-/// 类型关联键
-/// </summary>
-/// <param name="LeftType"></param>
-/// <param name="RightType"></param>
-public record PairTypeKey(Type LeftType, Type RightType)
-{
-#else
+
 /// <summary>
 /// 类型关联键
 /// </summary>
 /// <param name="leftType"></param>
 /// <param name="rightType"></param>
-public class PairTypeKey(Type leftType,Type rightType)
+public readonly struct PairTypeKey(Type leftType,Type rightType)
      : IEquatable<PairTypeKey>
 {
     #region 配置
@@ -43,7 +38,7 @@ public class PairTypeKey(Type leftType,Type rightType)
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6 || NET45)
         => _leftType.GetHashCode() ^ _rightType.GetHashCode();
 #else
-        => HashCode.Combine(_leftType, _rightType);
+        => HashCode.Combine(_leftType, RuntimeHelpers.GetHashCode(_rightType));
 #endif
     #region IEquatable
     /// <summary>
@@ -61,7 +56,6 @@ public class PairTypeKey(Type leftType,Type rightType)
     public override bool Equals(object other)
         => other is PairTypeKey key && Equals(key);
     #endregion
-#endif
     #region CheckNullable
     /// <summary>
     /// 判断可空类型

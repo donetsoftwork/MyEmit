@@ -33,13 +33,13 @@ public class DictionaryStorage<TKey, TValue>(IDictionary<TKey, TValue> provider)
     #endregion
     #region ISettings<TKey, TValue>
     /// <inheritdoc />
-    public bool ContainsKey(TKey key)
+    public bool ContainsKey(in TKey key)
         => _provider.ContainsKey(key);
     /// <inheritdoc />
-    public bool TryGetValue(TKey key, out TValue value)
+    public bool TryGetValue(in TKey key, out TValue value)
         => _provider.TryGetValue(key, out value);
     /// <inheritdoc />
-    public void Set(TKey key, TValue value)
+    public void Set(in TKey key, TValue value)
         => _provider[key] = value;
     #endregion
 }

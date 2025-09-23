@@ -5,8 +5,8 @@
     <TargetFrameworks>net4.5;net7.0;net8.0;net9.0;netstandard1.1;netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageId>PocoEmit.Mapper</PackageId>
     <Description>Emit加速操作属性和字段</Description>
-    <PackageTags>Emit;Poco;Mapper;Map</PackageTags>
-    <Version>$(VersionBase).1-alpha</Version>
+    <PackageTags>OOM;Emit;Poco;Mapper;Map</PackageTags>
+    <Version>$(VersionBase).2-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RootNamespace>PocoEmit</RootNamespace>
   </PropertyGroup>

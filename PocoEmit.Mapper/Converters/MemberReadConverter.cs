@@ -11,7 +11,7 @@ namespace PocoEmit.Converters;
 /// </summary>
 /// <param name="key"></param>
 /// <param name="reader"></param>
-public class MemberReadConverter(PairTypeKey key, IEmitMemberReader reader)
+public class MemberReadConverter(in PairTypeKey key, IEmitMemberReader reader)
     : IEmitConverter
     , IComplexPreview
 {

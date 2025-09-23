@@ -3,12 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using PocoEmit.Members;
-
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-using System.Collections.Frozen;
-#else
 using System.Linq;
-#endif
 
 namespace PocoEmit.Reflection;
 
@@ -70,7 +65,7 @@ public class DefaultReflectionMember(StringComparer comparer, bool includeField 
         CheckReader(readers, readMembers.Values);
         List<IEmitMemberWriter> writers = [];
         CheckWriter(writers, writeMembers.Values);
-        return new MemberBundle(CheckMembers(readMembers), CheckMembers(readers), CheckMembers(writeMembers), CheckMembers(writers));
+        return new MemberBundle(readMembers, readers.ToDictionary(m => m.Name, m => m, _comparer), writeMembers, writers.ToDictionary(m => m.Name, m => m, _comparer));
     }
     /// <summary>
     /// 处理读取器
@@ -103,45 +98,6 @@ public class DefaultReflectionMember(StringComparer comparer, bool includeField 
                 continue;
             writers.Add(writer);
         }
-    }
-    /// <summary>
-    /// 检查成员
-    /// </summary>
-    /// <param name="dic"></param>
-    /// <returns></returns>
-    protected virtual IDictionary<string, MemberInfo> CheckMembers(Dictionary<string, MemberInfo> dic)
-    {
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-        return dic.ToFrozenDictionary(_comparer);
-#else
-        return dic;
-#endif
-    }
-    /// <summary>
-    /// 检查成员
-    /// </summary>
-    /// <param name="list"></param>
-    /// <returns></returns>
-    protected virtual IDictionary<string, IEmitMemberReader> CheckMembers(IEnumerable<IEmitMemberReader> list)
-    {
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-        return list.ToFrozenDictionary(m => m.Name, m => m, _comparer);
-#else
-        return list.ToDictionary(m => m.Name, m => m, _comparer);
-#endif
-    }
-    /// <summary>
-    /// 检查成员
-    /// </summary>
-    /// <param name="list"></param>
-    /// <returns></returns>
-    protected virtual IDictionary<string, IEmitMemberWriter> CheckMembers(IEnumerable<IEmitMemberWriter> list)
-    {
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-        return list.ToFrozenDictionary(m => m.Name, m => m, _comparer);
-#else
-        return list.ToDictionary(m => m.Name, m => m, _comparer);
-#endif
     }
     /// <summary>
     /// 获取所有属性

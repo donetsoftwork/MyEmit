@@ -34,8 +34,7 @@ public class ConvertContext(IPool<ConvertContext> pool)
     /// <returns></returns>
     public TDest Convert<TSource, TDest>(IContextConverter converter, TSource source)
     {
-        var cacheKey = new ConvertCacheKey(source, typeof(TDest));
-        if (_cacher.TryGetValue(cacheKey, out var cached))
+        if (_cacher.TryGetValue(new ConvertCacheKey(source, typeof(TDest)), out var cached))
             return (TDest)cached;
         return converter.Convert<TSource, TDest>(this, source);
     }
@@ -102,7 +101,7 @@ public class ConvertContext(IPool<ConvertContext> pool)
     /// <param name="converter"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    public static Expression CallConvert(ParameterExpression context, PairTypeKey key, Expression converter, Expression source)
+    public static Expression CallConvert(ParameterExpression context, in PairTypeKey key, Expression converter, Expression source)
         => Expression.Call(context, _convertMethod.MakeGenericMethod(key.LeftType, key.RightType), converter, source);
     /// <summary>
     /// 调用设置缓存
@@ -112,7 +111,7 @@ public class ConvertContext(IPool<ConvertContext> pool)
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    public static Expression CallSetCache(ParameterExpression context, PairTypeKey key, Expression source, Expression dest)
+    public static Expression CallSetCache(ParameterExpression context, in PairTypeKey key, Expression source, Expression dest)
         => Expression.Call(context, _setCacheMethod.MakeGenericMethod(key.LeftType, key.RightType), source, dest);
     #endregion
     #region Reflection

@@ -15,43 +15,30 @@ public class TreeBench2
 {
     private AutoMapper.IMapper _auto;
     private PocoEmit.IMapper _poco;
-    private PocoEmit.IMapper _invoke;
     private Func<Tree2, TreeDTO2> _pocoFunc;
-    private Func<Tree2, TreeDTO2> _invokeFunc;
     private Func<Tree2, TreeDTO2, ResolutionContext, TreeDTO2> _autoFunc;
     private ResolutionContext _resolutionContext;
     private static Tree2 _tree = GetTree();
 
     [Benchmark]
-    public TreeDTO2 Auto2()
+    public TreeDTO2 Auto()
     {
         return _auto.Map<Tree2, TreeDTO2>(_tree);
     }
     [Benchmark]
-    public TreeDTO2 AutoFunc2()
+    public TreeDTO2 AutoFunc()
     {
         return _autoFunc(_tree, default(TreeDTO2), _resolutionContext);
     }
     [Benchmark(Baseline = true)]
-    public TreeDTO2 Poco2()
+    public TreeDTO2 Poco()
     {
         return _poco.Convert<Tree2, TreeDTO2>(_tree);
     }
     [Benchmark]
-    public TreeDTO2 PocoFunc2()
+    public TreeDTO2 PocoFunc()
     {
         return _pocoFunc(_tree);
-    }
-
-    [Benchmark]
-    public TreeDTO2 Invoke2()
-    {
-        return _invoke.Convert<Tree2, TreeDTO2>(_tree);
-    }
-    [Benchmark]
-    public TreeDTO2 InvokeFunc2()
-    {
-        return _invokeFunc(_tree);
     }
 
     public TreeDTO2 BuildAuto()
@@ -65,7 +52,7 @@ public class TreeBench2
         LambdaExpression expressionBranch = _auto.ConfigurationProvider.BuildExecutionPlan(typeof(TreeBranch2), typeof(TreeBranchDTO2));
         string codeBranch = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expressionBranch);
         Console.WriteLine(codeBranch);
-        return Auto2();
+        return Auto();
     }
     public TreeDTO2 BuildPoco()
     {
@@ -76,15 +63,7 @@ public class TreeBench2
         //{
         //    Poco2();
         //}
-        return Poco2();
-    }
-
-    public TreeDTO2 BuildInvoke()
-    {
-        LambdaExpression expression = _invoke.BuildConverter<Tree2, TreeDTO2>();
-        string code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
-        Console.WriteLine(code);
-        return Invoke2();
+        return Poco();
     }
 
     [GlobalSetup]
@@ -103,9 +82,7 @@ public class TreeBench2
         }
 
         _poco = ConfigurePocoMapper(new MapperOptions());
-        _invoke = ConfigurePocoMapper(new MapperOptions() { LambdaInvoke = true });
         _pocoFunc = _poco.GetConvertFunc<Tree2, TreeDTO2>();
-        _invokeFunc = _invoke.GetConvertFunc<Tree2, TreeDTO2>();
     }
     private static PocoEmit.IMapper ConfigurePocoMapper(MapperOptions options)
     {

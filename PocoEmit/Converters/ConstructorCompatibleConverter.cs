@@ -11,7 +11,7 @@ namespace PocoEmit.Converters;
 /// <param name="key"></param>
 /// <param name="constructor"></param>
 /// <param name="parameterType"></param>
-public class ConstructorCompatibleConverter(PairTypeKey key, ConstructorInfo constructor, Type parameterType)
+public class ConstructorCompatibleConverter(in PairTypeKey key, ConstructorInfo constructor, Type parameterType)
     : ConstructorConverter(key, constructor)
 {
     #region 配置

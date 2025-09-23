@@ -22,7 +22,7 @@ internal class FieldCacher(ICacher<FieldInfo, FieldAccessor> cacher)
 {
     #region CacheBase<MemberInfo, IMemberWriter>
     /// <inheritdoc />
-    protected override FieldAccessor CreateNew(FieldInfo key)
+    protected override FieldAccessor CreateNew(in FieldInfo key)
         => new(key);
     #endregion
 }
@@ -36,7 +36,7 @@ internal class PropertyCacher(ICacher<PropertyInfo, PropertyAccessor> cacher)
 {
     #region CacheBase<MemberInfo, IMemberReader>
     /// <inheritdoc />
-    protected override PropertyAccessor CreateNew(PropertyInfo key)
+    protected override PropertyAccessor CreateNew(in PropertyInfo key)
             => new(key);
     #endregion
 }
@@ -50,7 +50,7 @@ internal class EnumCacher(ICacher<Type, IEnumBundle> cacher)
 {
     #region CacheBase<MemberInfo, IMemberReader>
     /// <inheritdoc />
-    protected override IEnumBundle CreateNew(Type key)
+    protected override IEnumBundle CreateNew(in Type key)
     {
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
         var isEnum = key.GetTypeInfo().IsEnum;

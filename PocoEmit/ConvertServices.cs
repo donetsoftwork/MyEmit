@@ -50,7 +50,7 @@ public static partial class PocoEmitServices
     /// <param name="poco"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    public static object GetObjectConverter(this IPoco poco, PairTypeKey key)
+    public static object GetObjectConverter(this IPoco poco, in PairTypeKey key)
     {
         var converter = poco.GetEmitConverter(key);
         if (converter is null)
@@ -168,7 +168,7 @@ public static partial class PocoEmitServices
     /// <param name="key"></param>
     /// <param name="emitConverter"></param>
     /// <returns></returns>
-    internal static CompiledConverter<TSource, TDest> CompileConverter<TSource, TDest>(this IPocoOptions poco, PairTypeKey key, IEmitConverter emitConverter)
+    internal static CompiledConverter<TSource, TDest> CompileConverter<TSource, TDest>(this IPocoOptions poco,in PairTypeKey key, IEmitConverter emitConverter)
     {
         var lambda = emitConverter.Build<TSource, TDest>();
         var func = Compiler._instance.CompileDelegate(lambda);
@@ -183,7 +183,7 @@ public static partial class PocoEmitServices
         /// <summary>
         /// 反射Compile方法
         /// </summary>
-        private static readonly MethodInfo ConvertCompilerMethod = EmitHelper.GetActionMethodInfo<IPocoOptions>(poco => CompileConverter<long, object>(poco, null, null))
+        private static readonly MethodInfo ConvertCompilerMethod = EmitHelper.GetActionMethodInfo<IPocoOptions>(poco => CompileConverter<long, object>(poco, new PairTypeKey(null, null), null))
             .GetGenericMethodDefinition();
         /// <summary>
         /// 反射调用编译方法
@@ -192,7 +192,7 @@ public static partial class PocoEmitServices
         /// <param name="key"></param>
         /// <param name="emitConverter"></param>
         /// <returns></returns>
-        internal static object Compile(IPocoOptions poco, PairTypeKey key, IEmitConverter emitConverter)
+        internal static object Compile(IPocoOptions poco, in PairTypeKey key, IEmitConverter emitConverter)
         {
             return ConvertCompilerMethod.MakeGenericMethod(key.LeftType, key.RightType)
                 .Invoke(null, [poco, key, emitConverter]);

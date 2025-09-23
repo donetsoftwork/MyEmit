@@ -11,7 +11,7 @@ namespace PocoEmit.Converters;
 /// </summary>
 /// <param name="key"></param>
 /// <param name="method"></param>
-public sealed class SelfMethodConverter(PairTypeKey key, MethodInfo method)
+public sealed class SelfMethodConverter(in PairTypeKey key, MethodInfo method)
     : IEmitConverter
 {
     #region 配置

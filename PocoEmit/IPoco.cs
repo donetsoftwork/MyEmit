@@ -37,6 +37,6 @@ public interface IPoco
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    IEmitConverter GetEmitConverter(PairTypeKey key);
+    IEmitConverter GetEmitConverter(in PairTypeKey key);
     #endregion
 }

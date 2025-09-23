@@ -15,7 +15,6 @@ public class UserConvertBench
     private Func<User, UserDTO, ResolutionContext, UserDTO> _autoFunc;
     private ResolutionContext _resolutionContext;
     private PocoEmit.IMapper _poco;
-    private PocoEmit.IMapper _frozen;
     private PocoEmit.IPocoConverter<User, UserDTO> _converter;
     private Func<User, UserDTO> _convertFunc;
     private User _user = new() {  Id =111, Name = "Jxj" };
@@ -55,12 +54,6 @@ public class UserConvertBench
         return _poco.Convert<User, UserDTO>(_user);
     }
     [Benchmark]
-    public UserDTO Frozen()
-    {
-        return _frozen.Convert<User, UserDTO>(_user);
-    }
-
-    [Benchmark]
     public UserDTO Converter()
     {
         return _converter.Convert(_user);
@@ -87,7 +80,6 @@ public class UserConvertBench
             _resolutionContext = field.GetValue(_auto) as ResolutionContext;
         }
         _poco = ConfigurePocoMapper();
-        _frozen = ConfigurePocoFrozen();
         _converter = _poco.GetConverter<User, UserDTO>();
         _convertFunc = _poco.GetConvertFunc<User, UserDTO>();
         //UserDTO dto = PocoEmit.Mapper.Default.Convert<User, UserDTO>(new User());
@@ -98,16 +90,6 @@ public class UserConvertBench
         mapper.UseCollection();
         return mapper;
     }
-    private static PocoEmit.IMapper ConfigurePocoFrozen()
-    {
-        var mapper = ConfigurePocoMapper();
-        // 预加载,缓存
-        mapper.GetConverter<User, UserDTO>();
-        if (mapper is PocoEmit.Mapper configuration)
-            configuration.ToFrozen();
-        return mapper;
-    }
-
     private static MapperConfiguration ConfigureAutoMapper()
     {
         return new MapperConfiguration(CreateMap, LoggerFactory.Create(_ => { }));

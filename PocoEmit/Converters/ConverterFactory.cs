@@ -21,7 +21,7 @@ public sealed class ConverterFactory(IPocoOptions options)
     #endregion
     #region CacheBase
     /// <inheritdoc />
-    protected override IEmitConverter CreateNew(PairTypeKey key)
+    protected override IEmitConverter CreateNew(in PairTypeKey key)
         => _options.ConvertBuilder.Build(key.LeftType, key.RightType);
     #endregion
 

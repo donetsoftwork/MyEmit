@@ -23,7 +23,7 @@ internal class CollectionCacher(CollectionContainer container)
         => _container;
     #endregion
     /// <inheritdoc />
-    protected override CollectionBundle CreateNew(Type key)
+    protected override CollectionBundle CreateNew(in Type key)
     {
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
         var isCollection = typeof(ICollection).GetTypeInfo().IsAssignableFrom(key.GetTypeInfo());

@@ -19,11 +19,11 @@ public interface IComplexBundle
     /// <param name="converter"></param>
     /// <param name="isCollection"></param>
     /// <returns></returns>
-    ComplexBundle Accept(PairTypeKey item, IEmitConverter converter, bool isCollection);
+    ComplexBundle Accept(in PairTypeKey item, IEmitConverter converter, bool isCollection);
     /// <summary>
     /// 获取转化器
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    IEmitConverter GetConverter(PairTypeKey key);
+    IEmitConverter GetConverter(in PairTypeKey key);
 }

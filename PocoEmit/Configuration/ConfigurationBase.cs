@@ -96,7 +96,7 @@ public abstract partial class ConfigurationBase
     public Action<object, object> GetWriteAction(MemberInfo member)
         => (_writerActionCacher ??= new WriteActionCacher(this)).Get(member);
     /// <inheritdoc />
-    public IEmitConverter GetEmitConverter(PairTypeKey key)
+    public IEmitConverter GetEmitConverter(in PairTypeKey key)
         => _converterFactory.Get(key);
     /// <summary>
     /// 调用

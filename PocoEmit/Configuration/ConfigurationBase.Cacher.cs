@@ -25,7 +25,7 @@ public abstract partial class ConfigurationBase
             => _options;
         #endregion
         /// <inheritdoc />
-        protected override Func<object, object> CreateNew(MemberInfo key)
+        protected override Func<object, object> CreateNew(in MemberInfo key)
             => _options.GetReadFunc<object, object>(key);
     }
     /// <summary>
@@ -43,7 +43,7 @@ public abstract partial class ConfigurationBase
             => _poco;
         #endregion
         /// <inheritdoc />
-        protected override Action<object, object> CreateNew(MemberInfo key)
+        protected override Action<object, object> CreateNew(in MemberInfo key)
             => _poco.GetWriteAction<object, object>(key);
     }
     #endregion

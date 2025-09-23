@@ -20,7 +20,7 @@ internal class ListCacher(CollectionContainer container)
         => _container;
     #endregion
     /// <inheritdoc />
-    protected override ListBundle CreateNew(Type key)
+    protected override ListBundle CreateNew(in Type key)
     {
         if (!ReflectionHelper.HasGenericType(key, typeof(IList<>)))
             return null;

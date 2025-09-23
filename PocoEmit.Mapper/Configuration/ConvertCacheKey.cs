@@ -1,22 +1,16 @@
 using System;
+#if NET7_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 
 namespace PocoEmit.Configuration;
 
-#if NET7_0_OR_GREATER
-/// <summary>
-/// 转化缓存键
-/// </summary>
-/// <param name="Source"></param>
-/// <param name="DestType"></param>
-public record ConvertCacheKey(object Source, Type DestType)
-{
-#else
 /// <summary>
 /// 转化缓存键
 /// </summary>
 /// <param name="source"></param>
 /// <param name="destType"></param>
-public class ConvertCacheKey(object source, Type destType)
+public readonly struct ConvertCacheKey(object source, Type destType)
      : IEquatable<ConvertCacheKey>
 {
     #region 配置
@@ -33,31 +27,19 @@ public class ConvertCacheKey(object source, Type destType)
     public Type DestType
         => _destType;
     #endregion
-    /// <summary>
-    /// HashCode
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc />
     public override int GetHashCode()
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6 || NET45)
         => _destType.GetHashCode() ^ _source.GetHashCode();
 #else
-        => HashCode.Combine(_destType, _source);
+        => HashCode.Combine(_destType, RuntimeHelpers.GetHashCode(_source));
 #endif
-    #region IEquatable
-    /// <summary>
-    /// 判同
-    /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
+#region IEquatable
+    /// <inheritdoc />
     public bool Equals(ConvertCacheKey other)
         => _destType.Equals(other._destType) && _source.Equals(other._source);
-    /// <summary>
-    /// 判同
-    /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
+    /// <inheritdoc />
     public override bool Equals(object other)
         => other is ConvertCacheKey key && Equals(key);
     #endregion
-#endif
 }

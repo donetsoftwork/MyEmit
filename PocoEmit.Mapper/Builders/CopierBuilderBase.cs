@@ -30,7 +30,7 @@ public abstract class CopierBuilderBase(IMapperOptions options)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public virtual IEmitCopier Build(PairTypeKey key)
+    public virtual IEmitCopier Build(in PairTypeKey key)
     {
         var destType = key.RightType;
         TypeMemberCacher memberCacher = _options.MemberCacher;
@@ -55,7 +55,7 @@ public abstract class CopierBuilderBase(IMapperOptions options)
     /// <param name="key"></param>
     /// <param name="destMembers"></param>
     /// <param name="converters"></param>
-    public virtual void CheckMembers(PairTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
+    public virtual void CheckMembers(in PairTypeKey key, IEnumerable<IEmitMemberWriter> destMembers, ICollection<IMemberConverter> converters)
     {
     }
     /// <summary>
@@ -65,7 +65,7 @@ public abstract class CopierBuilderBase(IMapperOptions options)
     /// <param name="block"></param>
     /// <param name="members"></param>
     /// <returns></returns>
-    private ComplexTypeCopier New(PairTypeKey key, EventWaitHandle block, IEnumerable<IMemberConverter> members)
+    private ComplexTypeCopier New(in PairTypeKey key, EventWaitHandle block, IEnumerable<IMemberConverter> members)
     {
         ComplexTypeCopier copier = new(_options, Wait(block, members));
         ICacher<PairTypeKey, IEmitCopier> cacher = _options;

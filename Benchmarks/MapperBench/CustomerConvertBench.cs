@@ -13,7 +13,6 @@ public class CustomerConvertBench
 {
     private AutoMapper.IMapper _auto;
     private PocoEmit.IMapper _poco;
-    private PocoEmit.IMapper _frozen;
     private PocoEmit.IPocoConverter<Customer, CustomerDTO> _converter;
     private Func<Customer, CustomerDTO> _pocoFunc;
     private static Customer _customer = GetCustomer();
@@ -66,11 +65,6 @@ public class CustomerConvertBench
     {
         return _poco.Convert<Customer, CustomerDTO>(_customer);
     }
-    [Benchmark]
-    public CustomerDTO Frozen()
-    {
-        return _frozen.Convert<Customer, CustomerDTO>(_customer);
-    }
 
     [Benchmark]
     public CustomerDTO Converter()
@@ -100,7 +94,6 @@ public class CustomerConvertBench
         }
 
         _poco = ConfigurePocoMapper();
-        _frozen = ConfigurePocoFrozen();
         _converter = _poco.GetConverter<Customer, CustomerDTO>();
         _pocoFunc = _poco.GetConvertFunc<Customer, CustomerDTO>();
     }
@@ -115,15 +108,6 @@ public class CustomerConvertBench
     public static void ConvertAddressCity(Customer customer, CustomerDTO dto)
     {
         dto.AddressCity = customer.Address.City;
-    }
-    private static PocoEmit.IMapper ConfigurePocoFrozen()
-    {
-        var mapper = ConfigurePocoMapper();
-        // 预加载,缓存
-        mapper.GetConverter<Customer, CustomerDTO>();
-        if(mapper is PocoEmit.Mapper configuration)
-            configuration.ToFrozen();
-        return mapper;
     }
     private static MapperConfiguration ConfigureAutoMapper()
     {

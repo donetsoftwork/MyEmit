@@ -4,11 +4,7 @@
 
 #!csharp
 
-#r "nuget:System.Collections.Immutable,9.0.0.0"
-
-#!csharp
-
-#r "nuget:PocoEmit.Collections,0.6.2.1-alpha"
+#r "nuget:PocoEmit.Collections,0.6.3.2-alpha"
 
 #!csharp
 

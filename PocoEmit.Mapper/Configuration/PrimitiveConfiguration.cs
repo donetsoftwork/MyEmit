@@ -28,14 +28,14 @@ public class PrimitiveConfiguration
     }
     #region CacheBase<Type, bool>
     /// <inheritdoc />
-    public override bool Get(Type key)
+    public override bool Get(in Type key)
     {
         if(IsPrimitive(key))
             return true;
         return base.Get(key);
     }
     /// <inheritdoc />
-    protected override bool CreateNew(Type key)
+    protected override bool CreateNew(in Type key)
     {
         if (ReflectionHelper.IsNullable(key))
         {

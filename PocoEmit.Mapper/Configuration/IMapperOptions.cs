@@ -34,13 +34,13 @@ public interface IMapperOptions
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    IEmitActivator GetEmitActivator(PairTypeKey key);
+    IEmitActivator GetEmitActivator(in PairTypeKey key);
     /// <summary>
     /// 获取转化后成员检查配置
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    Delegate GetCheckMembers(PairTypeKey key);
+    Delegate GetCheckMembers(in PairTypeKey key);
     /// <summary>
     /// 是否基础类型
     /// </summary>

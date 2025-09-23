@@ -1,0 +1,43 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!csharp
+
+#r "nuget:PocoEmit.Collections,0.6.3.2-alpha"
+
+#!csharp
+
+using PocoEmit;
+using PocoEmit.Complexes;
+using PocoEmit.Configuration;
+using PocoEmit.Dictionaries;
+using System.Collections.Generic;
+
+CollectionContainer.GlobalUseCollection();
+
+#!csharp
+
+#!import ./Tree.cs
+
+#!csharp
+
+var mapper = Mapper.Create();
+var context = new BuildContext((IMapperOptions)mapper);
+var bundles = context.Visit<Tree, TreeDTO>()
+    .Distinct()
+    .ToArray();
+context.CheckCircle();
+// bundles.Display();
+context.Collections.Distinct().Display();
+
+#!csharp
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+//var json = JsonSerializer.Serialize(context.Collections, new JsonSerializerOptions{
+//   ReferenceHandler = ReferenceHandler.Preserve,
+//    WriteIndented = true
+//});
+//json.Display();

@@ -20,7 +20,7 @@ internal class ReadIndexCacher(CollectionContainer container)
         => _container;
     #endregion
     /// <inheritdoc />
-    protected override IEmitIndexMemberReader CreateNew(Type key)
+    protected override IEmitIndexMemberReader CreateNew(in Type key)
     {
         if (key.IsArray)
             return ArrayMemberIndex.Instance;

@@ -10,14 +10,14 @@ namespace PocoEmit.Converters;
 /// </summary>
 /// <param name="isPrimitiveSource"></param>
 /// <param name="key"></param>
-public class EmitConverter(bool isPrimitiveSource, PairTypeKey key)
+public class EmitConverter(bool isPrimitiveSource, in PairTypeKey key)
     : IEmitConverter
 {
     /// <summary>
     /// Emit类型转化
     /// </summary>
     /// <param name="key"></param>
-    public EmitConverter(PairTypeKey key)
+    public EmitConverter(in PairTypeKey key)
         : this(true, key)
     {
     }

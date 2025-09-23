@@ -9,7 +9,7 @@ namespace PocoEmit.Builders;
 /// <param name="poco"></param>
 /// <param name="key"></param>
 /// <param name="lambda"></param>
-public class ArgumentFuncCallBuilder(IPocoOptions poco, PairTypeKey key, LambdaExpression lambda)
+public class ArgumentFuncCallBuilder(IPocoOptions poco, in PairTypeKey key, LambdaExpression lambda)
     : IBuilder<LambdaExpression>
 {
     #region 配置

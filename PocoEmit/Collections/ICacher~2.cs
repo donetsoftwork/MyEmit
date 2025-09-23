@@ -13,13 +13,13 @@ public interface ICacher<TKey, TValue>
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    bool ContainsKey(TKey key);
+    bool ContainsKey(in TKey key);
     /// <summary>
     /// 尝试获取
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    bool TryGetValue(TKey key, out TValue value);
+    bool TryGetValue(in TKey key, out TValue value);
 }
 

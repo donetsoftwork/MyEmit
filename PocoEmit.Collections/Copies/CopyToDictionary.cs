@@ -25,7 +25,7 @@ public class CopyToDictionary(IMapperOptions options)
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public IEmitCopier ToDictionary(PairTypeKey key)
+    public IEmitCopier ToDictionary(in PairTypeKey key)
     {
         var destType = key.RightType;
         var destBundle = CollectionContainer.Instance.DictionaryCacher.Get(destType);

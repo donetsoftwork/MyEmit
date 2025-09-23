@@ -12,5 +12,5 @@ public interface IStore<TKey, TValue>
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    void Set(TKey key, TValue value);
+    void Set(in TKey key, TValue value);
 }

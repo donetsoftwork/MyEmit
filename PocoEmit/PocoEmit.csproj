@@ -5,7 +5,7 @@
     <PackageId>PocoEmit</PackageId>
     <Description>Emit加速操作属性和字段</Description>
     <PackageTags>Emit;Poco;Reflection;Property;Field</PackageTags>
-    <Version>$(VersionBase).1-alpha</Version>
+    <Version>$(VersionBase).2-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
@@ -15,14 +15,6 @@
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
-    <PackageReference Include="System.Collections.Immutable">
-      <Version>9.0.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1' or '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0'">
-    <PackageReference Include="System.Collections.Immutable">
-      <Version>9.0.0</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="readme.md" Pack="true" PackagePath="\" />

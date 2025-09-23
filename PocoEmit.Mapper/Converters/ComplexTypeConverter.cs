@@ -17,7 +17,7 @@ namespace PocoEmit.Converters;
 /// <param name="key"></param>
 /// <param name="destActivator"></param>
 /// <param name="copier"></param>
-public class ComplexTypeConverter(IMapperOptions options, PairTypeKey key, IEmitActivator destActivator, IEmitCopier copier)
+public class ComplexTypeConverter(IMapperOptions options,in PairTypeKey key, IEmitActivator destActivator, IEmitCopier copier)
     : IEmitComplexConverter
     , IBuilder<LambdaExpression>
 {

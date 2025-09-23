@@ -13,7 +13,7 @@ public class MemberReaderCacher(MemberContainer container)
     private readonly MemberContainer _container = container;
     #region CacheBase<MemberInfo, IMemberReader>
     /// <inheritdoc />
-    protected override IEmitMemberReader CreateNew(MemberInfo key)
+    protected override IEmitMemberReader CreateNew(in MemberInfo key)
     {
         if (key is FieldInfo field)
             return _container.Fields.Get(field);

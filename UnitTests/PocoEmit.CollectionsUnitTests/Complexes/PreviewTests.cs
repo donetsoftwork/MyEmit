@@ -70,7 +70,7 @@ public class PreviewTests : CollectionTestBase
         Assert.True(branch.IsCircle);
         var leaf = context.GetBundle<TreeLeaf, TreeLeafDTO>();
         Assert.NotNull(leaf);
-        Assert.True(leaf.IsCircle);
+        Assert.False(leaf.IsCircle);
     }
     [Fact]
     public void VisitTree2()

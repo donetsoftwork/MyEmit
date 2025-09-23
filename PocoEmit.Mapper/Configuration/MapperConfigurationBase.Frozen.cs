@@ -6,14 +6,7 @@ using System;
 using PocoEmit.Builders;
 using System.Linq.Expressions;
 using PocoEmit.Converters;
-
-
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-using System.Collections.Generic;
-using System.Collections.Frozen;
-#else
 using System.Collections.Concurrent;
-#endif
 
 namespace PocoEmit.Configuration;
 
@@ -25,44 +18,6 @@ public abstract partial class MapperConfigurationBase
     , IMapperOptions
 {
     #region 配置
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-    /// <summary>
-    /// 复制器缓存
-    /// </summary>
-    private IDictionary<PairTypeKey, IEmitCopier> _copiers;
-    /// <summary>
-    /// 复制器配置
-    /// </summary>
-    private IDictionary<PairTypeKey, IEmitCopier> _copyConfiguration;
-    /// <summary>
-    /// 激活器配置
-    /// </summary>
-    private IDictionary<Type, IEmitActivator> _activeConfiguration;
-    /// <summary>
-    /// 带参激活器配置
-    /// </summary>
-    private IDictionary<PairTypeKey, IEmitActivator> _argumentActiveConfiguration;
-    /// <summary>
-    /// 转化后成员检查配置
-    /// </summary>
-    private IDictionary<PairTypeKey, Delegate> _checkMembers;
-    /// <summary>
-    /// 成员匹配配置
-    /// </summary>
-    private IDictionary<PairTypeKey, IMemberMatch> _matchConfiguration;
-    /// <summary>
-    /// 基础类型配置
-    /// </summary>
-    private IDictionary<Type, bool> _primitiveTypes;
-    /// <summary>
-    /// 默认值配置
-    /// </summary>
-    private IDictionary<Type, IBuilder<Expression>> _defaultValueConfiguration;
-        /// <summary>
-    /// 上下文转化缓存
-    /// </summary>
-    private IDictionary<PairTypeKey, IContextConverter> _contextConverters;
-#else
     /// <summary>
     /// 复制器缓存
     /// </summary>
@@ -99,50 +54,49 @@ public abstract partial class MapperConfigurationBase
     /// 上下文转化缓存
     /// </summary>
     private readonly ConcurrentDictionary<PairTypeKey, IContextConverter> _contextConverters;
-#endif
     #endregion
     #region IMapperOptions
     /// <inheritdoc />
-    public IMemberMatch GetMemberMatch(PairTypeKey key)
+    public IMemberMatch GetMemberMatch(in PairTypeKey key)
     {
         _matchConfiguration.TryGetValue(key, out IMemberMatch matcher);
         return matcher ?? _defaultMatcher;
     }
     /// <inheritdoc />
-    public Delegate GetCheckMembers(PairTypeKey key)
+    public Delegate GetCheckMembers(in PairTypeKey key)
     {
         _checkMembers.TryGetValue(key, out Delegate checker);
         return checker;
     }
     #region IConfigure<PairTypeKey, IEmitCopier>
     /// <inheritdoc />
-    void IConfigure<PairTypeKey, IEmitCopier>.Configure(PairTypeKey key, IEmitCopier value)
+    void IConfigure<PairTypeKey, IEmitCopier>.Configure(in PairTypeKey key, IEmitCopier value)
         => _copyConfiguration[key] = value;
     #endregion
     #region ICacher<PairTypeKey, IEmitCopier>
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IEmitCopier>.ContainsKey(PairTypeKey key)
+    bool ICacher<PairTypeKey, IEmitCopier>.ContainsKey(in PairTypeKey key)
         => _copiers.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IEmitCopier>.TryGetValue(PairTypeKey key, out IEmitCopier value)
+    bool ICacher<PairTypeKey, IEmitCopier>.TryGetValue(in PairTypeKey key, out IEmitCopier value)
         => _copiers.TryGetValue(key, out value) || _copyConfiguration.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<PairTypeKey, IEmitCopier>.Set(PairTypeKey key, IEmitCopier value)
+    void IStore<PairTypeKey, IEmitCopier>.Set(in PairTypeKey key, IEmitCopier value)
         => _copiers[key] = value;
     #endregion
     #region IConfigure<Type, IEmitActivator>
     /// <inheritdoc />
-    void IConfigure<Type, IEmitActivator>.Configure(Type key, IEmitActivator value)
+    void IConfigure<Type, IEmitActivator>.Configure(in Type key, IEmitActivator value)
         => _activeConfiguration[key] = value;
     #endregion
     #region IConfigure<PairTypeKey, IEmitActivator>
     /// <inheritdoc />
-    void IConfigure<PairTypeKey, IEmitActivator>.Configure(PairTypeKey key, IEmitActivator value)
+    void IConfigure<PairTypeKey, IEmitActivator>.Configure(in PairTypeKey key, IEmitActivator value)
         => _argumentActiveConfiguration[key] = value;
     #endregion
     #region IConfigure<PairTypeKey, Delegate>
     /// <inheritdoc />
-    void IConfigure<PairTypeKey, Delegate>.Configure(PairTypeKey key, Delegate value)
+    void IConfigure<PairTypeKey, Delegate>.Configure(in PairTypeKey key, Delegate value)
     {
         if (_checkMembers.TryGetValue(key, out var value0))
             value = Delegate.Combine(value0, value);
@@ -151,51 +105,40 @@ public abstract partial class MapperConfigurationBase
     #endregion
     #region IConfigure<PairTypeKey, IMemberMatch>
     /// <inheritdoc />
-    void IConfigure<PairTypeKey, IMemberMatch>.Configure(PairTypeKey key, IMemberMatch value)
+    void IConfigure<PairTypeKey, IMemberMatch>.Configure(in PairTypeKey key, IMemberMatch value)
         => _matchConfiguration[key] = value;
     #endregion
     #region ICacher<Type, bool>
     /// <inheritdoc />
-    bool ICacher<Type, bool>.ContainsKey(Type key)
+    bool ICacher<Type, bool>.ContainsKey(in Type key)
         => _primitiveTypes.ContainsKey(key);
     /// <inheritdoc />
-    public virtual bool TryGetValue(Type key, out bool value)
+    public virtual bool TryGetValue(in Type key, out bool value)
         => _primitiveTypes.TryGetValue(key, out value);
     /// <inheritdoc />
-    void IStore<Type, bool>.Set(Type key, bool value)
+    void IStore<Type, bool>.Set(in Type key, bool value)
         => _primitiveTypes[key] = value;
     #endregion
     #region IConfigure<Type, bool>
     /// <inheritdoc />
-    void IConfigure<Type, bool>.Configure(Type key, bool value)
+    void IConfigure<Type, bool>.Configure(in Type key, bool value)
        => _primitiveTypes[key] = value;
     #endregion
     #region IConfigure<Type, IBuilder<Expression>>
     /// <inheritdoc />
-    void IConfigure<Type, IBuilder<Expression>>.Configure(Type key, IBuilder<Expression> value)
+    void IConfigure<Type, IBuilder<Expression>>.Configure(in Type key, IBuilder<Expression> value)
         => _defaultValueConfiguration[key] = value;
     #endregion
     #region ICacher<PairTypeKey, IContextConverter>
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IContextConverter>.ContainsKey(PairTypeKey key)
+    bool ICacher<PairTypeKey, IContextConverter>.ContainsKey(in PairTypeKey key)
         => _contextConverters.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<PairTypeKey, IContextConverter>.Set(PairTypeKey key, IContextConverter value)
+    void IStore<PairTypeKey, IContextConverter>.Set(in PairTypeKey key, IContextConverter value)
         => _contextConverters[key] = value;
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IContextConverter>.TryGetValue(PairTypeKey key, out IContextConverter value)
+    bool ICacher<PairTypeKey, IContextConverter>.TryGetValue(in PairTypeKey key, out IContextConverter value)
         => _contextConverters.TryGetValue(key, out value);
     #endregion
     #endregion
-#if NET8_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
-    /// <summary>
-    /// 设置为不可变
-    /// </summary>
-    public override void ToFrozen()
-    {
-        base.ToFrozen();
-        _copiers = _copiers.ToFrozenDictionary();
-        _contextConverters = _contextConverters.ToFrozenDictionary();
-    }
-#endif
 }

@@ -3,6 +3,8 @@ using BenchmarkDotNet.Running;
 using MapperBench;
 using MapperBench.Supports;
 using System.Linq.Expressions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 #region CustomerConvertBench
 //CustomerConvertBench convertBench = new();
@@ -30,7 +32,6 @@ using System.Linq.Expressions;
 ////treeBench2.PocoFunc();
 //var auto = treeBench2.BuildAuto();
 //var poco = treeBench2.BuildPoco();
-//var invoke = treeBench2.BuildInvoke();
 #endregion
 #region UserConvertBench
 //UserConvertBench userConvertBench = new();
