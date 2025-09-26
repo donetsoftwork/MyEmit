@@ -9,12 +9,11 @@ using System.Text.Json.Serialization;
 #region CustomerConvertBench
 //CustomerConvertBench convertBench = new();
 //convertBench.Setup();
-//convertBench.Test();
+////convertBench.Test();
 //var auto = convertBench.BuildAuto();
 //var autoFunc = convertBench.AutoFunc();
 //var converter = convertBench.Converter();
 //var pocoFunc = convertBench.PocoFunc();
-//var frozen = convertBench.Frozen();
 //var poco = CustomerTests.BuildPoco();
 #endregion
 
@@ -49,6 +48,14 @@ using System.Text.Json.Serialization;
 //menuBench.Setup();
 //var auto = menuBench.BuildAuto();
 //var poco = menuBench.BuildPoco();
+//var cache = menuBench.BuildCache();
+#endregion
+#region SoldierTeamBench
+//SoldierTeamBench soldierTeamBench = new();
+//soldierTeamBench.Setup();
+////var auto = soldierTeamBench.BuildAuto();
+////var poco = soldierTeamBench.BuildPoco();
+//var noCache = soldierTeamBench.BuildCache();
 #endregion
 //var dto5 = CustomerTests.BySys();
 //var dto6 = CustomerTests.ByFast();
@@ -58,7 +65,7 @@ using System.Text.Json.Serialization;
 //BenchmarkRunner.Run<UserConvertBench>();
 //BenchmarkRunner.Run<ToDictionaryBench>();
 //BenchmarkRunner.Run<TreeBench>();
-BenchmarkRunner.Run<TreeBench2>();
-//BenchmarkRunner.Run<NodeBench>();
+//BenchmarkRunner.Run<TreeBench2>();
+BenchmarkRunner.Run<NodeBench>();
 //BenchmarkRunner.Run<MenuBench>();
 

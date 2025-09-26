@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace PocoEmit.Complexes;
 
 /// <summary>
@@ -11,5 +9,5 @@ public interface IComplexPreview
     /// 预览
     /// </summary>
     /// <param name="parent"></param>
-    IEnumerable<ComplexBundle> Preview(IComplexBundle parent);
+    void Preview(IComplexBundle parent);
 }

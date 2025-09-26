@@ -1,4 +1,5 @@
 using PocoEmit.Collections.Bundles;
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using PocoEmit.Dictionaries;
@@ -24,16 +25,17 @@ public class ConvertToDictionary(IMapperOptions options)
     /// 转化为字典
     /// </summary>
     /// <param name="sourceType"></param>
+    /// <param name="isInterface"></param>
     /// <param name="destType"></param>
     /// <param name="destBundle"></param>
     /// <returns></returns>
-    public DictionaryConverter ToDictionary(Type sourceType, Type destType, DictionaryBundle destBundle)
+    public IEmitComplexConverter ToDictionary(Type sourceType, bool isInterface, Type destType, DictionaryBundle destBundle)
     {
         IEmitCopier copier = _options.GetCollectionCopier()
             .DictionaryCopier
             .Create(sourceType, destType, destBundle);
         if (copier is null)
             return null;
-        return new(sourceType, destType, destBundle.KeyType, destBundle.ValueType, copier);
+        return _options.CreateDictionaryConverter(sourceType, isInterface, destType, destBundle.KeyType, destBundle.ValueType, copier);
     }
 }

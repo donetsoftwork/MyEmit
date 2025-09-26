@@ -1,0 +1,31 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!csharp
+
+#r "nuget:PocoEmit.Collections,0.6.3.4-alpha"
+
+#!csharp
+
+#!import ./Menu.cs
+
+#!csharp
+
+using PocoEmit;
+
+var menu = Menu.GetMenu();
+var mapper = PocoEmit.Mapper.Create()
+    .UseCollection();
+var dto = mapper.Convert<Menu, MenuDTO>(menu);
+
+#!csharp
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions{
+    ReferenceHandler = ReferenceHandler.Preserve,
+    WriteIndented = true
+});
+json.Display();

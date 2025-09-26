@@ -5,8 +5,9 @@ public class CollectionTestBase
     protected readonly IMapper _mapper;
     public CollectionTestBase()
     {
-        CollectionContainer.GlobalUseCollection();
+        //CollectionContainer.GlobalUseCollection();
         _mapper = Mapper.Default;
+        _mapper.UseCollection();
     }
 
     protected void Equal(User source, UserDTO dest)

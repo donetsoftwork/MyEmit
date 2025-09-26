@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 namespace PocoEmit.Converters;
 
 /// <summary>
-/// 上线文转化
+/// 上下文转化
 /// </summary>
 public interface IContextConverter
 {

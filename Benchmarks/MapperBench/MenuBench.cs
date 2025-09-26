@@ -5,6 +5,7 @@ using MapperBench.Supports;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using PocoEmit;
+using PocoEmit.Configuration;
 
 namespace MapperBench;
 
@@ -18,6 +19,8 @@ public class MenuBench
     private ResolutionContext _resolutionContext;
     private PocoEmit.IMapper _poco;
     private Func<Menu, MenuDTO> _pocoFunc;
+    private PocoEmit.IMapper _cache;
+    private Func<Menu, MenuDTO> _cacheFunc;
     #endregion
 
     [Benchmark]
@@ -40,6 +43,16 @@ public class MenuBench
     {
         return _pocoFunc(_node);
     }
+    [Benchmark]
+    public MenuDTO PocoCache()
+    {
+        return _cache.Convert<Menu, MenuDTO>(_node);
+    }
+    [Benchmark]
+    public MenuDTO PocoCacheFunc()
+    {
+        return _cacheFunc(_node);
+    }
 
     [GlobalSetup]
     public void Setup()
@@ -55,9 +68,12 @@ public class MenuBench
             var field = typeof(AutoMapper.Mapper).GetField("_defaultContext", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             _resolutionContext = field.GetValue(_auto) as ResolutionContext;
         }
-        _poco = PocoEmit.Mapper.Create();
-        _poco.UseCollection();
+        _poco = PocoEmit.Mapper.Create()
+            .UseCollection();
         _pocoFunc = _poco.GetConvertFunc<Menu, MenuDTO>();
+        _cache = PocoEmit.Mapper.Create(new MapperOptions { Cached = ComplexCached.Circle })
+            .UseCollection();
+        _cacheFunc = _cache.GetConvertFunc<Menu, MenuDTO>();
     }
     private static MapperConfiguration ConfigureAutoMapper()
     {
@@ -91,5 +107,15 @@ public class MenuBench
         string code2 = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression2);
         Console.WriteLine(code2);
         return Poco();
+    }
+    public MenuDTO BuildCache()
+    {
+        LambdaExpression expression = _cache.BuildConverter<Menu, MenuDTO>();
+        string code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Console.WriteLine(code);
+        LambdaExpression expression2 = _cache.BuildConverter<List<Menu>, List<MenuDTO>>();
+        string code2 = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression2);
+        Console.WriteLine(code2);
+        return PocoCache();
     }
 }

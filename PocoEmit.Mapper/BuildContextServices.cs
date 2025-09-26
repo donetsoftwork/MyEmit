@@ -1,8 +1,11 @@
+using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using PocoEmit.Members;
 using PocoEmit.Resolves;
+using PocoEmit.Visitors;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit;
@@ -12,19 +15,6 @@ namespace PocoEmit;
 /// </summary>
 public static partial class MapperServices
 {
-    /// <summary>
-    /// 获取执行上下文
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public static ParameterExpression GetConvertContextParameter(this IBuildContext context, in PairTypeKey key)
-    {
-        var bundle = context.GetBundle(key);
-        if (bundle is null || !bundle.IsCircle)
-            return null;
-        return context.ConvertContextParameter;
-    }
     /// <summary>
     /// 读取检查复杂类型
     /// </summary>
@@ -50,80 +40,59 @@ public static partial class MapperServices
     /// <returns></returns>
     internal static Expression Convert(this IBuildContext context, IEmitConverter converter, Expression source)
     {
-        var key = converter.Key;
-        if (context.TryGetLambda(key, out LambdaExpression lambda))
-            return ConvertByLambda(context, key, lambda, source);
-        var convertContextParameter = context.ConvertContextParameter;
-        if (convertContextParameter is not null)
-        {
-            var bundle = context.GetBundle(key);
-            if(bundle is not null && bundle.HasCircle)
-            {
-                var sourceType = key.LeftType;
-                var destType = key.RightType;
-                if (PairTypeKey.CheckNullCondition(sourceType))
-                {
-                    return Expression.Condition(
-                        Expression.Equal(source, Expression.Constant(null, sourceType)),
-                        Expression.Default(destType),
-                        CallContextConvert(context, key, convertContextParameter, source)
-                    );
-                }
-                else
-                {
-                    return CallContextConvert(context, key, convertContextParameter, source);
-                }
-            }
-        }        
-        if (converter is IComplexIncludeConverter complexConverter)
-        {
-            return complexConverter.Convert(context, source);
-        }
-        else
-        {
-            return converter.Convert(source);
-        }
+        if (converter is IEmitComplexConverter complexConverter)
+            return CallComplexConvert(context, complexConverter.Key, source);
+        return converter.Convert(source);
     }
     /// <summary>
-    /// 调用上下文转化
+    /// 调用复杂类型转化
     /// </summary>
     /// <param name="context"></param>
     /// <param name="key"></param>
-    /// <param name="convertContext"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    internal static Expression CallContextConvert(this IBuildContext context, in PairTypeKey key, ParameterExpression convertContext, Expression source)
+    internal static Expression CallComplexConvert(this IBuildContext context, in PairTypeKey key, Expression source)
     {
-        var achieved = context.GetAchieve(key);
-        var contextLambda = achieved.Lambda;
-        if (contextLambda is null)
-            return ConvertContext.CallConvert(convertContext, key, Expression.Constant(achieved, typeof(IContextConverter)), source);
-        else
-            return Expression.Invoke(contextLambda, convertContext, source);
-    }
-    /// <summary>
-    /// 使用表达式转化
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="key"></param>
-    /// <param name="lambda"></param>
-    /// <param name="source"></param>
-    /// <returns></returns>
-    internal static Expression ConvertByLambda(this IBuildContext context, in PairTypeKey key, LambdaExpression lambda, Expression source)
-    {
-        var sourceType = key.LeftType;
         var destType = key.RightType;
-        if (PairTypeKey.CheckNullCondition(sourceType, destType))
+        var convertContext = context.ConvertContextParameter;
+        var dest = Expression.Variable(destType, "dest");
+        var bundle = context.GetBundle(key);
+        var isCache = context.HasCache;
+        if (convertContext is null)
+            isCache = false;
+        else if (bundle.HasCache)
+            isCache = true;
+        if (isCache)
         {
-            return Expression.Condition(
-                Expression.Equal(source, Expression.Constant(null, sourceType)),
-                Expression.Default(destType),
-                context.Call(lambda, source)
-            );
+            var achieved = context.GetContexAchieve(key);
+            var contextLambda = achieved.Build();
+            var test = ConvertContext.CallTryGetCache(convertContext, key, source, dest);
+            if (contextLambda is null)
+            {
+                var converter = Expression.Constant(achieved, EmitMapperHelper.GetContextConvertType(key));
+                var convert = EmitMapperHelper.CallContextConvert(converter, convertContext, source);
+                return Expression.Block(
+                    [dest],
+                    Expression.Condition(test, dest, convert, destType));
+            }
+            else
+            {
+                return Expression.Block([dest], Expression.Condition(test, dest, context.Call(bundle.IsCircle, contextLambda, convertContext, source), destType));
+            }
         }
         else
         {
-            return context.Call(lambda, source);
+            var achieved = context.GetAchieve(key);
+            var lambda = achieved.Build();
+            if (lambda is null)
+            {
+                var converter = Expression.Constant(achieved, EmitMapperHelper.GetCompiledConvertType(key));
+                return EmitMapperHelper.CallConvert(converter, source);
+            }
+            else
+            {
+                return Expression.Block([dest], context.Call(bundle.IsCircle, lambda, source));
+            }
         }
     }
     /// <summary>
@@ -133,34 +102,154 @@ public static partial class MapperServices
     /// <param name="key"></param>
     /// <returns></returns>
     internal static IBuildContext Enter(this IBuildContext parent, in PairTypeKey key)
+        => parent.Enter(parent.GetBundle(key));
+    /// <summary>
+    /// 切换进入新上下文
+    /// </summary>
+    /// <param name="parent"></param>
+    /// <param name="bundle"></param>
+    /// <returns></returns>
+    internal static IBuildContext Enter(this IBuildContext parent, ComplexBundle bundle)
     {
-        var convertContextParameter = parent.ConvertContextParameter;
-        if (convertContextParameter is null)
-            return parent;
-        var bundle = parent.GetBundle(key);
+        var isCache = parent.HasCache;
+        if (bundle is not null)
+            isCache |= bundle.HasCache;
+        var parameter = isCache || parent.ConvertContextParameter is not null ? ConvertContext.CreateParameter() : null;
+        return new CurrentContext(parent.Context, bundle, parameter);
+    }
+    /// <summary>
+    /// 构建上下文转化
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    internal static LambdaExpression BuildWithContext(this BuildContext context, IEmitComplexConverter converter)
+    {
+        var key = converter.Key;
+        var achieved = context.GetContexAchieve(key);
+        var contextLambda = achieved?.Build();
+        if (contextLambda is not null)
+            return contextLambda;
+        var bundle = context.GetBundle(key);
+        var currentContext = context.Enter(bundle);
+        var sourceType = key.LeftType;
+        var destType = key.RightType;
+        var source = Expression.Variable(sourceType, "source");
+        var dest = Expression.Variable(destType, "dest");
+        var parameter = currentContext.ConvertContextParameter;
+        List<Expression> list = [];
+        list.AddRange(converter.BuildBody(currentContext, source, dest, parameter));
+        var funcType = Expression.GetFuncType(parameter.Type, sourceType, destType);
+        var originalBody = converter.BuildBody(currentContext, source, dest, parameter);
+        Expression body;
+        if (PairTypeKey.CheckNullCondition(sourceType))
+        {
+            body = Expression.Block(
+                [dest],
+                Expression.IfThen(
+                    Expression.NotEqual(source, Expression.Constant(null, sourceType)),
+                    CleanVisitor.Clean(Expression.Block(originalBody))
+                ),
+                dest);
+        }
+        else
+        {
+            body = Expression.Block(
+                [dest],
+                [
+                    ..CleanVisitor.Clean(originalBody),
+                    dest
+                ]
+            );
+        }
+        contextLambda = Expression.Lambda(funcType, body, [parameter, source]);
+        achieved.CompileDelegate(contextLambda);
+        return contextLambda;
+    }
+    /// <summary>
+    /// 构建转化
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    internal static LambdaExpression Build(this BuildContext context, IEmitComplexConverter converter)
+    {
+        var key = converter.Key;
+        var achieved = context.GetAchieve(key);
+        var lambda = achieved?.Build();
+        if (lambda is not null)
+            return lambda;
+
+        var sourceType = key.LeftType;
+        var destType = key.RightType;
+        var source = Expression.Variable(sourceType, "source");
+        var dest = Expression.Variable(destType, "dest");
+
+        var bundle = context.GetBundle(key);
+        var parameters = new List<ParameterExpression>() { dest };
+        var expressions = new List<Expression>();
         if (bundle is null)
-            return new CurrentContext(parent.Context, null);
-        if (bundle.HasCircle)
-            return new CurrentContext(parent.Context, ConvertContext.CreateParameter());
-        return new CurrentContext(parent.Context, null);
+        {
+            expressions.AddRange(CleanVisitor.Clean(converter.BuildBody(context, source, dest, null)));
+        }
+        else if (bundle.HasCache)
+        {
+            var contextLambda = BuildWithContext(context, converter);
+
+            var parameter = ConvertContext.CreateParameter();
+            parameters.Add(parameter);
+            expressions.Add(context.InitContext(parameter));
+            expressions.Add(CleanVisitor.Clean(Expression.Assign(dest, context.Call(bundle.IsCircle, contextLambda, parameter, source))));
+            expressions.Add(EmitDispose.Dispose(parameter));
+        }
+        else
+        {
+
+            var currentContext = context.Enter(bundle);
+            expressions.AddRange(CleanVisitor.Clean(converter.BuildBody(currentContext, source, dest, null)));
+        }
+        var funcType = Expression.GetFuncType(sourceType, destType);
+        Expression body;
+        if (PairTypeKey.CheckNullCondition(sourceType))
+        {
+            body = Expression.Block(
+                parameters,
+                Expression.IfThen(
+                    Expression.NotEqual(source, Expression.Constant(null, sourceType)),
+                    CleanVisitor.Clean(Expression.Block(expressions))
+                ),
+                dest);
+        }
+        else
+        {
+            body = Expression.Block(
+                parameters,
+                [
+                    ..CleanVisitor.Clean(expressions),
+                    dest
+                ]
+            );
+        }
+        lambda = Expression.Lambda(funcType, body, [source]);
+        achieved?.CompileDelegate(lambda);
+        return lambda;
     }
     /// <summary>
     /// 设置缓存
     /// </summary>
     /// <param name="context"></param>
+    /// <param name="parameter"></param>
     /// <param name="key"></param>
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    internal static Expression SetCache(this IBuildContext context, in PairTypeKey key, Expression source, Expression dest)
+    internal static Expression SetCache(this IBuildContext context, ParameterExpression parameter, in PairTypeKey key, Expression source, Expression dest)
     {
-        var parameter = context.ConvertContextParameter;
-        if (parameter is not null)
-        {
-            var bundle = context.GetBundle(key);
-            if (bundle is not null && bundle.IsCircle)
-                return ConvertContext.CallSetCache(parameter, key, source, dest);
-        }
+        if (parameter is null)
+            return null;
+        var bundle = context.GetBundle(key);
+        if (bundle is not null && bundle.IsCache)
+            return ConvertContext.CallSetCache(parameter, key, source, dest);
         return null;
     }
 }

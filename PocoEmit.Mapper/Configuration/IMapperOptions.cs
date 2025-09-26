@@ -19,7 +19,7 @@ public interface IMapperOptions
     , ICacher<PairTypeKey, IEmitCopier>
     , ICacher<Type, bool>
     , IReflectionConstructor
-    , ICacher<PairTypeKey, IContextConverter>
+    , ICacher<PairTypeKey, IEmitContextConverter>
 {
     /// <summary>
     /// 复制器构造器
@@ -59,4 +59,8 @@ public interface IMapperOptions
     /// <param name="destType"></param>
     /// <returns></returns>
     Expression CreateDefault(Type destType);
+    /// <summary>
+    /// 被缓存状态
+    /// </summary>
+    ComplexCached Cached { get; }
 }

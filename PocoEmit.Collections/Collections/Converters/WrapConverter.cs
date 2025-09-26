@@ -1,7 +1,7 @@
 using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
-using PocoEmit.Visitors;
+using PocoEmit.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -20,9 +20,7 @@ public class WrapConverter(IMapperOptions options, Type sourceType, Type destTyp
     /// <summary>
     /// Emit配置
     /// </summary>
-    protected readonly IMapperOptions _options = options;
-    private readonly Type _sourceType = sourceType;
-    private readonly Type _destType = destType;
+    private readonly IMapperOptions _options = options;
     private readonly PairTypeKey _key = new(sourceType, destType);
     private readonly IComplexIncludeConverter _original = original;
     /// <summary>
@@ -42,120 +40,42 @@ public class WrapConverter(IMapperOptions options, Type sourceType, Type destTyp
     #endregion
     #region IEmitConverter
     /// <inheritdoc />
-    public Expression Convert(Expression source)
-        => _original.Convert(BuildContext.WithPrepare(_options, this), source);
+    Expression IEmitConverter.Convert(Expression source)
+        => BuildContext.WithPrepare(_options, this)
+        .Enter(_key)
+        .CallComplexConvert(_key, source);
+    #endregion
+    #region IBuilder<LambdaExpression>
+    /// <summary>
+    /// 构造表达式
+    /// </summary>
+    /// <returns></returns>
+    public LambdaExpression Build()
+        => BuildContext.WithPrepare(_options, this)
+        .Build(this);
     #endregion
     #region IEmitComplexConverter
     /// <inheritdoc />
     public LambdaExpression Build(IBuildContext context)
-    {
-        if (context.TryGetLambda(_key, out LambdaExpression lambda))
-            return lambda;
-        var contextLambda = BuildWithContext(context);
-        if (contextLambda.Parameters.Count == 1)
-            return contextLambda;
-        var destType = _key.RightType;
-        var source = Expression.Variable(_sourceType, "source");
-
-        Expression body;
-        var convertContextParameter = context.ConvertContextParameter;
-        if (convertContextParameter is null)
-        {
-            body = CleanVisitor.Clean(_options.Call(contextLambda, source));
-        }
-        else
-        {
-            var dest = Expression.Variable(destType, "dest");
-            body = Expression.Block(
-                [convertContextParameter, dest],
-                context.InitContext(convertContextParameter),
-                Expression.Assign(dest, Expression.Invoke(contextLambda, convertContextParameter, source)),
-                EmitDispose.Dispose(convertContextParameter),
-                dest
-            );
-        }
-        var funcType = Expression.GetFuncType(_sourceType, destType);
-        return Expression.Lambda(funcType, body, source);
-    }
+        => context.Context.Build(this);
     /// <inheritdoc />
     public LambdaExpression BuildWithContext(IBuildContext context)
-    {
-        var achieved = context.GetAchieve(_key);
-        var contextLambda = achieved?.Lambda;
-        if (contextLambda is not null)
-            return contextLambda;
-        var destType = _key.RightType;
-        var source = Expression.Variable(_sourceType, "source");
-        var dest = Expression.Variable(destType, "dest");
-        var currentContext = context.Enter(_key);
-
-        var original = _original.Convert(currentContext, source);
-        var convertCore = CleanVisitor.Clean(Expression.Assign(dest, original));
-        List<Expression> list = [];
-        if (PairTypeKey.CheckNullCondition(_sourceType))
-        {
-            list.Add(Expression.IfThen(
-                    Expression.NotEqual(source, Expression.Constant(null, _sourceType)),
-                    convertCore
-                )
-            );
-        }
-        else
-        {
-            list.Add(convertCore);
-        }
-        var convertContextParameter = currentContext.ConvertContextParameter;
-        if (convertContextParameter is null)
-        {
-            var body = Expression.Block([dest], [.. list, dest]);
-            return Expression.Lambda(Expression.GetFuncType([_sourceType, destType]), body, [source]);
-        }
-        var bundle = context.GetBundle(_key);
-        if (bundle.HasCircle)
-        {
-            var funcType = Expression.GetFuncType(convertContextParameter.Type, _sourceType, destType);
-            var body = CleanVisitor.Clean(Expression.Block([dest], [.. list, dest]));
-            return Expression.Lambda(funcType, body, [convertContextParameter, source]);
-        }
-        else
-        {
-            var body = Expression.Block([dest], [.. list, dest]);
-            return Expression.Lambda(Expression.GetFuncType([_sourceType, destType]), body, [source]);
-        }
-    }
+        => context.Context.BuildWithContext(this);
     #endregion
-    #region IBuilder<LambdaExpression>
+    /// <summary>
+    /// 转化核心方法
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="source"></param>
+    /// <param name="dest"></param>
+    /// <param name="convertContext"></param>
+    /// <returns></returns>
+    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
+        => _original.BuildBody(context, source, dest, convertContext);
     /// <inheritdoc />
-    public LambdaExpression Build()
+    void IComplexPreview.Preview(IComplexBundle parent)
     {
-        var context = BuildContext.WithPrepare(_options, this);
-        var source = Expression.Variable(_sourceType, "source");
-        var funcType = Expression.GetFuncType(_sourceType, _destType);
-
-        var convertContextParameter = context.ConvertContextParameter;
-        if (convertContextParameter is null)
-            return Expression.Lambda(funcType, CleanVisitor.Clean(_original.Convert(context, source)), source);
-
-        var dest = Expression.Variable(_destType, "dest");
-        var body = Expression.Block(
-            [convertContextParameter, dest],
-            context.InitContext(convertContextParameter),
-            CleanVisitor.Clean(Expression.Assign(dest, _original.Convert(context, source))),
-            EmitDispose.Dispose(convertContextParameter),
-            dest
-            );
-        return Expression.Lambda(funcType, body, source);
+        parent.Accept(_key, this, true);
+        _original.Preview(parent);
     }
-    #endregion
-    /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
-    {
-        var bundle = parent.Accept(_key, this, true);
-        if (bundle is null)
-            yield break;
-        foreach (var item in _original.Preview(bundle))
-            yield return item;
-    }
-    Expression IComplexIncludeConverter.Convert(IBuildContext context, Expression source)
-        => _original.Convert(context, source);
 }

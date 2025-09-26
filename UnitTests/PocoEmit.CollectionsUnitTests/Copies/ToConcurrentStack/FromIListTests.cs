@@ -32,13 +32,10 @@ public class FromIListTests : CollectionTestBase
     [Fact]
     public void ConfigureMap()
     {
-        IMapper mapper = Mapper.Create();
-        // Emit默认不支持字符串转int,需要扩展
-        // mapper.UseSystemConvert();
-        mapper.ConfigureMap<AutoUserDTO, User>();
+        _mapper.ConfigureMap<AutoUserDTO, User>();
         IList<AutoUserDTO> source = [new AutoUserDTO { UserId = "222", UserName = "Jxj" }, new AutoUserDTO { UserId = "333", UserName = "李四" }];
         ConcurrentStack<User> result = [];
-        var copier = mapper.GetCopier<IList<AutoUserDTO>, ConcurrentStack<User>>();
+        var copier = _mapper.GetCopier<IList<AutoUserDTO>, ConcurrentStack<User>>();
         copier.Copy(source, result);
         Assert.Equal(source.Count, result.Count);
         Equal(source[0], result.Last());

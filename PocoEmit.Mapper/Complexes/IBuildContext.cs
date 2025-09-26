@@ -1,4 +1,5 @@
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Complexes;
@@ -13,6 +14,14 @@ public interface IBuildContext
     /// </summary>
     BuildContext Context { get; }
     /// <summary>
+    /// 复杂类型成员信息
+    /// </summary>
+    IComplexBundle Bundle { get; }
+    /// <summary>
+    /// 是否缓存
+    /// </summary>
+    bool HasCache { get; }
+    /// <summary>
     /// 执行上下文
     /// </summary>
     ParameterExpression ConvertContextParameter { get; }
@@ -25,10 +34,11 @@ public interface IBuildContext
     /// <summary>
     /// 调用
     /// </summary>
+    /// <param name="isCicle"></param>
     /// <param name="lambda"></param>
     /// <param name="arguments"></param>
     /// <returns></returns>
-    Expression Call(LambdaExpression lambda, params Expression[] arguments);
+    Expression Call(bool isCicle, LambdaExpression lambda, params Expression[] arguments);
     /// <summary>
     /// 赋值初始化执行上线文
     /// </summary>
@@ -36,16 +46,15 @@ public interface IBuildContext
     /// <returns></returns>
     Expression InitContext(ParameterExpression context);
     /// <summary>
-    /// 获取表达式
+    /// 获取构建结果
     /// </summary>
     /// <param name="key"></param>
-    /// <param name="lambda"></param>
     /// <returns></returns>
-    bool TryGetLambda(in PairTypeKey key, out LambdaExpression lambda);
+    ICompiledConverter GetAchieve(in PairTypeKey key);
     /// <summary>
     /// 获取上下文构建结果
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    ContextAchieved GetAchieve(in PairTypeKey key);
+    IEmitContextConverter GetContexAchieve(in PairTypeKey key);
 }

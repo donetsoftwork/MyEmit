@@ -31,8 +31,11 @@ public class ComplexTypeCopier(IMapperOptions options, IEnumerable<IMemberConver
     bool ICompileInfo.Compiled
         => false;
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
-        => _members.SelectMany(member => member.Preview(parent));
+    void IComplexPreview.Preview(IComplexBundle parent)
+    {
+        foreach (var member in _members)
+            member.Preview(parent);
+    }
     /// <inheritdoc />
     public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
     {

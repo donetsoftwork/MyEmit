@@ -1,4 +1,3 @@
-using PocoEmit.Converters;
 using System;
 
 namespace PocoEmit.Resolves;
@@ -15,12 +14,12 @@ public interface IConvertContext : IDisposable
     /// <param name="dest"></param>
     void SetCache<TSource, TDest>(TSource source, TDest dest);
     /// <summary>
-    /// 转化
+    /// 读取缓存
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
-    /// <param name="converter"></param>
     /// <param name="source"></param>
+    /// <param name="dest"></param>
     /// <returns></returns>
-    TDest Convert<TSource, TDest>(IContextConverter converter, TSource source);
+    bool TryGetCache<TSource, TDest>(TSource source, out TDest dest);
 }

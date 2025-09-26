@@ -41,4 +41,8 @@ public class MapperOptions : PocoOptions
     /// 上下文转化数量
     /// </summary>
     public int ContextConverterCapacity = 31;
+    /// <summary>
+    /// 被缓存状态(默认不缓存)
+    /// </summary>
+    public ComplexCached Cached = ComplexCached.Never;
 }

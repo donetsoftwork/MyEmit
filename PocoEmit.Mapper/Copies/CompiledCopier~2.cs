@@ -43,6 +43,6 @@ public sealed class CompiledCopier<TSource, TDest>(IEmitCopier original, Action<
     void IObjectCopier.CopyObject(object from, object to)
         => _copyAction((TSource)from, (TDest)to);
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+    void IComplexPreview.Preview(IComplexBundle parent)
         => _original.Preview(parent);
 }

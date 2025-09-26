@@ -31,7 +31,7 @@ public class ConvertToCollection(IMapperOptions options)
     /// <param name="destType"></param>
     /// <param name="destBundle"></param>
     /// <returns></returns>
-    public IComplexIncludeConverter ToCollection(Type sourceType, Type destType, CollectionBundle destBundle)
+    public IEmitComplexConverter ToCollection(Type sourceType, Type destType, CollectionBundle destBundle)
     {
         var container = CollectionContainer.Instance;
         if (sourceType.IsArray)
@@ -63,7 +63,7 @@ public class ConvertToCollection(IMapperOptions options)
         // 容量构造函数存在才需要获取sourceCount
         if (capacityConstructor is not null)
             sourceCount = CollectionContainer.Instance.CountCacher.GetByArray(sourceType, sourceElementType);
-        return new CollectionConverter(sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
+        return new CollectionConverter(_options, sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     /// <summary>
     /// 字典转集合
@@ -84,7 +84,7 @@ public class ConvertToCollection(IMapperOptions options)
         // 容量构造函数存在才需要获取sourceCount
         if (capacityConstructor is not null)
             sourceCount = CollectionContainer.Instance.CountCacher.GetByDictionary(sourceType, sourceBundle);
-        return new CollectionConverter(sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
+        return new CollectionConverter(_options, sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     /// <summary>
     /// 列表转集合
@@ -105,7 +105,7 @@ public class ConvertToCollection(IMapperOptions options)
         // 容量构造函数存在才需要获取sourceCount
         if (capacityConstructor is not null)
             sourceCount = CollectionContainer.Instance.CountCacher.GetByCollection(sourceType, sourceBundle);
-        return new CollectionConverter(sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
+        return new CollectionConverter(_options, sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     /// <summary>
     /// 迭代转集合
@@ -126,7 +126,7 @@ public class ConvertToCollection(IMapperOptions options)
         // 容量构造函数存在才需要获取sourceCount
         if (capacityConstructor is not null)
             sourceCount = CollectionContainer.Instance.CountCacher.GetByEnumerable(sourceType, sourceBundle.ElementType);
-        return new CollectionConverter(sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
+        return new CollectionConverter(_options, sourceType, destType, destBundle.ElementType, capacityConstructor, sourceCount, copier);
     }
     ///// <summary>
     ///// 其他情况
@@ -165,7 +165,7 @@ public class ConvertToCollection(IMapperOptions options)
     /// <param name="collectionType"></param>
     /// <param name="destBundle"></param>
     /// <returns></returns>
-    public CollectionInitConverter ElementToCollection(Type sourceType, Type collectionType, CollectionBundle destBundle)
+    public IEmitComplexConverter ElementToCollection(Type sourceType, Type collectionType, CollectionBundle destBundle)
     {
         Type elementType = destBundle.ElementType;
         if (!PairTypeKey.CheckValueType(sourceType, elementType))
@@ -176,7 +176,10 @@ public class ConvertToCollection(IMapperOptions options)
         var saver = CollectionContainer.Instance.SaveCacher.GetByCollection(collectionType, destBundle);
         if (saver is null)
             return null;
-        return new CollectionInitConverter(collectionType, elementType, saver, elementConverter);
+        var collection = new CollectionInitConverter(_options, collectionType, elementType, saver, elementConverter);
+        if (sourceType == elementType)
+            return collection;
+        return new WrapConverter(_options, sourceType, collectionType, collection);
     }
     /// <summary>
     /// 接口转化为实现类型

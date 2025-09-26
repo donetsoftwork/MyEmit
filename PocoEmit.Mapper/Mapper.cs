@@ -14,7 +14,8 @@ public sealed class Mapper : MapperConfigurationBase
     /// <param name="options"></param>
     private Mapper(MapperOptions options)
         : base(options) 
-    {        
+    {
+
     }
     #region Create
     /// <summary>
@@ -29,8 +30,8 @@ public sealed class Mapper : MapperConfigurationBase
     /// <returns></returns>
     public static IMapper Create(MapperOptions options)
     {
-        var mapper = new Mapper(options);
         _globalOptions?.Invoke(options);
+        var mapper = new Mapper(options);
         _globalConfiguration?.Invoke(mapper);
         return mapper;
     }

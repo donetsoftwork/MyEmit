@@ -31,7 +31,7 @@ public class MemberReadConverter(in PairTypeKey key, IEmitMemberReader reader)
         => false;
     #endregion
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+    void IComplexPreview.Preview(IComplexBundle parent)
         => parent.Visit(_reader);
     /// <inheritdoc />
     public Expression Convert(Expression source)

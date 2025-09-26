@@ -5,6 +5,7 @@ using MapperBench.Supports;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using PocoEmit;
+using PocoEmit.Configuration;
 
 namespace MapperBench;
 
@@ -55,7 +56,7 @@ public class NodeBench
             var field = typeof(AutoMapper.Mapper).GetField("_defaultContext", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             _resolutionContext = field.GetValue(_auto) as ResolutionContext;
         }
-        _poco = PocoEmit.Mapper.Create();
+        _poco = PocoEmit.Mapper.Create(new MapperOptions { Cached = ComplexCached.Circle });
         _pocoFunc = _poco.GetConvertFunc<Node, NodeDTO>();
     }
     private static MapperConfiguration ConfigureAutoMapper()

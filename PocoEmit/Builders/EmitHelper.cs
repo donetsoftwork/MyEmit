@@ -213,4 +213,18 @@ public static class EmitHelper
     #endregion
     //public static ParameterExpression Copy(ParameterExpression parameter)
     //    => Expression.Parameter(parameter.Type, parameter.Name);
+    /// <summary>
+    /// 转化null保护
+    /// </summary>
+    /// <param name="sourceType"></param>
+    /// <param name="source"></param>
+    /// <param name="original"></param>
+    /// <returns></returns>
+    public static Expression ConvertGuard(Type sourceType, Expression source, Expression original)
+    {
+        return Expression.IfThen(
+            Expression.NotEqual(source, Expression.Constant(null, sourceType)),
+            original
+            );
+    }
 }

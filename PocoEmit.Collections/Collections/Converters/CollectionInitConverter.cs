@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Collections.Saves;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
@@ -15,11 +16,13 @@ namespace PocoEmit.Collections.Converters;
 /// <param name="elementType"></param>
 /// <param name="saver"></param>
 /// <param name="elementConverter"></param>
-public sealed class CollectionInitConverter(Type collectionType, Type elementType, IEmitElementSaver saver, IEmitConverter elementConverter)
+public sealed class CollectionInitConverter(IMapperOptions options, Type collectionType, Type elementType, IEmitElementSaver saver, IEmitConverter elementConverter)
     : EmitCollectionBase(collectionType, elementType)
-    , IComplexIncludeConverter
+    , IEmitComplexConverter
+    , IBuilder<LambdaExpression>
 {
     #region 配置
+    private readonly IMapperOptions _options = options;
     private readonly PairTypeKey _key = new(elementType, collectionType);
     private readonly IEmitElementSaver _saver = saver;
     private readonly IEmitConverter _elementConverter = elementConverter;
@@ -38,11 +41,45 @@ public sealed class CollectionInitConverter(Type collectionType, Type elementTyp
         => _elementConverter;
     #endregion
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
-        => parent.Visit(_elementConverter);
+    void IComplexPreview.Preview(IComplexBundle parent)
+    {
+        var bundle = parent.Accept(_key, this, true);
+        if (bundle is null)
+            return;
+        bundle.Visit(_elementConverter);
+    }
+    #region IEmitConverter
     /// <inheritdoc />
-    public Expression Convert(IBuildContext context, Expression source)
-        => Expression.ListInit(Expression.New(_collectionType), Expression.ElementInit(_saver.AddMethod, CheckElement(context, source)));
+    Expression IEmitConverter.Convert(Expression source)
+        => BuildContext.WithPrepare(_options, this)
+        .Enter(_key)
+        .CallComplexConvert(_key, source);
+    #endregion
+    #region IBuilder<LambdaExpression>
+    /// <summary>
+    /// 构造表达式
+    /// </summary>
+    /// <returns></returns>
+    public LambdaExpression Build()
+        => BuildContext.WithPrepare(_options, this)
+        .Build(this);
+    #endregion
+    #region IEmitComplexConverter
+    /// <inheritdoc />
+    public LambdaExpression Build(IBuildContext context)
+        => context.Context.Build(this);
+    /// <inheritdoc />
+    public LambdaExpression BuildWithContext(IBuildContext context)
+        => context.Context.BuildWithContext(this);
+    #endregion
+    /// <inheritdoc />
+    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
+    {
+        yield return Expression.Assign(dest, Expression.ListInit(Expression.New(_collectionType), Expression.ElementInit(_saver.AddMethod, CheckElement(context, source))));
+        var cache = context.SetCache(convertContext, _key, source, dest);
+        if (cache is not null)
+            yield return cache;
+    }
     /// <summary>
     /// 检查子元素
     /// </summary>

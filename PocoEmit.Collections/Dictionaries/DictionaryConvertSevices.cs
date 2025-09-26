@@ -1,6 +1,8 @@
 using PocoEmit.Collections.Converters;
+using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
+using PocoEmit.Copies;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -268,15 +270,14 @@ public static partial class PocoDictionaryServices
     /// <param name="names">成员名</param>
     /// <param name="ignoreDefault">是否忽略默认值</param>
     /// <returns></returns>
-    internal static WrapConverter CreateDictionaryConverter(this IMapperOptions options, Type instanceType, Type targetType, Type dictionaryType, IEnumerable<string> names, bool ignoreDefault)
+    internal static IEmitComplexConverter CreateDictionaryConverter(this IMapperOptions options, Type instanceType, Type targetType, Type dictionaryType, IEnumerable<string> names, bool ignoreDefault)
     {
         if (options.CheckPrimitive(instanceType) || options.CheckPrimitive(dictionaryType))
             return null;
         var bundle = CollectionContainer.Instance.DictionaryCacher.Get(dictionaryType);
         if (bundle == null)
             return null;
-        var dictionaryConverter = CreateDictionaryConverter(options, instanceType, targetType, dictionaryType, bundle.KeyType, bundle.ValueType, bundle.Items, names, ignoreDefault);
-        return new(options, instanceType, dictionaryType, dictionaryConverter);
+        return CreateDictionaryConverter(options, instanceType, targetType, dictionaryType, bundle.KeyType, bundle.ValueType, bundle.Items, names, ignoreDefault);
     }
     /// <summary>
     /// 成员转化为字典
@@ -291,20 +292,38 @@ public static partial class PocoDictionaryServices
     /// <param name="names">成员名</param>
     /// <param name="ignoreDefault">是否忽略默认值</param>
     /// <returns></returns>
-    internal static DictionaryConverter CreateDictionaryConverter(this IMapperOptions options, Type instanceType, Type targetType, Type dictionaryType, Type keyType, Type elementType, PropertyInfo itemProperty, IEnumerable<string> names, bool ignoreDefault)
+    internal static IEmitComplexConverter CreateDictionaryConverter(this IMapperOptions options, Type instanceType, Type targetType, Type dictionaryType, Type keyType, Type elementType, PropertyInfo itemProperty, IEnumerable<string> names, bool ignoreDefault)
     {
+        var copier = options.CreateDictionaryCopier(instanceType, targetType ?? elementType, dictionaryType, keyType, elementType, itemProperty, names, ignoreDefault);
+        if(copier is null)
+            return null;
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
         var isInterface = dictionaryType.GetTypeInfo().IsInterface;
 #else
         var isInterface = dictionaryType.IsInterface;
 #endif
+        return CreateDictionaryConverter(options, instanceType, isInterface, dictionaryType, keyType, elementType, copier);
+    }
+    /// <summary>
+    /// 构造字典转化器
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="sourceType"></param>
+    /// <param name="isInterface"></param>
+    /// <param name="dictionaryType"></param>
+    /// <param name="keyType"></param>
+    /// <param name="elementType"></param>
+    /// <param name="copier"></param>
+    /// <returns></returns>
+    internal static IEmitComplexConverter CreateDictionaryConverter(this IMapperOptions options, Type sourceType, bool isInterface, Type dictionaryType, Type keyType, Type elementType, IEmitCopier copier)
+    {
         if (isInterface)
-            dictionaryType = typeof(Dictionary<,>).MakeGenericType(keyType, elementType);
-        targetType ??= elementType;
-        DictionaryCopier copier = options.CreateDictionaryCopier(instanceType, targetType, dictionaryType, keyType, elementType, itemProperty, names, ignoreDefault);
-        if(copier is null)
-            return null;
-        return new(instanceType, dictionaryType, keyType, elementType, copier);
+        {
+            var implType = typeof(Dictionary<,>).MakeGenericType(keyType, elementType);
+            var dictionary = new DictionaryConverter(options, sourceType, implType, keyType, elementType, copier);
+            return new WrapConverter(options, sourceType, dictionaryType, dictionary);
+        }
+        return new DictionaryConverter(options, sourceType, dictionaryType, keyType, elementType, copier);
     }
     #endregion
 }

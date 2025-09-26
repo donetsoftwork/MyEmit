@@ -73,7 +73,7 @@ public class CollectionCopier : EmitCollectionBase
     //    => _clear;
     #endregion
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+    void IComplexPreview.Preview(IComplexBundle parent)
         => parent.Visit(_elementConverter);
     /// <inheritdoc />
     public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)

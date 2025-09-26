@@ -1,6 +1,7 @@
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PocoEmit.Complexes;
 
@@ -25,7 +26,14 @@ public class ComplexBundle(BuildContext context, in PairTypeKey key, IEmitConver
     private int _depth = depth;
     private bool _isCircle = false;
     private bool _hasCircle = false;
+    private bool _isCache = false;
+    /// <summary>
+    /// 被缓存包含
+    /// </summary>
+    private bool _cacheIncluded = false;
+    private bool _hasCache = false;
     private readonly bool _isCollection = isCollection;
+    //private ComplexUsed _used = ComplexUsed.None;
     /// <summary>
     /// 包含类型
     /// </summary>
@@ -65,6 +73,21 @@ public class ComplexBundle(BuildContext context, in PairTypeKey key, IEmitConver
     public bool HasCircle
         => _hasCircle || _isCircle;
     /// <summary>
+    /// 是否缓存
+    /// </summary>
+    public bool IsCache
+        => _isCache || _cacheIncluded;
+    /// <summary>
+    /// 是否包含缓存
+    /// </summary>
+    public bool HasCache
+        => _hasCache || _isCache || _cacheIncluded;
+    ///// <summary>
+    ///// 是否包含上下文
+    ///// </summary>
+    //public bool HasContext
+    //    => _isCircle || _hasCircle || _isCache || _hasCache;
+    /// <summary>
     /// 包含类型
     /// </summary>
     public HashSet<ComplexBundle> Includes
@@ -79,7 +102,12 @@ public class ComplexBundle(BuildContext context, in PairTypeKey key, IEmitConver
     /// </summary>
     public int Depth 
         => _depth;
-
+    ///// <summary>
+    ///// 被使用状态
+    ///// </summary>
+    //public ComplexUsed Used
+    //    => _used;
+    #endregion
     /// <summary>
     /// 修正深度
     /// </summary>
@@ -89,7 +117,26 @@ public class ComplexBundle(BuildContext context, in PairTypeKey key, IEmitConver
         if (depth < _depth)
             _depth = depth;
     }
-    #endregion
+    ///// <summary>
+    ///// 修正使用状态
+    ///// </summary>
+    //public void CheckUsed()
+    //{
+    //    switch (_uses.Count)
+    //    {
+    //        case 0:
+    //            break;
+    //        case 1:
+    //            if (_uses.First().Value == 1)
+    //                _used = ComplexUsed.One;
+    //            else
+    //                _used = ComplexUsed.Many;
+    //            break;
+    //        default:
+    //            _used = ComplexUsed.Many;
+    //            break;
+    //    }
+    //}
     /// <summary>
     /// 获取转化器
     /// </summary>
@@ -103,13 +150,32 @@ public class ComplexBundle(BuildContext context, in PairTypeKey key, IEmitConver
     /// <param name="bundle"></param>
     private bool Include(ComplexBundle bundle)
     {
-        _uses.TryGetValue(bundle, out var times);
-        _uses[bundle] = times + 1;
+        if(bundle is null)
+            return false;
         if (_includes.Contains(bundle))
             return false;
         _includes.Add(bundle);
+        Use(bundle);
         return true;
     }
+    /// <summary>
+    /// 调用
+    /// </summary>
+    /// <param name="bundle"></param>
+    private void Use(ComplexBundle bundle)
+    {
+        var uses = bundle.Uses;
+        if (_isCollection)
+        {
+            uses[this] = 2;
+        }
+        else
+        {
+            uses.TryGetValue(this, out var times);
+            uses[this] = times + 1;
+        }
+    }
+    #region Circle
     /// <summary>
     /// 检测循环引用
     /// </summary>
@@ -118,8 +184,6 @@ public class ComplexBundle(BuildContext context, in PairTypeKey key, IEmitConver
     {
         if (_isCircle)
             return true;
-        //if(_isCollection)
-        //    return false;
         return CheckIsCircle(this, [], _includes);
     }
     /// <summary>
@@ -174,14 +238,112 @@ public class ComplexBundle(BuildContext context, in PairTypeKey key, IEmitConver
         }
         return false;
     }
+    #endregion
+    #region Cache
+    /// <summary>
+    /// 检测是否缓存
+    /// </summary>
+    /// <returns></returns>
+    public bool CheckIsCache()
+    {
+        if (_isCircle)
+            return _isCache = true;
+        switch (_uses.Count)
+        {
+            case 0:
+                return _isCache = false;
+            case 1:
+                if (_uses.First().Value == 1)
+                    return _isCache = false;
+                break;
+            default:
+                break;
+        }
+        return _isCache = true;
+    }
+    /// <summary>
+    /// 判断是否缓存包含
+    /// </summary>
+    /// <returns></returns>
+    public bool CheckCacheInclude()
+    {
+        if(IsCache)
+            return true;
+        return CheckCacheInclude(this, [this], _includes);
+    }
+    /// <summary>
+    /// 判断是否缓存包含
+    /// </summary>
+    /// <param name="bundle"></param>
+    /// <param name="skip"></param>
+    /// <param name="uses"></param>
+    /// <returns></returns>
+    public static bool CheckCacheInclude(ComplexBundle bundle, HashSet<ComplexBundle> skip, IEnumerable<ComplexBundle> uses)
+    {
+        foreach (var item in uses)
+        {
+            if (skip.Contains(item))
+                continue;
+            if (item.IsCache)
+                return bundle._cacheIncluded = true;
+            skip.Add(item);
+            if (CheckCacheInclude(item, skip, item.Includes))
+                return bundle._cacheIncluded = true;
+        }
+        return false;
+    }
+    /// <summary>
+    /// 按照循环引用设置缓存
+    /// </summary>
+    public bool CheckCacheByCircle()
+        => _isCache = _isCircle;
+    /// <summary>
+    /// 判断是否包含缓存
+    /// </summary>
+    /// <returns></returns>
+    public bool CheckHasCache()
+    {
+        if (HasCircle || HasCache)
+            return true;
+        return CheckHasCache(this, [this], _includes);
+    }
+    /// <summary>
+    /// 判断是否包含缓存
+    /// </summary>
+    /// <param name="bundle"></param>
+    /// <param name="skip"></param>
+    /// <param name="includes"></param>
+    /// <returns></returns>
+    public static bool CheckHasCache(ComplexBundle bundle, HashSet<ComplexBundle> skip, HashSet<ComplexBundle> includes)
+    {
+        foreach (var item in includes)
+        {
+            if (skip.Contains(item))
+                continue;
+            if (item.HasCircle || item.IsCache)
+                return bundle._hasCache = true;
+            skip.Add(item);
+            if (CheckHasCache(item, skip, item.Includes))
+                return bundle._hasCache = true;
+        }
+        return false;
+    }
+    #endregion
     /// <inheritdoc />
     public ComplexBundle Accept(in PairTypeKey item, IEmitConverter converter, bool isCollection)
     {
-        var bundle = _context.GetBundleOrCreate(item, converter, _depth + 2, isCollection);
+        //var bundle = _context.GetBundleOrCreate(item, converter, _depth + 2, isCollection);
+        var bundle = _context.GetBundle(item);
         if (bundle is null)
-            return null;
-        if (Include(bundle))
-            return bundle;
+        {
+            bundle = _context.CreateBundle(item, converter, _depth, isCollection);
+            if (Include(bundle))
+                return bundle;
+        }
+        else
+        {
+            Include(bundle);
+        }
         return null;
     }
     /// <summary>

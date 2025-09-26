@@ -20,7 +20,6 @@ public class ConvertToArray(IMapperOptions options)
     public IMapperOptions Options
         => _options;
     #endregion
-
     /// <summary>
     /// 转化为数组
     /// </summary>
@@ -28,7 +27,7 @@ public class ConvertToArray(IMapperOptions options)
     /// <param name="isPrimitive"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    public IComplexIncludeConverter ToArray(Type sourceType, bool isPrimitive, Type destType)
+    public IEmitComplexConverter ToArray(Type sourceType, bool isPrimitive, Type destType)
     {
         //不支持多维数组
         if (destType.GetArrayRank() > 1)
@@ -86,12 +85,15 @@ public class ConvertToArray(IMapperOptions options)
     /// <param name="arrayType"></param>
     /// <param name="elementType"></param>
     /// <returns></returns>
-    public ArrayInitConverter ElementToArray(Type sourceType, Type arrayType, Type elementType)
+    public IEmitComplexConverter ElementToArray(Type sourceType, Type arrayType, Type elementType)
     {
         var elementConverter = _options.GetEmitConverter(sourceType, elementType);
         if (elementConverter is null)
             return null;
-        return new ArrayInitConverter(arrayType, elementType, elementConverter);
+        var array = new ArrayInitConverter(_options, arrayType, elementType, elementConverter);
+        if(sourceType == elementType)
+            return array;
+        return new WrapConverter(_options, sourceType, arrayType, array);
     }
 
     /// <summary>
@@ -107,7 +109,7 @@ public class ConvertToArray(IMapperOptions options)
         var elementConverter = _options.GetEmitConverter(sourceElementType, destElementType);
         if (elementConverter is null)
             return null;
-        return new(sourceType, sourceElementType, destType, destElementType, elementConverter);
+        return new(_options, sourceType, sourceElementType, destType, destElementType, elementConverter);
     }
     /// <summary>
     /// 列表转数组
@@ -132,7 +134,7 @@ public class ConvertToArray(IMapperOptions options)
         var indexReader = container.ReadIndexCacher.Get(sourceType);
         if (indexReader is null)
             return null;
-        return new(sourceType, sourceElementType, destType, destElementType, length, indexReader, elementConverter);
+        return new(_options, sourceType, sourceElementType, destType, destElementType, length, indexReader, elementConverter);
     }
     /// <summary>
     /// 迭代转数组
@@ -157,7 +159,7 @@ public class ConvertToArray(IMapperOptions options)
         var visitor = container.VisitorCacher.GetByEnumerable(sourceType, bundle);
         if (visitor is null)
             return null;
-        return new(sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
+        return new(_options, sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
     }
     /// <summary>
     /// 字典转数组
@@ -178,6 +180,6 @@ public class ConvertToArray(IMapperOptions options)
         var visitor = container.VisitorCacher.GetByDictionary(sourceType, bundle);
         if (visitor is null)
             return null;
-        return new(sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
+        return new(_options, sourceType, sourceElementType, destType, destElementType, length, visitor, elementConverter);
     }
 }

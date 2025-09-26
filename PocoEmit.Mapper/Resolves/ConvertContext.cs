@@ -11,38 +11,29 @@ namespace PocoEmit.Resolves;
 /// <summary>
 /// 转化执行上下文
 /// </summary>
-public class ConvertContext(IPool<ConvertContext> pool)
+public sealed class ConvertContext(IPool<ConvertContext> pool)
     : IConvertContext
 {
     #region 配置
     private readonly IPool<ConvertContext> _pool = pool;
     private readonly Dictionary<ConvertCacheKey, object> _cacher = [];
-    /// <summary>
-    /// 回收池
-    /// </summary>
-    public IPool<ConvertContext> Pool 
-        => _pool;
     #endregion
     #region 功能
-    /// <summary>
-    /// 转化
-    /// </summary>
-    /// <typeparam name="TSource"></typeparam>
-    /// <typeparam name="TDest"></typeparam>
-    /// <param name="converter"></param>
-    /// <param name="source"></param>
-    /// <returns></returns>
-    public TDest Convert<TSource, TDest>(IContextConverter converter, TSource source)
+    /// <inheritdoc />
+    public bool TryGetCache<TSource, TDest>(TSource source, out TDest dest)
     {
         if (_cacher.TryGetValue(new ConvertCacheKey(source, typeof(TDest)), out var cached))
-            return (TDest)cached;
-        return converter.Convert<TSource, TDest>(this, source);
+        {
+            if (cached is TDest t)
+                dest = t;
+            else
+                dest = default;
+            return true;
+        }
+        dest = default;
+        return false;
     }
-    /// <summary>
-    /// 设置缓存
-    /// </summary>
-    /// <param name="source"></param>
-    /// <param name="dest"></param>
+    /// <inheritdoc />
     public void SetCache<TSource, TDest>(TSource source, TDest dest)
         => _cacher[new ConvertCacheKey(source, typeof(TDest))] = dest;
     /// <summary>
@@ -60,7 +51,7 @@ public class ConvertContext(IPool<ConvertContext> pool)
     /// </summary>
     /// <returns></returns>
     public static ConvertContext Create()
-        => Manager.Default.Get();
+        => Pool.Get();
     /// <summary>
     /// 创建单一类型转化上下文
     /// </summary>
@@ -68,7 +59,7 @@ public class ConvertContext(IPool<ConvertContext> pool)
     /// <typeparam name="TDest"></typeparam>
     /// <returns></returns>
     public static SingleContext<TSource, TDest> CreateSingle<TSource, TDest>()
-        => SingleContext<TSource, TDest>.Manager.Default.Get();
+        => SingleContext<TSource, TDest>.Pool.Get();
     #endregion
     #region Expression
     /// <summary>
@@ -78,31 +69,15 @@ public class ConvertContext(IPool<ConvertContext> pool)
     public static ParameterExpression CreateParameter()
         => Expression.Parameter(typeof(IConvertContext), "context");
     /// <summary>
-    /// 参数赋值初始化
-    /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    public static Expression InitParameter(ParameterExpression context)
-        => Expression.Assign(context, Expression.Call(null, CreateMethod));
-    /// <summary>
-    /// 单一类型参数赋值初始化
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="sourceType"></param>
-    /// <param name="destType"></param>
-    /// <returns></returns>
-    public static Expression InitSingleParameter(ParameterExpression context, Type sourceType, Type destType)
-        => Expression.Assign(context, Expression.Call(null, _createSingleMethod.MakeGenericMethod(sourceType, destType)));
-    /// <summary>
-    /// 调用转化
+    /// 调用获取缓存
     /// </summary>
     /// <param name="context"></param>
     /// <param name="key"></param>
-    /// <param name="converter"></param>
     /// <param name="source"></param>
+    /// <param name="dest"></param>
     /// <returns></returns>
-    public static Expression CallConvert(ParameterExpression context, in PairTypeKey key, Expression converter, Expression source)
-        => Expression.Call(context, _convertMethod.MakeGenericMethod(key.LeftType, key.RightType), converter, source);
+    public static Expression CallTryGetCache(ParameterExpression context, in PairTypeKey key, Expression source, Expression dest)
+        => Expression.Call(context, _tryGetCacheMethod.MakeGenericMethod(key.LeftType, key.RightType), source, dest);
     /// <summary>
     /// 调用设置缓存
     /// </summary>
@@ -118,8 +93,12 @@ public class ConvertContext(IPool<ConvertContext> pool)
     /// <summary>
     /// 反射Convert方法
     /// </summary>
-    private static readonly MethodInfo _convertMethod = EmitHelper.GetMethodInfo<IConvertContext, int>(context => context.Convert<int,  int>(null, 0))
+    private static readonly MethodInfo _convertMethod = EmitHelper.GetMethodInfo<IContextConverter, int>(context => context.Convert<int, int>(null, 0))
         .GetGenericMethodDefinition();
+    /// <summary>
+    /// 反射Convert方法
+    /// </summary>
+    private static readonly MethodInfo _tryGetCacheMethod = ReflectionHelper.GetMethod(typeof(IConvertContext), nameof(IConvertContext.TryGetCache));
     /// <summary>
     /// 反射SetCache方法
     /// </summary>
@@ -128,25 +107,30 @@ public class ConvertContext(IPool<ConvertContext> pool)
     /// <summary>
     /// 反射Create方法
     /// </summary>
-    public static readonly MethodInfo CreateMethod = EmitHelper.GetMethodInfo(() => Create());
+    internal static readonly MethodInfo CreateMethod = EmitHelper.GetMethodInfo(() => Create());
     /// <summary>
     /// 反射CreateSingle方法
     /// </summary>
     private static readonly MethodInfo _createSingleMethod = EmitHelper.GetMethodInfo(() => CreateSingle<int, int>())
         .GetGenericMethodDefinition();
     /// <summary>
-    /// 
+    /// 获取泛型Create方法
     /// </summary>
     /// <param name="sourceType"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    public static MethodInfo GetCreateSingleMethod(Type sourceType, Type destType)
+    internal static MethodInfo GetCreateSingleMethod(Type sourceType, Type destType)
         => _createSingleMethod.MakeGenericMethod(sourceType, destType);
     #endregion
+    #region Pool
+    /// <summary>
+    /// 池化管理器
+    /// </summary>
+    public static readonly IPool<ConvertContext> Pool = new PoolManager();
     /// <summary>
     /// 转换上下文管理器
     /// </summary>
-    class Manager()
+    class PoolManager()
         : PoolBase<ConvertContext>(Environment.ProcessorCount, Environment.ProcessorCount << 2)
     {
         /// <inheritdoc />
@@ -162,9 +146,6 @@ public class ConvertContext(IPool<ConvertContext> pool)
             }
             return false;
         }
-        /// <summary>
-        /// 单例
-        /// </summary>
-        public static readonly Manager Default = new();
     }
+    #endregion
 }

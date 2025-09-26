@@ -38,13 +38,10 @@ public class ParameterConstructorActivator(IMapperOptions options, Type returnTy
         => _readers;
     #endregion
     /// <inheritdoc />
-    public IEnumerable<ComplexBundle> Preview(IComplexBundle parent)
+    public void Preview(IComplexBundle parent)
     {
         foreach (var reader in _readers)
-        {
-            foreach(var item in parent.Visit(reader as ConvertValueReader))
-                yield return item;
-        }
+            parent.Visit(reader as ConvertValueReader);
     }
     /// <inheritdoc />
     public override Expression New(IBuildContext context, Expression argument)

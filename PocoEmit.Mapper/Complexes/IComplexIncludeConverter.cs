@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Complexes;
@@ -9,10 +10,12 @@ public interface IComplexIncludeConverter
      : IComplexPreview     
 {
     /// <summary>
-    /// 转化
+    /// 转化核心方法
     /// </summary>
-    /// <param name="context">构建上下文</param>
-    /// <param name="source">源表达式</param>
+    /// <param name="context"></param>
+    /// <param name="source"></param>
+    /// <param name="dest"></param>
+    /// <param name="convertContext"></param>
     /// <returns></returns>
-    Expression Convert(IBuildContext context, Expression source);
+    IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext);
 }

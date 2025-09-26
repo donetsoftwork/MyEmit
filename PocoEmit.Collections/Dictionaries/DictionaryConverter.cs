@@ -1,5 +1,7 @@
+using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
+using PocoEmit.Converters;
 using PocoEmit.Copies;
 using System;
 using System.Collections.Generic;
@@ -8,13 +10,15 @@ using System.Linq.Expressions;
 namespace PocoEmit.Dictionaries;
 
 /// <summary>
-/// 字典激活
+/// 字典转化
 /// </summary>
-public class DictionaryConverter(Type instanceType, Type dictionaryType, Type keyType, Type elementType, IEmitCopier copier)
+public class DictionaryConverter(IMapperOptions options, Type instanceType, Type dictionaryType, Type keyType, Type elementType, IEmitCopier copier)
     : EmitDictionaryBase(dictionaryType, keyType, elementType)
-    , IComplexIncludeConverter
+    , IEmitComplexConverter
+    , IBuilder<LambdaExpression>
 {
     #region 配置
+    private readonly IMapperOptions _options = options;
     private readonly PairTypeKey _key = new(instanceType, dictionaryType);
     private readonly IEmitCopier _copier = copier;
     /// <inheritdoc />
@@ -27,64 +31,45 @@ public class DictionaryConverter(Type instanceType, Type dictionaryType, Type ke
         => _copier;
     #endregion
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
-         => _copier.Preview(parent);
-    /// <summary>
-    /// 转化核心方法
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="source"></param>
-    /// <param name="dest"></param>
-    /// <returns></returns>
-    public List<Expression> ConvertCore(IBuildContext context, Expression source, Expression dest)
+    void IComplexPreview.Preview(IComplexBundle parent)
     {
-        var assign = Expression.Assign(dest, New(source));
-        var list = new List<Expression>() { assign };
-        list.AddRange(_copier.Copy(context, source, dest));
-        list.Add(dest);
-        return list;
+        var bundle = parent.Accept(_key, this, true);
+        if (bundle is null)
+            return;
+        _copier.Preview(bundle);
     }
+    #region IEmitConverter
+    /// <inheritdoc />
+    Expression IEmitConverter.Convert(Expression source)
+        => BuildContext.WithPrepare(_options, this)
+        .Enter(_key)
+        .CallComplexConvert(_key, source);
+    #endregion
+    #region IBuilder<LambdaExpression>
     /// <summary>
-    /// 激活
+    /// 构造表达式
     /// </summary>
-    /// <param name="argument"></param>
     /// <returns></returns>
-    public Expression New(Expression argument)
-        => Expression.New(_collectionType);
-
+    public LambdaExpression Build()
+        => BuildContext.WithPrepare(_options, this)
+        .Build(this);
+    #endregion
     #region IEmitComplexConverter
     /// <inheritdoc />
-    public Expression Convert(IBuildContext context, Expression source)
-    {
-        var lambda = Build(context);
-        return context.Call(lambda, source);
-    }
-    /// <inheritdoc />
     public LambdaExpression Build(IBuildContext context)
-    {
-        if (context.TryGetLambda(_key, out LambdaExpression lambda))
-            return lambda;
-        var sourcetype = _key.LeftType;
-        var destType = _key.RightType;
-        var source = Expression.Variable(sourcetype, "source");
-        var dest = Expression.Variable(destType, "dest");
-        List<ParameterExpression> variables = [dest];
-        List<Expression> list = [];
-        if (PairTypeKey.CheckNullCondition(sourcetype))
-        {
-            list.Add(Expression.IfThen(
-                    Expression.NotEqual(source, Expression.Constant(null, sourcetype)),
-                    Expression.Block(ConvertCore(context, source, dest))
-                )
-            );
-        }
-        else
-        {
-            list.AddRange(ConvertCore(context, source, dest));
-        }
-        list.Add(dest);
-        var funcType = Expression.GetFuncType(sourcetype, destType);
-        return Expression.Lambda(funcType, Expression.Block(variables, list), source);
-    }
+        => context.Context.Build(this);
+    /// <inheritdoc />
+    public LambdaExpression BuildWithContext(IBuildContext context)
+        => context.Context.BuildWithContext(this);
     #endregion
+    /// <inheritdoc />
+    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
+    {
+        yield return Expression.Assign(dest, Expression.New(_collectionType));
+        var cache = context.SetCache(convertContext, _key, source, dest);
+        if (cache is not null)
+            yield return cache;
+        foreach (var item in _copier.Copy(context, source, dest))
+            yield return item;
+    }
 }

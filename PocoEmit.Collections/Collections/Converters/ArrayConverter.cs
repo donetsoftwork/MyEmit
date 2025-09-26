@@ -4,7 +4,6 @@ using PocoEmit.Collections.Counters;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
-using PocoEmit.Resolves;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -14,16 +13,19 @@ namespace PocoEmit.Collections.Converters;
 /// <summary>
 /// 数组转数组
 /// </summary>
+/// <param name="options"></param>
 /// <param name="sourceType"></param>
 /// <param name="sourceElementType"></param>
 /// <param name="destType"></param>
 /// <param name="destElementType"></param>
 /// <param name="elementConverter"></param>
-public class ArrayConverter(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
+public class ArrayConverter(IMapperOptions options, Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitConverter elementConverter)
     : ArrayActivator(destType, destElementType, ArrayLength.Length)
-    , IComplexIncludeConverter
+    , IEmitComplexConverter
+    , IBuilder<LambdaExpression>
 {
     #region 配置
+    private readonly IMapperOptions _options = options;
     private readonly PairTypeKey _key = new(sourceType, destType);
     private readonly Type _sourceType = sourceType;
     private readonly Type _sourceElementType = sourceElementType;
@@ -47,10 +49,33 @@ public class ArrayConverter(Type sourceType, Type sourceElementType, Type destTy
     public IEmitConverter ElementConverter
         => _elementConverter;
     #endregion
+    #region IEmitConverter
     /// <inheritdoc />
-    public Expression Convert(IBuildContext context, Expression source)
+    Expression IEmitConverter.Convert(Expression source)
+        => BuildContext.WithPrepare(_options, this)
+        .Enter(_key)
+        .CallComplexConvert(_key, source);
+    #endregion
+    #region IBuilder<LambdaExpression>
+    /// <summary>
+    /// 构造表达式
+    /// </summary>
+    /// <returns></returns>
+    public LambdaExpression Build()
+        => BuildContext.WithPrepare(_options, this)
+        .Build(this);
+    #endregion
+    #region IEmitComplexConverter
+    /// <inheritdoc />
+    public LambdaExpression Build(IBuildContext context)
+        => context.Context.Build(this);
+    /// <inheritdoc />
+    public LambdaExpression BuildWithContext(IBuildContext context)
+        => context.Context.BuildWithContext(this);
+    #endregion
+    /// <inheritdoc />
+    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
     {
-        var dest = Expression.Variable(_collectionType, "dest");
         var count = Expression.Variable(typeof(int), "count");
         var index = Expression.Variable(typeof(int), "index");
         var sourceItem = Expression.Variable(_sourceElementType, "sourceItem");
@@ -60,17 +85,16 @@ public class ArrayConverter(Type sourceType, Type sourceElementType, Type destTy
             Expression.Assign(index, Expression.Constant(0)),
             Expression.Assign(dest, New(count))
         };
-        var cache = context.SetCache(_key, source, dest);
+        var cache = context.SetCache(convertContext, _key, source, dest);
         if (cache is not null)
             list.Add(cache);
-        return Expression.Block(
-        [count, dest, index, sourceItem],
-        [
-            ..list,
-            EmitHelper.For(index, count, i => CopyElement(context, source, dest, i, sourceItem, _elementConverter)),
-            dest
-        ]
-    );
+        yield return Expression.Block(
+            [count, index, sourceItem],
+            [
+                ..list,
+                EmitHelper.For(index, count, i => CopyElement(context, source, dest, i, sourceItem, _elementConverter)),
+            ]
+        );
     }
     /// <summary>
     /// 复制子元素
@@ -88,6 +112,11 @@ public class ArrayConverter(Type sourceType, Type sourceElementType, Type destTy
             Expression.Assign(Expression.ArrayAccess(dest, index), context.Convert(converter, sourceItem))
             );
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
-        => parent.Visit(_elementConverter);
+    void IComplexPreview.Preview(IComplexBundle parent)
+    {
+        var bundle = parent.Accept(_key, this, true);
+        if (bundle is null)
+            return;
+        bundle.Visit(_elementConverter);
+    }
 }

@@ -1,4 +1,3 @@
-using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using System;

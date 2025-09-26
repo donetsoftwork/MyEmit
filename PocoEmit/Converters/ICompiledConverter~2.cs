@@ -1,22 +1,15 @@
 using PocoEmit.Builders;
-using System;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Converters;
 
 /// <summary>
-/// 强类型转化
+/// 已编译转化
 /// </summary>
-/// <typeparam name="TSource"></typeparam>
-/// <typeparam name="TDest"></typeparam>
-public interface ICompiledConverter<TSource, TDest> 
+public interface ICompiledConverter
     : IEmitConverter
-    , IPocoConverter<TSource, TDest>
     , IBuilder<LambdaExpression>
     , IWrapper<IEmitConverter>
+    , IDelegateCompile
 {
-    /// <summary>
-    /// 类型转化方法
-    /// </summary>
-    Func<TSource, TDest> ConvertFunc { get; }
 }

@@ -50,7 +50,7 @@ public class ComplexConvertBuilder(IMapperOptions options)
         // 字符串
         if (destType == typeof(string))
             return BuildForString(sourceType);
-        return BuildOther(sourceType, destType)/* ?? BuildByEmit(destType)*/;
+        return BuildOther(sourceType, destType);
     }
     /// <inheritdoc />
     protected override IEmitConverter BuildOther(Type sourceType, Type destType)

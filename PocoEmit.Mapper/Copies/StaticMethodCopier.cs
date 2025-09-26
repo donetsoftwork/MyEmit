@@ -45,6 +45,5 @@ public class MethodCopier(Expression target, MethodInfo method)
     protected Expression CallMethod(Expression source, Expression dest)
         => Expression.Call(_target, _method, source, dest);
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
-        => [];
+    public virtual void Preview(IComplexBundle parent) { }
 }

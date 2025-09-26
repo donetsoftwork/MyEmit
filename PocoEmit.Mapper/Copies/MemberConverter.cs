@@ -47,7 +47,7 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
         => _converter;
     #endregion
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+    void IComplexPreview.Preview(IComplexBundle parent)
         => parent.Visit(_converter);
     /// <summary>
     /// 获取源成员

@@ -12,8 +12,8 @@ public class PreviewTests
         IMapper mapper = Mapper.Create();
         var converter = mapper.GetEmitConverter<User, UserDTO>();
         var context = new BuildContext((IMapperOptions)mapper);
-        var list = context.Visit(converter).ToArray();
-        Assert.Single(list);
+        context.Visit(converter);
+        Assert.Single(context.Collections);
     }
     [Fact]
     public void UserPreview2()
@@ -21,16 +21,15 @@ public class PreviewTests
         IMapper mapper = Mapper.Create();
         var converter = mapper.GetEmitConverter<User?, UserDTO>();
         var context = new BuildContext((IMapperOptions)mapper);
-        var list = context.Visit(converter).ToArray();
-        Assert.Single(list);
+        context.Visit(converter);
+        Assert.Single(context.Collections);
     }
     [Fact]
     public void VisitUser()
     {
         IMapper mapper = Mapper.Create();
         var context = new BuildContext((IMapperOptions)mapper);
-        _ = context.Visit<User, UserDTO>()
-            .ToArray();
+        context.Visit<User, UserDTO>();
         Assert.Single(context.Collections);
     }
     [Fact]
@@ -38,17 +37,15 @@ public class PreviewTests
     {
         IMapper mapper = Mapper.Create();
         var context = new BuildContext((IMapperOptions)mapper);
-        var list = context.Visit<int, string>()
-            .ToArray();
-        Assert.Empty(list);
+        context.Visit<int, string>();
+        Assert.Empty(context.Collections);
     }
     [Fact]
     public void VisitNode()
     {
         IMapper mapper = Mapper.Create();
         var context = new BuildContext((IMapperOptions)mapper);
-        var list = context.Visit<Node, NodeDTO>()
-            .ToArray();
+        context.Visit<Node, NodeDTO>();
         Assert.Single(context.Collections);
     }
 }

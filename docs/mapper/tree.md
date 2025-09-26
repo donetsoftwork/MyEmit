@@ -1,6 +1,500 @@
-# Poco支持循环引用
+# PocoEmit遥遥领先于AutoMapper之循环引用处理
 
-## 一、循环引用
+## 一、举个树状结构的例子
+>* 树状结构在实际应用中很常见
+
+### 1. 导航菜单代码
+>导航菜单是一个典型的树状结构
+
+```csharp
+public class Menu
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public List<Menu> Children { get; set; }
+    public static Menu GetMenu()
+    {
+        var programs = new Menu { Id = 2, Name = "Programs", Description = "程序" };
+        var documents = new Menu { Id = 3, Name = "Documents", Description = "文档" };
+        var settings = new Menu { Id = 4, Name = "Settings", Description = "设置" };
+        var help = new Menu { Id = 5, Name = "Help", Description = "帮助" };
+        var run = new Menu { Id = 6, Name = "Run", Description = "运行" };
+        var shutdown = new Menu { Id = 7, Name = "Shut Down", Description = "关闭" };
+        var start = new Menu { Id = 1, Name = "Start", Description = "开始", Children = [programs, documents, settings, help, run, shutdown] };
+        return start;
+    }
+}
+```
+
+### 2. 把Menu转化为MenuDTO
+#### 2.1 PocoEmit执行代码
+>* 代码中多加了UseCollection
+>* 如果全局开启了集合就不需要这行代码
+
+```csharp
+var menu = Menu.GetMenu();
+var mapper = PocoEmit.Mapper.Create()
+    .UseCollection();
+var dto = mapper.Convert<Menu, MenuDTO>(menu);
+```
+#### 2.2 执行效果如下:
+>* 以下测试是使用vscode执行的(需要Jupyter Notebook插件)
+>* 测试代码地址为: https://github.com/donetsoftwork/MyEmit/tree/main/Notes/menu.dib
+>* gitee地址:  https://gitee.com/donetsoftwork/MyEmit/tree/main/Notes/menu.dib
+
+~~~json
+{
+  "$id": "1",
+  "Id": 1,
+  "Name": "Start",
+  "Description": "\u5F00\u59CB",
+  "Children": {
+    "$id": "2",
+    "$values": [
+      {
+        "$id": "3",
+        "Id": 2,
+        "Name": "Programs",
+        "Description": "\u7A0B\u5E8F",
+        "Children": null
+      },
+      {
+        "$id": "4",
+        "Id": 3,
+        "Name": "Documents",
+        "Description": "\u6587\u6863",
+        "Children": null
+      },
+      {
+        "$id": "5",
+        "Id": 4,
+        "Name": "Settings",
+        "Description": "\u8BBE\u7F6E",
+        "Children": null
+      },
+      {
+        "$id": "6",
+        "Id": 5,
+        "Name": "Help",
+        "Description": "\u5E2E\u52A9",
+        "Children": null
+      },
+      {
+        "$id": "7",
+        "Id": 6,
+        "Name": "Run",
+        "Description": "\u8FD0\u884C",
+        "Children": null
+      },
+      {
+        "$id": "8",
+        "Id": 7,
+        "Name": "Shut Down",
+        "Description": "\u5173\u95ED",
+        "Children": null
+      }
+    ]
+  }
+}
+~~~
+
+
+### 3. 与AutoMapper性能对比如下
+
+| Method        | Mean      | Error    | StdDev   | Ratio | RatioSD | Gen0   | Gen1   | Allocated | Alloc Ratio |
+|-------------- |----------:|---------:|---------:|------:|--------:|-------:|-------:|----------:|------------:|
+| Auto          | 313.92 ns | 0.481 ns | 0.535 ns |  5.65 |    0.02 | 0.0751 | 0.0003 |    1296 B |        2.95 |
+| AutoFunc      | 283.82 ns | 2.302 ns | 2.463 ns |  5.11 |    0.05 | 0.0751 | 0.0003 |    1296 B |        2.95 |
+| Poco          |  55.53 ns | 0.188 ns | 0.216 ns |  1.00 |    0.01 | 0.0255 |      - |     440 B |        1.00 |
+| PocoFunc      |  46.48 ns | 0.058 ns | 0.062 ns |  0.84 |    0.00 | 0.0255 |      - |     440 B |        1.00 |
+| PocoCache     | 312.15 ns | 0.823 ns | 0.948 ns |  5.62 |    0.03 | 0.0255 |      - |     440 B |        1.00 |
+| PocoCacheFunc | 278.93 ns | 1.581 ns | 1.692 ns |  5.02 |    0.04 | 0.0255 |      - |     440 B |        1.00 |
+
+#### 3.1 这次加入一个PocoNoCache
+>* PocoCache是转化的时候缓存对象
+>* 由于Menu虽然是循环引用,但是它没有执行死循环也没有重复对象引用
+>* 完全没有必要存缓存和尝试读缓存
+>* 对比Poco,性能几乎提高了4倍
+>* 对比Auto,性能几乎提高了5倍
+>* 所以在这种常见的情况下,大部分的cpu都在做无用功
+>* 对于Mapper会出现执行死循环的情况很少
+
+
+### 4. 代码对比
+#### 4.1 Poco生成代码如下
+```csharp
+(Func<Menu, MenuDTO>)((Menu source) => //MenuDTO
+{
+    MenuDTO dest = null;
+    if ((source != (Menu)null))
+    {
+        dest = new MenuDTO();
+        List<Menu> member0 = null;
+        dest.Id = source.Id;
+        dest.Name = source.Name;
+        dest.Description = source.Description;
+        member0 = source.Children;
+        if ((member0 != null))
+        {
+            dest.Children = default(CompiledConverter<List<Menu>, List<MenuDTO>>)/*NOTE: Provide the non-default value for the Constant!*/.Convert(member0);
+        }
+    }
+    return dest;
+});
+```
+
+```csharp
+(Func<List<Menu>, List<MenuDTO>>)((List<Menu> source) => //List<MenuDTO>
+{
+    List<MenuDTO> dest = null;
+    if ((source != (List<Menu>)null))
+    {
+        dest = new List<MenuDTO>(source.Count);
+        int index = default;
+        int len = default;
+        index = 0;
+        len = source.Count;
+        while (true)
+        {
+            if ((index < len))
+            {
+                Menu sourceItem = null;
+                MenuDTO destItem = null;
+                sourceItem = source[index];
+                // { The block result will be assigned to `destItem`
+                    MenuDTO dest_1 = null;
+                    destItem = ((Func<Menu, MenuDTO>)((Menu source_1) => //MenuDTO
+                    {
+                        MenuDTO dest_2 = null;
+                        if ((source_1 != (Menu)null))
+                        {
+                            dest_2 = new MenuDTO();
+                            List<Menu> member0 = null;
+                            dest_2.Id = source_1.Id;
+                            dest_2.Name = source_1.Name;
+                            dest_2.Description = source_1.Description;
+                            member0 = source_1.Children;
+                            if ((member0 != null))
+                            {
+                                dest_2.Children = default(CompiledConverter<List<Menu>, List<MenuDTO>>)/*NOTE: Provide the non-default value for the Constant!*/.Convert(member0);
+                            }
+                        }
+                        return dest_2;
+                    }))
+                    .Invoke(
+                        sourceItem);
+                    // } end of block assignment;
+                dest.Add(destItem);
+                index++;
+            }
+            else
+            {
+                goto forLabel;
+            }
+        }
+        forLabel:;
+    }
+    return dest;
+});
+```
+
+#### 4.2 AutoMapper生成代码如下
+```csharp
+T __f<T>(System.Func<T> f) => f();
+(Func<Menu, MenuDTO, ResolutionContext, MenuDTO>)((
+    Menu source, 
+    MenuDTO destination, 
+    ResolutionContext context) => //MenuDTO
+    (source == null) ? 
+        (destination == null) ? (MenuDTO)null : destination : 
+        __f(() => {
+            MenuDTO typeMapDestination = null;
+            ResolutionContext.CheckContext(ref context);
+            return ((MenuDTO)context.GetDestination(
+                source,
+                typeof(MenuDTO))) ?? 
+                __f(() => {
+                    typeMapDestination = destination ?? new MenuDTO();
+                    context.CacheDestination(
+                        source,
+                        typeof(MenuDTO),
+                        typeMapDestination);
+                    typeMapDestination;
+                    try
+                    {
+                        typeMapDestination.Id = source.Id;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw TypeMapPlanBuilder.MemberMappingError(
+                            ex,
+                            default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                    }
+                    try
+                    {
+                        typeMapDestination.Name = source.Name;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw TypeMapPlanBuilder.MemberMappingError(
+                            ex,
+                            default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                    }
+                    try
+                    {
+                        typeMapDestination.Description = source.Description;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw TypeMapPlanBuilder.MemberMappingError(
+                            ex,
+                            default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                    }
+                    try
+                    {
+                        List<Menu> resolvedValue = null;
+                        List<MenuDTO> mappedValue = null;
+                        resolvedValue = source.Children;
+                        mappedValue = (resolvedValue == null) ? 
+                            new List<MenuDTO>() : 
+                            context.MapInternal<List<Menu>, List<MenuDTO>>(
+                                resolvedValue,
+                                (destination == null) ? (List<MenuDTO>)null : 
+                                    typeMapDestination.Children,
+                                (MemberMap)default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                        typeMapDestination.Children = mappedValue;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw TypeMapPlanBuilder.MemberMappingError(
+                            ex,
+                            default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                    }
+                    return typeMapDestination;
+                });
+        }));
+```
+
+```csharp
+T __f<T>(System.Func<T> f) => f();
+(Func<List<Menu>, List<MenuDTO>, ResolutionContext, List<MenuDTO>>)((
+    List<Menu> source,
+    List<MenuDTO> mapperDestination,
+    ResolutionContext context) => //List<MenuDTO>
+    (source == null) ?
+        new List<MenuDTO>() :
+        __f(() => {
+            try
+            {
+                List<MenuDTO> collectionDestination = null;
+                List<MenuDTO> passedDestination = null;
+                ResolutionContext.CheckContext(ref context);
+                passedDestination = mapperDestination;
+                collectionDestination = passedDestination ?? new List<MenuDTO>();
+                collectionDestination.Clear();
+                List<Menu>.Enumerator enumerator = default;
+                Menu item = null;
+                enumerator = source.GetEnumerator();
+                try
+                {
+                    while (true)
+                    {
+                        if (enumerator.MoveNext())
+                        {
+                            item = enumerator.Current;
+                            collectionDestination.Add(((Func<Menu, MenuDTO, ResolutionContext, MenuDTO>)((
+                                Menu source_1,
+                                MenuDTO destination,
+                                ResolutionContext context) => //MenuDTO
+                                (source_1 == null) ?
+                                    (destination == null) ? (MenuDTO)null : destination :
+                                    __f(() => {
+                                        MenuDTO typeMapDestination = null;
+                                        ResolutionContext.CheckContext(ref context);
+                                        return ((MenuDTO)context.GetDestination(
+                                            source_1,
+                                            typeof(MenuDTO))) ??
+                                            __f(() => {
+                                                typeMapDestination = destination ?? new MenuDTO();
+                                                context.CacheDestination(
+                                                    source_1,
+                                                    typeof(MenuDTO),
+                                                    typeMapDestination);
+                                                typeMapDestination;
+                                                try
+                                                {
+                                                    typeMapDestination.Id = source_1.Id;
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    throw TypeMapPlanBuilder.MemberMappingError(
+                                                        ex,
+                                                        default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                                                }
+                                                try
+                                                {
+                                                    typeMapDestination.Name = source_1.Name;
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    throw TypeMapPlanBuilder.MemberMappingError(
+                                                        ex,
+                                                        default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                                                }
+                                                try
+                                                {
+                                                    typeMapDestination.Description = source_1.Description;
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    throw TypeMapPlanBuilder.MemberMappingError(
+                                                        ex,
+                                                        default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                                                }
+                                                try
+                                                {
+                                                    List<Menu> resolvedValue = null;
+                                                    List<MenuDTO> mappedValue = null;
+                                                    resolvedValue = source_1.Children;
+                                                    mappedValue = (resolvedValue == null) ?
+                                                        new List<MenuDTO>() :
+                                                        context.MapInternal<List<Menu>, List<MenuDTO>>(
+                                                            resolvedValue,
+                                                            (destination == null) ? (List<MenuDTO>)null :
+                                                                typeMapDestination.Children,
+                                                            (MemberMap)default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                                                    typeMapDestination.Children = mappedValue;
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    throw TypeMapPlanBuilder.MemberMappingError(
+                                                        ex,
+                                                        default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
+                                                }
+                                                return typeMapDestination;
+                                            });
+                                    })))
+                            .Invoke(
+                                item,
+                                (MenuDTO)null,
+                                context));
+                        }
+                        else
+                        {
+                            goto LoopBreak;
+                        }
+                    }
+                    LoopBreak:;
+                }
+                finally
+                {
+                    enumerator.Dispose();
+                }
+                return collectionDestination;
+            }
+            catch (Exception ex)
+            {
+                throw MapperConfiguration.GetMappingError(
+                    ex,
+                    default(MapRequest)/*NOTE: Provide the non-default value for the Constant!*/);
+            }
+        }));
+```
+
+### 4. Poco支持缓存配置
+#### 4.1 通过枚举ComplexCached配置缓存
+```csharp
+/// <summary>
+/// 被缓存状态
+/// </summary>
+public enum ComplexCached
+{
+    /// <summary>
+    /// 默认缓存
+    /// </summary>
+    Default = 0,
+    /// <summary>
+    /// 从不缓存
+    /// </summary>
+    Never = 1,
+    /// <summary>
+    /// 总是缓存
+    /// </summary>
+    Always = 2
+}
+```
+
+#### 4.2 PocoNoCache示例的配置代码如下
+```csharp
+_noCache = PocoEmit.Mapper.Create(new MapperOptions { ComplexCached = ComplexCached.Never });
+```
+
+#### 4.3 生成代码对比
+>* 首先Poco生成的代码还是更简洁
+>* AutoMapper还是两倍多的代码
+>* AutoMapper的MapInternal<List<Menu>, List<MenuDTO>>对应Poco的Convert<List<Menu>, List<MenuDTO>>
+>* 以上AutoMapper和Poco的代码展示都不全,由于集合处理是通过代理调用,那部分代码未关联出来,这里就不再赘述
+
+#### 4.4 树状结构和链表的差异
+>* 树状结构例子使用的是ConvertContext.Create
+>* 前面链表例子是ConvertContext.CreateSingle,CreateSingle性能更好,内存分配更少
+>* 树状结构有两个循环引用类型,Menu和List<Menu>
+>* 如果检测到只有一个循环引用类型,Poco就使用CreateSingle
+>* 如果没检测到循环引用类型,Poco就不生成context代码
+
+### 5 没有循环引用也可以使用缓存
+>* 只要把ComplexCached配置成Always就行
+>* 也举个无循环引用缓存的例子
+
+#### 5.1 先定义以下类
+
+```csharp
+/// <summary>
+/// 军官
+/// </summary>
+public class Officer
+{
+    public string Name { get; set; }
+    public int Level { get; set; }
+    /// <summary>
+    /// 部队
+    /// </summary>
+    /// <returns></returns>
+    public static Dictionary<Officer, Officer> GetArmy()
+    {
+        var officer1 = new Officer { Name = "司令", Level = 1 };
+        var officer2 = new Officer { Name = "1军军长", Level = 2 };
+        var officer3 = new Officer { Name = "2军军长", Level = 2 };
+        var officer21 = new Officer { Name = "101师师长", Level = 3 };
+        var officer22 = new Officer { Name = "102师师长", Level = 3 };
+        var officer31 = new Officer { Name = "201师师长", Level = 3 };
+        var officer32 = new Officer { Name = "202师师长", Level = 3 };
+        var army = new Dictionary<Officer, Officer>()
+        {
+            { officer2 , officer1 },
+            { officer21 , officer2 },
+            { officer22 , officer2 },
+            { officer3 , officer1 },
+            { officer31 , officer3 },
+            { officer32 , officer3 }
+        };
+        return army;
+    }
+}
+public class OfficerDTO
+{
+    public string Name { get; set; }
+    public string Level { get; set; }
+}
+```
+
+#### 5.2 把Dictionary<Officer, Officer>转化为Dictionary<OfficerDTO, OfficerDTO>
+
+
+
+
+## 二、循环引用
 ### 1. 什么是循环引用
 >循环引用就是类型相互依赖
 
@@ -8,7 +502,7 @@
 >* 这有什么问题呢?
 >* 编写生成A的代码需要遍历A的所有属性
 >* 构造B类型属性是A代码的一部分,B代码有含有A类型属性
->* 这就构成一个循环,处理不好就是个死循环
+>* 这就是一个编译死循环
 
 #### 1.2 其他循环引用例子
 >* 链表结构只有一个类型也是循环引用
@@ -42,17 +536,91 @@ public class Node
 }
 ~~~
 
-### 2. 把Node转化为NodeDTO
+### 2. PocoEmit把Node转化为NodeDTO
+#### 2.1  PocoEmit直接转化不需任何特殊配置
+~~~csharp
+var node = Node.GetNode();
+var dto = PocoEmit.Mapper.Default.Convert<Node, NodeDTO>(node);
+~~~
 
+#### 2.2 执行效果如下:
+>* 以下测试是使用vscode执行的(需要Jupyter Notebook插件)
+>* 测试代码地址为: https://github.com/donetsoftwork/MyEmit/tree/main/Notes/node.dib
+>* gitee地址:  https://gitee.com/donetsoftwork/MyEmit/tree/main/Notes/node.dib
+
+~~~json
+{
+  "$id": "1",
+  "Id": 1,
+  "Name": "node1",
+  "Next": {
+    "$id": "2",
+    "Id": 2,
+    "Name": "node2",
+    "Next": {
+      "$id": "3",
+      "Id": 3,
+      "Name": "node3",
+      "Next": {
+        "$id": "4",
+        "Id": 4,
+        "Name": "node4",
+        "Next": {
+          "$id": "5",
+          "Id": 5,
+          "Name": "node5",
+          "Next": {
+            "$id": "6",
+            "Id": 6,
+            "Name": "node6",
+            "Next": {
+              "$id": "7",
+              "Id": 7,
+              "Name": "node7",
+              "Next": {
+                "$id": "8",
+                "Id": 8,
+                "Name": "node8",
+                "Next": {
+                  "$id": "9",
+                  "Id": 9,
+                  "Name": "node9",
+                  "Next": {
+                    "$ref": "1"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+~~~
 
 ### 3. 与AutoMapper性能对比如下
 
+| Method   | Mean     | Error   | StdDev  | Ratio | Gen0   | Gen1   | Allocated | Alloc Ratio |
+|--------- |---------:|--------:|--------:|------:|-------:|-------:|----------:|------------:|
+| Auto     | 671.4 ns | 1.49 ns | 1.59 ns |  1.33 | 0.0936 | 0.0004 |    1616 B |        4.49 |
+| AutoFunc | 639.4 ns | 5.96 ns | 6.38 ns |  1.27 | 0.0936 | 0.0004 |    1616 B |        4.49 |
+| Poco     | 503.9 ns | 1.22 ns | 1.40 ns |  1.00 | 0.0208 |      - |     360 B |        1.00 |
+| PocoFunc | 493.1 ns | 3.98 ns | 4.42 ns |  0.98 | 0.0208 |      - |     360 B |        1.00 |
+
 | Method   | Mean     | Error    | StdDev   | Median   | Ratio | RatioSD | Gen0   | Gen1   | Allocated | Alloc Ratio |
 |--------- |---------:|---------:|---------:|---------:|------:|--------:|-------:|-------:|----------:|------------:|
-| Auto     | 670.6 ns | 16.80 ns | 17.98 ns | 670.8 ns |  1.34 |    0.04 | 0.0937 | 0.0004 |    1616 B |        4.12 |
-| AutoFunc | 637.0 ns |  3.66 ns |  3.91 ns | 634.0 ns |  1.28 |    0.01 | 0.0937 | 0.0004 |    1616 B |        4.12 |
-| Poco     | 499.4 ns |  1.46 ns |  1.63 ns | 500.0 ns |  1.00 |    0.00 | 0.0227 | 0.0001 |     392 B |        1.00 |
-| PocoFunc | 482.2 ns |  3.52 ns |  3.91 ns | 480.3 ns |  0.97 |    0.01 | 0.0209 |      - |     360 B |        0.92 |
+| Auto     | 672.9 ns | 12.92 ns | 14.37 ns | 660.6 ns |  1.79 |    0.04 | 0.0936 | 0.0004 |    1616 B |        4.49 |
+| AutoFunc | 660.6 ns |  3.18 ns |  3.54 ns | 659.5 ns |  1.76 |    0.02 | 0.0936 | 0.0004 |    1616 B |        4.49 |
+| Poco     | 375.5 ns |  3.63 ns |  4.18 ns | 375.1 ns |  1.00 |    0.02 | 0.0208 |      - |     360 B |        1.00 |
+| PocoFunc | 363.4 ns |  0.53 ns |  0.61 ns | 363.3 ns |  0.97 |    0.01 | 0.0208 |      - |     360 B |        1.00 |
+
+| Method   | Mean     | Error    | StdDev   | Median   | Ratio | RatioSD | Gen0   | Gen1   | Allocated | Alloc Ratio |
+|--------- |---------:|---------:|---------:|---------:|------:|--------:|-------:|-------:|----------:|------------:|
+| Auto     | 678.3 ns | 12.65 ns | 14.06 ns | 666.1 ns |  1.78 |    0.04 | 0.0936 | 0.0004 |    1616 B |        4.49 |
+| AutoFunc | 632.7 ns |  4.18 ns |  4.64 ns | 628.8 ns |  1.66 |    0.02 | 0.0936 | 0.0004 |    1616 B |        4.49 |
+| Poco     | 381.8 ns |  2.66 ns |  3.07 ns | 382.0 ns |  1.00 |    0.01 | 0.0208 |      - |     360 B |        1.00 |
+| PocoFunc | 365.4 ns |  2.73 ns |  2.92 ns | 366.9 ns |  0.96 |    0.01 | 0.0208 |      - |     360 B |        1.00 |
 
 >* 首先可以看出Poco和AutoMapper执行耗时都挺高的,所以建议大家尽量避免循环引用
 >* Poco性能较好,如果基础类型字段多一些,优势会更明显
@@ -162,184 +730,19 @@ T __f<T>(System.Func<T> f) => f();
 >* AutoMapper的context.CacheDestination对应Poco的context.SetCache
 >* AutoMapper的ResolutionContext.CheckContext对应Poco的ConvertContext.CreateSingle
 >* Poco有context.Dispose,AutoMapper没有
->* AutoMapper的context.MapInternal对应Poco的context.Convert,都是“代理调用”
->* 由于代码生成顺序的原因,被调用代码尚未生成,只能使用“代理调用”，特别是调用自身(LambdaExpression不能调用自身)
->* AutoMapper和Poco处理循环引用的原理是差不多的
+
+#### 4.4 编译死循环处理
+>* context.Convert是用来解决编译死循环的
+>* 在循环引用中,被调用代码尚未生成时需要一个"代理"
+>* 通过context.Convert跳过死循环编译
+
+#### 4.5 执行死循环处理
+>* 《九九归一》的next是个死循环
+>* context.SetCache是用来解决执行死循环的
+>* 已经初始化的NodeDTO缓存起来不重复执行
+>* 这样就跳出来了执行死循环
 
 
-## 二、再举个树状结构的例子
->* 树状结构在实际应用中更常见
-
-### 1. 导航菜单代码
->导航菜单是一个典型的树状结构
-
-```csharp
-public class Menu
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public List<Menu> Children { get; set; }
-    public static Menu GetMenu()
-    {
-        var programs = new Menu { Id = 2, Name = "Programs", Description = "程序" };
-        var documents = new Menu { Id = 3, Name = "Documents", Description = "文档" };
-        var settings = new Menu { Id = 4, Name = "Settings", Description = "设置" };
-        var help = new Menu { Id = 5, Name = "Help", Description = "帮助" };
-        var run = new Menu { Id = 6, Name = "Run", Description = "运行" };
-        var shutdown = new Menu { Id = 7, Name = "Shut Down", Description = "关闭" };
-        var start = new Menu { Id = 1, Name = "Start", Description = "开始", Children = [programs, documents, settings, help, run, shutdown] };
-        return start;
-    }
-}
-```
-
-### 2. 把Menu转化为MenuDTO
-
-
-### 3. 与AutoMapper性能对比如下
-
-| Method   | Mean     | Error   | StdDev  | Ratio | RatioSD | Gen0   | Gen1   | Allocated | Alloc Ratio |
-|--------- |---------:|--------:|--------:|------:|--------:|-------:|-------:|----------:|------------:|
-| Auto     | 321.0 ns | 0.88 ns | 1.01 ns |  1.19 |    0.01 | 0.0751 | 0.0003 |    1296 B |        1.78 |
-| AutoFunc | 283.7 ns | 4.12 ns | 4.74 ns |  1.06 |    0.02 | 0.0751 | 0.0003 |    1296 B |        1.78 |
-| Poco     | 268.8 ns | 1.72 ns | 1.92 ns |  1.00 |    0.01 | 0.0422 |      - |     728 B |        1.00 |
-| PocoFunc | 245.4 ns | 1.74 ns | 2.00 ns |  0.91 |    0.01 | 0.0403 |      - |     696 B |        0.96 |
-
->* Poco性能较好
->* 内存分配上Poco有优势,AutoMapper分配了几乎2倍的内存
-
-### 4. 与AutoMapper生成代码对比如下
-#### 4.1 AutoMapper生成以下代码
-```csharp
-T __f<T>(System.Func<T> f) => f();
-(Func<Menu, MenuDTO, ResolutionContext, MenuDTO>)((
-    Menu source,
-    MenuDTO destination,
-    ResolutionContext context) => //MenuDTO
-    (source == null) ?
-        (destination == null) ? (MenuDTO)null : destination :
-        __f(() => {
-            MenuDTO typeMapDestination = null;
-            ResolutionContext.CheckContext(ref context);
-            return ((MenuDTO)context.GetDestination(
-                source,
-                typeof(MenuDTO))) ??
-                __f(() => {
-                    typeMapDestination = destination ?? new MenuDTO();
-                    context.CacheDestination(
-                        source,
-                        typeof(MenuDTO),
-                        typeMapDestination);
-                    typeMapDestination;
-                    try
-                    {
-                        typeMapDestination.Id = source.Id;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw TypeMapPlanBuilder.MemberMappingError(
-                            ex,
-                            default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
-                    }
-                    try
-                    {
-                        typeMapDestination.Name = source.Name;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw TypeMapPlanBuilder.MemberMappingError(
-                            ex,
-                            default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
-                    }
-                    try
-                    {
-                        typeMapDestination.Description = source.Description;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw TypeMapPlanBuilder.MemberMappingError(
-                            ex,
-                            default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
-                    }
-                    try
-                    {
-                        List<Menu> resolvedValue = null;
-                        List<MenuDTO> mappedValue = null;
-                        resolvedValue = source.Children;
-                        mappedValue = (resolvedValue == null) ?
-                            new List<MenuDTO>() :
-                            context.MapInternal<List<Menu>, List<MenuDTO>>(
-                                resolvedValue,
-                                (destination == null) ? (List<MenuDTO>)null :
-                                    typeMapDestination.Children,
-                                (MemberMap)default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
-                        typeMapDestination.Children = mappedValue;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw TypeMapPlanBuilder.MemberMappingError(
-                            ex,
-                            default(PropertyMap)/*NOTE: Provide the non-default value for the Constant!*/);
-                    }
-                    return typeMapDestination;
-                });
-        }));
-```
-
-#### 4.2 Poco生成以下代码
-```csharp
-(Func<Menu, MenuDTO>)((Menu source) => //MenuDTO
-{
-    IConvertContext context = null;
-    MenuDTO dest = null;
-    context = ConvertContext.Create();
-    dest = ((Func<IConvertContext, Menu, MenuDTO>)((
-        IConvertContext context_1, 
-        Menu source_1) => //MenuDTO
-    {
-        MenuDTO dest_1 = null;
-        if ((source_1 != (Menu)null))
-        {
-            dest_1 = new MenuDTO();
-            context_1.SetCache<Menu, MenuDTO>(
-                source_1,
-                dest_1);
-            List<Menu> member0 = null;
-            dest_1.Id = source_1.Id;
-            dest_1.Name = source_1.Name;
-            dest_1.Description = source_1.Description;
-            member0 = source_1.Children;
-            if ((member0 != null))
-            {
-                dest_1.Children = (member0 == (List<Menu>)null) ? (List<MenuDTO>)null : 
-                    context_1.Convert<List<Menu>, List<MenuDTO>>(
-                        (IContextConverter)default(ContextAchieved)/*NOTE: Provide the non-default value for the Constant!*/,
-                        member0);
-            }
-        }
-        return dest_1;
-    }))
-    .Invoke(
-        context,
-        source);
-    context.Dispose();
-    return dest;
-});
-```
-
-#### 4.3 生成代码对比
->* 首先Poco生成的代码还是更简洁
->* AutoMapper还是两倍多的代码
->* AutoMapper的MapInternal<List<Menu>, List<MenuDTO>>对应Poco的Convert<List<Menu>, List<MenuDTO>>
->* 以上AutoMapper和Poco的代码展示都不全,由于集合处理是通过代理调用,那部分代码未关联出来,这里就不再赘述
-
-#### 4.4 树状结构和链表的差异
->* 树状结构例子使用的是ConvertContext.Create
->* 前面链表例子是ConvertContext.CreateSingle,CreateSingle性能更好,内存分配更少
->* 树状结构有两个循环引用类型,Menu和List<Menu>
->* 如果检测到只有一个循环引用类型,Poco就使用CreateSingle
->* 如果没检测到循环引用类型,Poco就不生成context代码
 
 ## 三、再举个逼真树的例子
 ### 1. 树的构成

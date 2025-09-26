@@ -34,7 +34,7 @@ public abstract partial class MapperConfigurationBase
         _matchConfiguration = new ConcurrentDictionary<PairTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
         _primitiveTypes = new ConcurrentDictionary<Type, bool>(concurrencyLevel, options.PrimitiveCapacity);
         _defaultValueConfiguration = new ConcurrentDictionary<Type, IBuilder<Expression>>(concurrencyLevel, options.DefaultValueCapacity);
-        _contextConverters = new ConcurrentDictionary<PairTypeKey, IContextConverter>(concurrencyLevel, options.ContextConverterCapacity);
+        _contextConverters = new ConcurrentDictionary<PairTypeKey, IEmitContextConverter>(concurrencyLevel, options.ContextConverterCapacity);
         _reflectionConstructor = DefaultReflectionConstructor.Default;
         _defaultMatcher = MemberNameMatcher.Default;
         _recognizer = new Recognizer(_defaultMatcher.NameMatch);
@@ -42,6 +42,7 @@ public abstract partial class MapperConfigurationBase
         _copierBuilder = new CopierBuilder(this);
         _copierFactory = new CopierFactory(this);
         _primitives = new PrimitiveConfiguration(this);
+        _cached = options.Cached;
     }
     #region 配置
     private CopierBuilder _copierBuilder;
@@ -87,6 +88,10 @@ public abstract partial class MapperConfigurationBase
         get => _copierBuilder; 
         internal set => _copierBuilder = value ?? throw new ArgumentNullException(nameof(value));
     }
+    private ComplexCached _cached = ComplexCached.Circle;
+    /// <inheritdoc />
+    public ComplexCached Cached
+        => _cached;
     #endregion
     #region 功能
     /// <summary>

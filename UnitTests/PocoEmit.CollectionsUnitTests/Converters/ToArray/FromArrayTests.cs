@@ -28,10 +28,9 @@ public class FromArrayTests : CollectionTestBase
     [Fact]
     public void ConfigureMap()
     {
-        IMapper mapper = Mapper.Create();
-        mapper.ConfigureMap<AutoUserDTO, User>();
+        _mapper.ConfigureMap<AutoUserDTO, User>();
         AutoUserDTO[] source = [new AutoUserDTO { UserId = "222", UserName = "Jxj" }, new AutoUserDTO { UserId = "333", UserName = "李四" }];
-        var converter = mapper.GetConverter<AutoUserDTO[], User[]>();
+        var converter = _mapper.GetConverter<AutoUserDTO[], User[]>();
         var result = converter.Convert(source);
         Assert.NotNull(result);
         Assert.Equal(source.Length, result.Length);

@@ -22,6 +22,5 @@ public class ActionCopier(IPocoOptions poco, LambdaExpression copyAction)
     IEnumerable<Expression> IEmitCopier.Copy(IBuildContext context, Expression source, Expression dest)
         => [Call(source, dest)];
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
-        => [];
+    void IComplexPreview.Preview(IComplexBundle parent) { }
 }

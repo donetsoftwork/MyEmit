@@ -14,6 +14,7 @@ namespace PocoEmit.Collections.Converters;
 /// <summary>
 /// 索引转数组
 /// </summary>
+/// <param name="options"></param>
 /// <param name="sourceType"></param>
 /// <param name="sourceElementType"></param>
 /// <param name="destType"></param>
@@ -21,11 +22,13 @@ namespace PocoEmit.Collections.Converters;
 /// <param name="length"></param>
 /// <param name="indexReader"></param>
 /// <param name="elementConverter"></param>
-public class IndexArrayConverter(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitElementCounter length, IEmitIndexMemberReader indexReader, IEmitConverter elementConverter)
+public class IndexArrayConverter(IMapperOptions options, Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitElementCounter length, IEmitIndexMemberReader indexReader, IEmitConverter elementConverter)
     : ArrayActivator(destType, destElementType, length)
-    , IComplexIncludeConverter
+    , IEmitComplexConverter
+    , IBuilder<LambdaExpression>
 {
     #region 配置
+    private readonly IMapperOptions _options = options;
     private readonly PairTypeKey _key = new(sourceType, destType);
     private readonly Type _sourceType = sourceType;
     private readonly Type _sourceElementType = sourceElementType;
@@ -56,23 +59,58 @@ public class IndexArrayConverter(Type sourceType, Type sourceElementType, Type d
         => _indexReader;
     #endregion
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
-        => parent.Visit(_elementConverter);
-    /// <inheritdoc />
-    public Expression Convert(IBuildContext context, Expression source)
+    void IComplexPreview.Preview(IComplexBundle parent)
     {
-        var dest = Expression.Variable(_collectionType, "dest");
+        var bundle = parent.Accept(_key, this, true);
+        if (bundle is null)
+            return;
+        bundle.Visit(_elementConverter);
+    }
+    #region IEmitConverter
+    /// <inheritdoc />
+    Expression IEmitConverter.Convert(Expression source)
+        => BuildContext.WithPrepare(_options, this)
+        .Enter(_key)
+        .CallComplexConvert(_key, source);
+    #endregion
+    #region IBuilder<LambdaExpression>
+    /// <summary>
+    /// 构造表达式
+    /// </summary>
+    /// <returns></returns>
+    public LambdaExpression Build()
+        => BuildContext.WithPrepare(_options, this)
+        .Build(this);
+    #endregion
+    #region IEmitComplexConverter
+    /// <inheritdoc />
+    public LambdaExpression Build(IBuildContext context)
+        => context.Context.Build(this);
+    /// <inheritdoc />
+    public LambdaExpression BuildWithContext(IBuildContext context)
+        => context.Context.BuildWithContext(this);
+    #endregion
+    /// <inheritdoc />
+    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
+    {
         var count = Expression.Variable(typeof(int), "count");
         var index = Expression.Variable(typeof(int), "index");
         var sourceItem = Expression.Variable(_sourceElementType, "sourceItem");
-        return Expression.Block(
-            [count, dest, index, sourceItem],
+
+        var list = new List<Expression>() {
             Expression.Assign(count, _length.Count(source)),
             Expression.Assign(index, Expression.Constant(0)),
-            Expression.Assign(dest, New(count)),
-            //Expression.Assign(index, Expression.Constant(0)),
-            EmitHelper.For(index, count, i => CopyElement(context, source, dest, i, sourceItem, _indexReader, _elementConverter)),
-            dest
+            Expression.Assign(dest, New(count))
+        };
+        var cache = context.SetCache(convertContext, _key, source, dest);
+        if (cache is not null)
+            list.Add(cache);
+        yield return Expression.Block(
+            [count, index, sourceItem],
+            [
+                ..list,
+                EmitHelper.For(index, count, i => CopyElement(context, source, dest, i, sourceItem, _indexReader, _elementConverter))
+            ]
         );
     }
     /// <summary>

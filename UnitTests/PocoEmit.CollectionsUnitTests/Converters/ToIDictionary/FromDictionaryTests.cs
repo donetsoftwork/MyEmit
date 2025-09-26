@@ -24,12 +24,9 @@ public class FromDictionaryTests : DictionaryTestBase
     [Fact]
     public void ListConfigureMap()
     {
-        IMapper mapper = Mapper.Create();
-        // Emit默认不支持字符串转int,需要扩展
-        // mapper.UseSystemConvert();
-        mapper.ConfigureMap<AutoUserDTO, User>();
+        _mapper.ConfigureMap<AutoUserDTO, User>();
         Dictionary<string, AutoUserDTO> source = new() { { "222", new AutoUserDTO { UserId = "222", UserName = "Jxj" } } };
-        var converter = mapper.GetConverter<Dictionary<string, AutoUserDTO>, IDictionary< int,User>>();
+        var converter = _mapper.GetConverter<Dictionary<string, AutoUserDTO>, IDictionary< int,User>>();
         var result = converter.Convert(source);
         Equal(source, result);
     }

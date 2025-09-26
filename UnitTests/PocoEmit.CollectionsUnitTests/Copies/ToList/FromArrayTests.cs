@@ -41,13 +41,10 @@ public class FromArrayTests : CollectionTestBase
     [Fact]
     public void ConfigureMap()
     {
-        IMapper mapper = Mapper.Create();
-        // Emit默认不支持字符串转int,需要扩展
-        // mapper.UseSystemConvert();
-        mapper.ConfigureMap<AutoUserDTO, User>();
+        _mapper.ConfigureMap<AutoUserDTO, User>();
         AutoUserDTO[] source = [new AutoUserDTO { UserId = "222", UserName = "Jxj" }, new AutoUserDTO { UserId = "333", UserName = "李四" }];
         List<User> result = [];
-        var copier = mapper.GetCopier<AutoUserDTO[], List<User>>();
+        var copier = _mapper.GetCopier<AutoUserDTO[], List<User>>();
         copier.Copy(source, result);
         Assert.Equal(source.Length, result.Count);
         Equal(source[0], result[0]);

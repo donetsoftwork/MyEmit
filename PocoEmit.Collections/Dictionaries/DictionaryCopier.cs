@@ -59,7 +59,7 @@ public class DictionaryCopier(Type dictionaryType, Type keyType, Type elementTyp
         => _ignoreDefault;
     #endregion
     /// <inheritdoc />
-    IEnumerable<ComplexBundle> IComplexPreview.Preview(IComplexBundle parent)
+    void IComplexPreview.Preview(IComplexBundle parent)
         => parent.Visit(_elementConverter);
     /// <inheritdoc />
     public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)

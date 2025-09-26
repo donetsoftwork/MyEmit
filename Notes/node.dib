@@ -1,0 +1,31 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!csharp
+
+#r "nuget:PocoEmit.Collections,0.6.3.4-alpha"
+
+#!csharp
+
+#!import ./Node.cs
+
+#!csharp
+
+using PocoEmit;
+using PocoEmit.Configuration;
+
+var node = Node.GetNode();
+var manager = PocoEmit.Mapper.Create(new MapperOptions { Cached = ComplexCached.Circle });
+var dto = manager.Convert<Node, NodeDTO>(node);
+
+#!csharp
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions{
+   ReferenceHandler = ReferenceHandler.Preserve,
+    WriteIndented = true
+});
+json.Display();

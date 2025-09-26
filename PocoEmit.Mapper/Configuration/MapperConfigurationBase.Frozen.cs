@@ -53,7 +53,7 @@ public abstract partial class MapperConfigurationBase
     /// <summary>
     /// 上下文转化缓存
     /// </summary>
-    private readonly ConcurrentDictionary<PairTypeKey, IContextConverter> _contextConverters;
+    private readonly ConcurrentDictionary<PairTypeKey, IEmitContextConverter> _contextConverters;
     #endregion
     #region IMapperOptions
     /// <inheritdoc />
@@ -129,15 +129,15 @@ public abstract partial class MapperConfigurationBase
     void IConfigure<Type, IBuilder<Expression>>.Configure(in Type key, IBuilder<Expression> value)
         => _defaultValueConfiguration[key] = value;
     #endregion
-    #region ICacher<PairTypeKey, IContextConverter>
+    #region ICacher<PairTypeKey, IEmitContextConverter>
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IContextConverter>.ContainsKey(in PairTypeKey key)
+    bool ICacher<PairTypeKey, IEmitContextConverter>.ContainsKey(in PairTypeKey key)
         => _contextConverters.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<PairTypeKey, IContextConverter>.Set(in PairTypeKey key, IContextConverter value)
+    void IStore<PairTypeKey, IEmitContextConverter>.Set(in PairTypeKey key, IEmitContextConverter value)
         => _contextConverters[key] = value;
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IContextConverter>.TryGetValue(in PairTypeKey key, out IContextConverter value)
+    bool ICacher<PairTypeKey, IEmitContextConverter>.TryGetValue(in PairTypeKey key, out IEmitContextConverter value)
         => _contextConverters.TryGetValue(key, out value);
     #endregion
     #endregion

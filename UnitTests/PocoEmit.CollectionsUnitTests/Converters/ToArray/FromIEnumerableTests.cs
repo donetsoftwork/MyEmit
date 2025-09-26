@@ -35,12 +35,9 @@ public class FromIEnumerableTests : CollectionTestBase
     [Fact]
     public void IEnumerableConfigureMap()
     {
-        IMapper mapper = Mapper.Create();
-        // Emit默认不支持字符串转int,需要扩展
-        // mapper.UseSystemConvert();
-        mapper.ConfigureMap<AutoUserDTO, User>();
+        _mapper.ConfigureMap<AutoUserDTO, User>();
         IEnumerable<AutoUserDTO> source = [new AutoUserDTO { UserId = "222", UserName = "Jxj" }, new AutoUserDTO { UserId = "333", UserName = "李四" }];
-        var converter = mapper.GetConverter<IEnumerable<AutoUserDTO>, User[]>();
+        var converter = _mapper.GetConverter<IEnumerable<AutoUserDTO>, User[]>();
         var result = converter.Convert(source);
         Assert.NotNull(result);
         var sourceItem = source.First();

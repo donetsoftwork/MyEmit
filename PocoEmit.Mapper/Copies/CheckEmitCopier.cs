@@ -33,17 +33,14 @@ public class CheckEmitCopier(IEmitCopier inner, Expression target, MethodInfo me
     public IEmitCopier Inner
         => _inner;
     #endregion
-    /// <summary>
-    /// 复制
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="source"></param>
-    /// <param name="dest"></param>
-    /// <returns></returns>
+    /// <inheritdoc />
     public override IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
     {
         foreach(var item in _inner.Copy(context, source, dest))
             yield return item;
         yield return CallMethod(source, dest);
     }
+    /// <inheritdoc />
+    public override void Preview(IComplexBundle parent)
+        => _inner.Preview(parent);
 }

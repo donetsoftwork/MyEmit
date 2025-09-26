@@ -81,7 +81,7 @@ public class TreeBench2
             _resolutionContext = field.GetValue(_auto) as ResolutionContext;
         }
 
-        _poco = ConfigurePocoMapper(new MapperOptions());
+        _poco = ConfigurePocoMapper(new MapperOptions { Cached = ComplexCached.Circle });
         _pocoFunc = _poco.GetConvertFunc<Tree2, TreeDTO2>();
     }
     private static PocoEmit.IMapper ConfigurePocoMapper(MapperOptions options)

@@ -50,6 +50,6 @@ public sealed class CompatibleCopier(IEmitCopier original, Type innerSourceType,
         return _original.Copy(context, source, dest);
     }
     /// <inheritdoc />
-    public IEnumerable<ComplexBundle> Preview(IComplexBundle parent)
+    public void Preview(IComplexBundle parent)
         => _original.Preview(parent);
 }
