@@ -241,6 +241,13 @@ public class ComplexBundle(BuildContext context, in PairTypeKey key, IEmitConver
     #endregion
     #region Cache
     /// <summary>
+    /// 开启缓存
+    /// </summary>
+    internal void EnableCache()
+    {
+        _isCache = true;
+    }
+    /// <summary>
     /// 检测是否缓存
     /// </summary>
     /// <returns></returns>

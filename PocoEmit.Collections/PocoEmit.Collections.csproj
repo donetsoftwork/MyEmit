@@ -6,7 +6,7 @@
     <PackageId>PocoEmit.Collections</PackageId>
     <Description>Emit操作集合</Description>
     <PackageTags>OOM;Emit;Poco;Mapper;Map</PackageTags>
-    <Version>$(VersionBase).5-alpha</Version>
+    <Version>$(VersionBase).6-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RootNamespace>PocoEmit</RootNamespace>
   </PropertyGroup>

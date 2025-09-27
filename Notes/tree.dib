@@ -4,7 +4,7 @@
 
 #!csharp
 
-#r "nuget:PocoEmit.Collections,0.6.3.4-alpha"
+#r "nuget:PocoEmit.Collections,0.6.3.5-alpha"
 
 #!csharp
 
@@ -25,9 +25,7 @@ CollectionContainer.GlobalUseCollection();
 var mapper = Mapper.Create();
 var context = new BuildContext((IMapperOptions)mapper);
 var converter = mapper.GetEmitConverter<Tree, TreeDTO>();
-var bundles = context.Visit(converter)
-    .Distinct()
-    .ToArray();
+context.Visit(converter);
 context.CheckConvertContext();
 // bundles.Display();
 context.Collections.Distinct().Display();

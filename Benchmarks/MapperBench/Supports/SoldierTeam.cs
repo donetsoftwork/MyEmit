@@ -24,7 +24,6 @@ public class SoldierTeam
         return team;
     }
 }
-
 public class Soldier
 {
     public string Name { get; set; }

@@ -23,12 +23,12 @@ public class BuildContext(IMapperOptions options, ComplexCached complexCached)
     /// </summary>
     /// <param name="options"></param>
     public BuildContext(IMapperOptions options)
-        :this(options, options.Cached)
+        : this(options, options.Cached)
     {
     }
     #region 配置
     private readonly IMapperOptions _options = options;
-    private ComplexCached _complexCached = complexCached;
+    private readonly ComplexCached _complexCached = complexCached;
     private readonly Dictionary<PairTypeKey, ComplexBundle> _collections = [];
     private readonly Dictionary<PairTypeKey, ComplexBundle> _readies = [];
     private readonly Dictionary<PairTypeKey, ICompiledConverter> _achieves = [];
@@ -133,29 +133,6 @@ public class BuildContext(IMapperOptions options, ComplexCached complexCached)
     }
     #endregion
     #region bundle
-    ///// <summary>
-    ///// 获取复杂类型成员信息
-    ///// </summary>
-    ///// <param name="key"></param>
-    ///// <param name="converter"></param>
-    ///// <param name="depth"></param>
-    ///// <param name="isCollection"></param>
-    ///// <returns></returns>
-    //public ComplexBundle GetBundleOrCreate(in PairTypeKey key, IEmitConverter converter, int depth, bool isCollection)
-    //{
-    //    // 忽略基础类型
-    //    if (_options.CheckPrimitive(key.LeftType))
-    //        return null;
-    //    // 按depth倒序构建
-    //    // 优先非集合构建
-    //    if (isCollection)
-    //        depth--;
-    //    if (_collections.TryGetValue(key, out var bundle))
-    //        bundle.CheckDepth(depth);
-    //    else
-    //        _collections.Add(key, bundle = new(this, key, converter, depth, isCollection));
-    //    return bundle;
-    //}
     /// <summary>
     /// 构造复杂类型成员信息
     /// </summary>
@@ -305,7 +282,7 @@ public class BuildContext(IMapperOptions options, ComplexCached complexCached)
         var bundles = _collections.Values;
         var hasCircle = CheckCircle(bundles);
         int cacheCount = 0;
-        switch(_options.Cached)
+        switch(_complexCached)
         {
             case ComplexCached.Never:
                 break;

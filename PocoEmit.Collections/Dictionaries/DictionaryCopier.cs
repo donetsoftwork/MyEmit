@@ -81,20 +81,21 @@ public class DictionaryCopier(Type dictionaryType, Type keyType, Type elementTyp
     {
         if (_ignoreDefault)
         {
-            var elementType = element.Type;            
+            var elementType = element.Type;
+            var elementConvert = context.Convert(elementConverter, element);
             if (EmitHelper.CheckComplexSource(element, false))
             {
                 var value0 = Expression.Parameter(elementType, "value0");
                 return Expression.Block([value0],
                     Expression.Assign(value0, element),
-                    Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), context.Convert(elementConverter, value0)))
+                    Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [context.Convert(keyConverter, key)]), context.Convert(elementConverter, value0)))
                 );
             }
             else
             {
-                return Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), context.Convert(elementConverter, element)));
+                return Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [context.Convert(keyConverter, key)]), context.Convert(elementConverter, element)));
             }                
         }
-        return Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [keyConverter.Convert(key)]), context.Convert(elementConverter, element));
+        return Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [context.Convert(keyConverter, key)]), context.Convert(elementConverter, element));
     }
 }

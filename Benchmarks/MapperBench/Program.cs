@@ -47,7 +47,9 @@ using System.Text.Json.Serialization;
 //MenuBench menuBench = new();
 //menuBench.Setup();
 //var auto = menuBench.BuildAuto();
+//var auto0 = menuBench.BuildAuto0();
 //var poco = menuBench.BuildPoco();
+//var poco0 = menuBench.BuildPoco0();
 //var cache = menuBench.BuildCache();
 #endregion
 #region SoldierTeamBench
@@ -55,7 +57,8 @@ using System.Text.Json.Serialization;
 //soldierTeamBench.Setup();
 ////var auto = soldierTeamBench.BuildAuto();
 ////var poco = soldierTeamBench.BuildPoco();
-//var noCache = soldierTeamBench.BuildCache();
+////var noCache = soldierTeamBench.BuildCache();
+//var context = soldierTeamBench.BuildContextFunc();
 #endregion
 //var dto5 = CustomerTests.BySys();
 //var dto6 = CustomerTests.ByFast();
@@ -68,4 +71,5 @@ using System.Text.Json.Serialization;
 //BenchmarkRunner.Run<TreeBench2>();
 BenchmarkRunner.Run<NodeBench>();
 //BenchmarkRunner.Run<MenuBench>();
+//BenchmarkRunner.Run<SoldierTeamBench>();
 

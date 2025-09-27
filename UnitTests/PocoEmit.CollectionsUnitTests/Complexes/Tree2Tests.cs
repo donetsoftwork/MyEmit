@@ -1,5 +1,6 @@
 using PocoEmit.CollectionsUnitTests.Supports;
 using PocoEmit.Configuration;
+using PocoEmit.Resolves;
 
 namespace PocoEmit.CollectionsUnitTests.Complexes;
 
@@ -89,13 +90,39 @@ public class Tree2Tests
     {
         var trunk = CreateTreeBranch2(new Tree2());
         var branch1 = trunk.Branches[0];
-        var mapper = Mapper.Create(new MapperOptions { Cached = ComplexCached.Circle });
-        mapper.UseCollection();
+        var mapper = Mapper.Create(new MapperOptions { Cached = ComplexCached.Circle })
+            .UseCollection();
         var expression = mapper.BuildConverter<TreeBranch2, TreeBranchDTO2>();
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Assert.NotNull(code);
         var func = FastExpressionCompiler.ExpressionCompiler.CompileFast(expression);
         TreeBranchDTO2 dto = func(trunk);
+        Assert.NotNull(dto);
+        var branches = dto.Branches;
+        Assert.NotNull(branches);
+        Assert.Equal(trunk.Branches.Length, branches.Length);
+        var dtoBranch1 = dto.Branches[0];
+        Assert.NotNull(dtoBranch1);
+        var dtoLeaves = dtoBranch1.Leaves;
+        Assert.NotNull(dtoLeaves);
+        Assert.Equal(branch1.Leaves.Length, dtoLeaves.Length);
+    }
+    [Fact]
+    public void ConvertFuncTreeBranchByInvoke()
+    {
+        var trunk = CreateTreeBranch2(new Tree2());
+        var branch1 = trunk.Branches[0];
+        var mapper = Mapper.Create(new MapperOptions { Cached = ComplexCached.Circle })
+            .UseCollection();
+        var converter = mapper.GetEmitContextConverter<TreeBranch2, TreeBranchDTO2>();
+        Assert.NotNull(converter);
+        var expression = converter.Build();
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
+        var func = mapper.GetContextConvertFunc<TreeBranch2, TreeBranchDTO2>();
+        Assert.NotNull(func);
+        using var content = ConvertContext.Pool.Get();
+        TreeBranchDTO2 dto = func(content, trunk);
         Assert.NotNull(dto);
         var branches = dto.Branches;
         Assert.NotNull(branches);

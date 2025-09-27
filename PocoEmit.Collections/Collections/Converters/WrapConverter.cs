@@ -11,6 +11,10 @@ namespace PocoEmit.Collections.Converters;
 /// <summary>
 /// 包装转化器
 /// </summary>
+/// <param name="options"></param>
+/// <param name="sourceType"></param>
+/// <param name="destType"></param>
+/// <param name="original"></param>
 public class WrapConverter(IMapperOptions options, Type sourceType, Type destType, IComplexIncludeConverter original)
     : IWrapper<IComplexIncludeConverter>
     , IEmitComplexConverter

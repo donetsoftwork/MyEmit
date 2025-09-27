@@ -12,6 +12,7 @@ namespace PocoEmit.Collections.Converters;
 /// <summary>
 /// 集合直接初始化转化
 /// </summary>
+/// <param name="options"></param>
 /// <param name="collectionType"></param>
 /// <param name="elementType"></param>
 /// <param name="saver"></param>

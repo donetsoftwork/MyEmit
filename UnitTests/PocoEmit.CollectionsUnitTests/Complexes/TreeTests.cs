@@ -1,5 +1,7 @@
 using PocoEmit.CollectionsUnitTests.Supports;
 using PocoEmit.Configuration;
+using PocoEmit.Resolves;
+using System.Linq.Expressions;
 
 namespace PocoEmit.CollectionsUnitTests.Complexes;
 
@@ -69,7 +71,7 @@ public class TreeTests : CollectionTestBase
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Assert.NotNull(code);
         var func = FastExpressionCompiler.ExpressionCompiler.CompileFast(expression);
-        TreeBranchDTO dto = func(trunk);
+        var dto = func(trunk);
         Assert.NotNull(dto);
         //var dto2 = ToDTO(trunk);
         var branches = dto.Branches;
@@ -81,6 +83,60 @@ public class TreeTests : CollectionTestBase
         Assert.NotNull(dtoLeaves);
         Assert.Equal(branch1.Leaves.Length, dtoLeaves.Length);
 
+    }
+    [Fact]
+    public void GetContextConvertFunc()
+    {
+        var converter = _mapper.GetEmitContextConverter<TreeBranch, TreeBranchDTO>();
+        Assert.NotNull(converter);
+        var expression = converter.Build();
+        Assert.NotNull(expression);
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
+        var convertFunc = _mapper.GetContextConvertFunc<TreeBranch, TreeBranchDTO>();
+        Assert.NotNull(convertFunc);
+        var trunk = CreateTreeBranch();
+        var branch1 = trunk.Branches[0];
+        using var content = SingleContext<TreeBranch, TreeBranchDTO>.Pool.Get();
+        var dto = convertFunc(content, trunk);
+        Assert.NotNull(dto);
+        //var dto2 = ToDTO(trunk);
+        var branches = dto.Branches;
+        Assert.NotNull(branches);
+        Assert.Equal(trunk.Branches.Length, branches.Length);
+        var dtoBranch1 = dto.Branches[0];
+        Assert.NotNull(dtoBranch1);
+        var dtoLeaves = dtoBranch1.Leaves;
+        Assert.NotNull(dtoLeaves);
+        Assert.Equal(branch1.Leaves.Length, dtoLeaves.Length);
+    }
+    [Fact]
+    public void GetContextConvertFunc2()
+    {
+        var mapper = Mapper.Create(new MapperOptions { Cached = ComplexCached.Always, LambdaInvoke = true })
+            .UseCollection();
+        var converter = mapper.GetEmitContextConverter<TreeBranch, TreeBranchDTO>();
+        Assert.NotNull(converter);
+        var expression = converter.Build();
+        Assert.NotNull(expression);
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
+        var convertFunc = mapper.GetContextConvertFunc<TreeBranch, TreeBranchDTO>();
+        Assert.NotNull(convertFunc);
+        var trunk = CreateTreeBranch();
+        var branch1 = trunk.Branches[0];
+        using var content = SingleContext<TreeBranch, TreeBranchDTO>.Pool.Get();
+        var dto = convertFunc(content, trunk);
+        Assert.NotNull(dto);
+        //var dto2 = ToDTO(trunk);
+        var branches = dto.Branches;
+        Assert.NotNull(branches);
+        Assert.Equal(trunk.Branches.Length, branches.Length);
+        var dtoBranch1 = dto.Branches[0];
+        Assert.NotNull(dtoBranch1);
+        var dtoLeaves = dtoBranch1.Leaves;
+        Assert.NotNull(dtoLeaves);
+        Assert.Equal(branch1.Leaves.Length, dtoLeaves.Length);
     }
 
     public static TreeBranch CreateTreeBranch()

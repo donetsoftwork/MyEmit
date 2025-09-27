@@ -18,6 +18,7 @@ namespace PocoEmit.Converters;
 public sealed class CompiledConverter<TSource, TDest>(IPocoOptions options,in PairTypeKey key, IEmitConverter original, LambdaExpression lambda, Func<TSource, TDest> convertFunc)
     : ArgumentFuncCallBuilder(options, key, lambda)
     , IPocoConverter<TSource, TDest>
+    , IWrapper<IEmitConverter>
     , ICompiledConverter  
 {
     /// <summary>

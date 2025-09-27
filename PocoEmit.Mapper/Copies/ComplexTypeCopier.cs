@@ -2,7 +2,6 @@ using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Copies;
@@ -48,7 +47,7 @@ public class ComplexTypeCopier(IMapperOptions options, IEnumerable<IMemberConver
             var sourceMemberType = sourceMember.Type;
             if (EmitHelper.CheckComplexSource(sourceMember, _options.CheckPrimitive(sourceMemberType)))
             {
-                var sourceMemberVariable = Expression.Variable(sourceMember.Type, "member" + index++);
+                var sourceMemberVariable = EmitHelper.Variable(sourceMember, ref index);
                 variables.Add(sourceMemberVariable);
                 converters.Add(Expression.Assign(sourceMemberVariable, sourceMember));
                 converters.Add(member.ConvertMember(context, sourceMemberVariable, dest));

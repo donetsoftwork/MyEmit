@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using PocoEmit;
 using PocoEmit.Configuration;
+using PocoEmit.Resolves;
 
 namespace MapperBench;
 
@@ -17,8 +18,10 @@ public class NodeBench
     private AutoMapper.IMapper _auto;
     private Func<Node, NodeDTO, ResolutionContext, NodeDTO> _autoFunc;
     private ResolutionContext _resolutionContext;
+    private PocoEmit.IMapper _pocoContext;
     private PocoEmit.IMapper _poco;
-    private Func<Node, NodeDTO> _pocoFunc;
+    private Func<Node, NodeDTO> _pocoCircleFunc;
+    private Func<IConvertContext, Node, NodeDTO> _pocoContextFunc;
     #endregion
 
     [Benchmark]
@@ -39,7 +42,13 @@ public class NodeBench
     [Benchmark]
     public NodeDTO PocoFunc()
     {
-        return _pocoFunc(_node);
+        return _pocoCircleFunc(_node);
+    }
+    [Benchmark]
+    public NodeDTO PocoContextFunc()
+    {
+        using var context = SingleContext<Node, NodeDTO>.Pool.Get();
+        return _pocoContextFunc(context, _node);
     }
 
     [GlobalSetup]
@@ -56,8 +65,10 @@ public class NodeBench
             var field = typeof(AutoMapper.Mapper).GetField("_defaultContext", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             _resolutionContext = field.GetValue(_auto) as ResolutionContext;
         }
+        _pocoContext = PocoEmit.Mapper.Default;
         _poco = PocoEmit.Mapper.Create(new MapperOptions { Cached = ComplexCached.Circle });
-        _pocoFunc = _poco.GetConvertFunc<Node, NodeDTO>();
+        _pocoCircleFunc = _poco.GetConvertFunc<Node, NodeDTO>();
+        _pocoContextFunc = _pocoContext.GetContextConvertFunc<Node, NodeDTO>();
     }
     private static MapperConfiguration ConfigureAutoMapper()
     {
@@ -80,7 +91,7 @@ public class NodeBench
     }
     public NodeDTO BuildPoco()
     {
-        LambdaExpression expression = _poco.BuildConverter<Node, NodeDTO>();
+        LambdaExpression expression = _pocoContext.BuildConverter<Node, NodeDTO>();
         string code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Console.WriteLine(code);
         return Poco();

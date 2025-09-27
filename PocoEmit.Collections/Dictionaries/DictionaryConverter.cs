@@ -12,6 +12,12 @@ namespace PocoEmit.Dictionaries;
 /// <summary>
 /// 字典转化
 /// </summary>
+/// <param name="options"></param>
+/// <param name="instanceType"></param>
+/// <param name="dictionaryType"></param>
+/// <param name="keyType"></param>
+/// <param name="elementType"></param>
+/// <param name="copier"></param>
 public class DictionaryConverter(IMapperOptions options, Type instanceType, Type dictionaryType, Type keyType, Type elementType, IEmitCopier copier)
     : EmitDictionaryBase(dictionaryType, keyType, elementType)
     , IEmitComplexConverter

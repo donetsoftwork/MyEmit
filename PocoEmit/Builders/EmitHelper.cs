@@ -145,12 +145,12 @@ public static class EmitHelper
     /// <summary>
     /// 是否为复杂类型
     /// </summary>
-    /// <param name="value"></param>
+    /// <param name="source"></param>
     /// <param name="isPrimitive"></param>
     /// <returns></returns>
-    public static bool CheckComplexSource(Expression value, bool isPrimitive = false)
+    public static bool CheckComplexSource(Expression source, bool isPrimitive = false)
     {
-        ExpressionType type = value.NodeType;
+        ExpressionType type = source.NodeType;
         return type switch
         {
             ExpressionType.Constant => false,
@@ -160,6 +160,27 @@ public static class EmitHelper
         };
     }
     #endregion
+    /// <summary>
+    /// 定义变量
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    public static ParameterExpression Variable(Expression source, ref int index)
+    {
+        switch (source.NodeType)
+        {
+            case ExpressionType.Parameter:
+                if (source is ParameterExpression parameter)
+                    return Expression.Parameter(parameter.Type, parameter.Name);
+                break;
+            case ExpressionType.MemberAccess:
+                if (source is MemberExpression member)
+                    return Expression.Parameter(member.Type, member.Member.Name);
+                break;
+        }
+        return Expression.Parameter(source.Type, "member" + index++);
+    }
     #region BuildConditions
     /// <summary>
     /// 构造条件分支
