@@ -35,23 +35,23 @@ public class SoldierTeamBench
     {
         return _autoFunc(_team, default(SoldierTeamDTO), _resolutionContext);
     }
+    //[Benchmark(Baseline = true)]
+    //public SoldierTeamDTO Poco()
+    //{
+    //    return _poco.Convert<SoldierTeam, SoldierTeamDTO>(_team);
+    //}
+    //[Benchmark]
+    //public SoldierTeamDTO PocoFunc()
+    //{
+    //    return _pocoFunc(_team);
+    //}
     [Benchmark(Baseline = true)]
     public SoldierTeamDTO Poco()
-    {
-        return _poco.Convert<SoldierTeam, SoldierTeamDTO>(_team);
-    }
-    [Benchmark]
-    public SoldierTeamDTO PocoFunc()
-    {
-        return _pocoFunc(_team);
-    }
-    [Benchmark]
-    public SoldierTeamDTO PocoCache()
     {
         return _cache.Convert<SoldierTeam, SoldierTeamDTO>(_team);
     }
     [Benchmark]
-    public SoldierTeamDTO PocoCacheFunc()
+    public SoldierTeamDTO PocoFunc()
     {
         return _cacheFunc(_team);
     }
@@ -79,19 +79,19 @@ public class SoldierTeamBench
         Console.WriteLine($"DTO Count:{dtoList.Length}");
         return auto;
     }
-    public SoldierTeamDTO BuildPoco()
-    {
-        LambdaExpression expression = _poco.BuildConverter<SoldierTeam, SoldierTeamDTO>();
-        string code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
-        Console.WriteLine(code);
-        LambdaExpression expression2 = _poco.BuildConverter<List<Soldier>, List<SoldierDTO>>();
-        string code2 = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression2);
-        Console.WriteLine(code2);
-        var poco = Poco();
-        var dtoList = poco.Members.Concat([poco.Leader, poco.Courier]).Distinct().ToArray();
-        Console.WriteLine($"DTO Count:{dtoList.Length}");
-        return poco;
-    }
+    //public SoldierTeamDTO BuildPoco()
+    //{
+    //    LambdaExpression expression = _poco.BuildConverter<SoldierTeam, SoldierTeamDTO>();
+    //    string code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+    //    Console.WriteLine(code);
+    //    LambdaExpression expression2 = _poco.BuildConverter<List<Soldier>, List<SoldierDTO>>();
+    //    string code2 = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression2);
+    //    Console.WriteLine(code2);
+    //    var poco = Poco();
+    //    var dtoList = poco.Members.Concat([poco.Leader, poco.Courier]).Distinct().ToArray();
+    //    Console.WriteLine($"DTO Count:{dtoList.Length}");
+    //    return poco;
+    //}
     public SoldierTeamDTO BuildCache()
     {
         LambdaExpression expression = _cache.BuildConverter<SoldierTeam, SoldierTeamDTO>();
@@ -101,7 +101,7 @@ public class SoldierTeamBench
         //string code2 = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression2);
         //Console.WriteLine(code2);
         var list = _team.Members.Concat([_team.Leader, _team.Courier]).Distinct().ToArray();
-        var cache = PocoCache();
+        var cache = Poco();
         var dtoList = cache.Members.Concat([cache.Leader, cache.Courier]).Distinct().ToArray();
         Console.WriteLine($"DTO Count:{dtoList.Length}");
         return cache;
@@ -151,7 +151,7 @@ public class SoldierTeamBench
     }
     private static void CreateMap(IMapperConfigurationExpression cfg)
     {
-        cfg.CreateMap<Soldier, SoldierDTO>();
-        cfg.CreateMap<SoldierTeam, SoldierTeamDTO>();
+        cfg.CreateMap<Soldier, SoldierDTO>().PreserveReferences() ;
+        cfg.CreateMap<SoldierTeam, SoldierTeamDTO>().PreserveReferences();
     }
 }

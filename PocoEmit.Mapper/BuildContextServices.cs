@@ -62,37 +62,39 @@ public static partial class MapperServices
             isCache = false;
         else if (bundle.HasCache)
             isCache = true;
+        
         if (isCache)
         {
-            var achieved = context.GetContexAchieve(key);
-            var contextLambda = achieved.Build();
-            var test = ConvertContext.CallTryGetCache(convertContext, key, source, dest);
-            if (contextLambda is null)
+            var contexAchieve = context.GetContexAchieve(key);
+            if (contexAchieve is not null)
             {
-                var converter = Expression.Constant(achieved, EmitMapperHelper.GetContextConvertType(key));
-                var convert = EmitMapperHelper.CallContextConvert(converter, convertContext, source);
-                return Expression.Block(
-                    [dest],
-                    Expression.Condition(test, dest, convert, destType));
+                var contextLambda = contexAchieve.Build();
+                var test = ConvertContext.CallTryGetCache(convertContext, key, source, dest);
+                if (contextLambda is null)
+                {
+                    var converter = Expression.Constant(contexAchieve, EmitMapperHelper.GetContextConvertType(key));
+                    var convert = EmitMapperHelper.CallContextConvert(converter, convertContext, source);
+                    return Expression.Block(
+                        [dest],
+                        Expression.Condition(test, dest, convert, destType));
+                }
+                else
+                {
+                    return Expression.Block([dest], Expression.Condition(test, dest, context.Call(bundle.IsCircle, contextLambda, convertContext, source), destType));
+                }
             }
-            else
-            {
-                return Expression.Block([dest], Expression.Condition(test, dest, context.Call(bundle.IsCircle, contextLambda, convertContext, source), destType));
-            }
+        }
+
+        var achieved = context.GetAchieve(key);
+        var lambda = achieved.Build();
+        if (lambda is null)
+        {
+            var converter = Expression.Constant(achieved, EmitMapperHelper.GetCompiledConvertType(key));
+            return EmitMapperHelper.CallConvert(converter, source);
         }
         else
         {
-            var achieved = context.GetAchieve(key);
-            var lambda = achieved.Build();
-            if (lambda is null)
-            {
-                var converter = Expression.Constant(achieved, EmitMapperHelper.GetCompiledConvertType(key));
-                return EmitMapperHelper.CallConvert(converter, source);
-            }
-            else
-            {
-                return Expression.Block([dest], context.Call(bundle.IsCircle, lambda, source));
-            }
+            return Expression.Block([dest], context.Call(bundle.IsCircle, lambda, source));
         }
     }
     /// <summary>
@@ -126,8 +128,8 @@ public static partial class MapperServices
     internal static LambdaExpression BuildWithContext(this BuildContext context, IEmitComplexConverter converter)
     {
         var key = converter.Key;
-        var achieved = context.GetContexAchieve(key);
-        var contextLambda = achieved?.Build();
+        var contexAchieve = context.GetContexAchieve(key);
+        var contextLambda = contexAchieve?.Build();
         if (contextLambda is not null)
             return contextLambda;
         var bundle = context.GetBundle(key);
@@ -163,7 +165,7 @@ public static partial class MapperServices
             );
         }
         contextLambda = Expression.Lambda(funcType, body, [parameter, source]);
-        achieved.CompileDelegate(contextLambda);
+        contexAchieve.CompileDelegate(contextLambda);
         return contextLambda;
     }
     /// <summary>

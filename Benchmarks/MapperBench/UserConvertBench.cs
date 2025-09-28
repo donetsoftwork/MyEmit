@@ -36,7 +36,7 @@ public class UserConvertBench
     }
     public string BuildPoco()
     {
-        var expression = _poco.BuildDictionaryConverter<User, UserDTO>();
+        var expression = _poco.BuildConverter<User, UserDTO>();
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Console.WriteLine(code);
         return code;

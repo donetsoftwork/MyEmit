@@ -162,7 +162,7 @@ public class Menu0
 
 >* Auto0是AutoMapper把Menu0列表转化为DTO的case
 >* Poco0是Poco把Menu0列表转化为DTO的case
->* AutoMapper循环引用处理耗时是列表的3倍
+>* AutoMapper循环引用处理耗时和内存都是列表的3倍
 >* Poco循环引用处理和列表性能差不多
 >* 当然就算是无循环引用的列表处理,AutoMapper耗时也几乎是Poco的两倍
 >* 这充分说明AutoMapper处理循环引用是有问题的
@@ -523,8 +523,8 @@ referenceJson.Display();
 >* 如果以上代码不配置ReferenceHandler会报错
 >* 异常信息为A possible object cycle was detected...
 
-### 7. 对比Poco循环引用处理的代码
-#### 7.1 Poco循环引用处理的代码如下
+### 7. Poco循环引用处理的代码
+#### 7.1 Menu转DTO代码如下
 ```csharp
 (Func<Menu, MenuDTO>)((Menu source) => //MenuDTO
 {
@@ -546,8 +546,65 @@ referenceJson.Display();
 });
 ```
 
-#### 7.2 代码对比AutoMapper
+#### 7.2 List\<Menu\>转DTO代码如下
+```csharp
+(Func<List<Menu>, List<MenuDTO>>)((List<Menu> source) => //List<MenuDTO>
+{
+    List<MenuDTO> dest = null;
+    if ((source != (List<Menu>)null))
+    {
+        dest = new List<MenuDTO>(source.Count);
+        int index = default;
+        int len = default;
+        index = 0;
+        len = source.Count;
+        while (true)
+        {
+            if ((index < len))
+            {
+                Menu sourceItem = null;
+                MenuDTO destItem = null;
+                sourceItem = source[index];
+                // { The block result will be assigned to `destItem`
+                    MenuDTO dest_1 = null;
+                    destItem = ((Func<Menu, MenuDTO>)((Menu source_1) => //MenuDTO
+                    {
+                        MenuDTO dest_2 = null;
+                        if ((source_1 != (Menu)null))
+                        {
+                            dest_2 = new MenuDTO();
+                            List<Menu> Children = null;
+                            dest_2.Id = source_1.Id;
+                            dest_2.Name = source_1.Name;
+                            dest_2.Description = source_1.Description;
+                            Children = source_1.Children;
+                            if ((Children != null))
+                            {
+                                dest_2.Children = default(CompiledConverter<List<Menu>, List<MenuDTO>>)/*NOTE: Provide the non-default value for the Constant!*/.Convert(Children);
+                            }
+                        }
+                        return dest_2;
+                    }))
+                    .Invoke(
+                        sourceItem);
+                    // } end of block assignment;
+                dest.Add(destItem);
+                index++;
+            }
+            else
+            {
+                goto forLabel;
+            }
+        }
+        forLabel:;
+    }
+    return dest;
+});
+```
+
+### 8. AutoMapper和Poco生成代码对比
 >* AutoMapper生成代码量是Poco的3倍多
+>* AutoMapper生成的代码可读性不好,Poco生成的代码几乎就是正常程序员手写代码
 >* CompiledConverter.Convert对应AutoMapper的context.MapInternal
 >* 本case中Poco无多余缓存处理,节省了大量cpu和内存
 >* 如果有对象循环引用Poco该怎么办呢
@@ -582,6 +639,10 @@ public class Node
 ~~~
 
 ### 2. PocoEmit配置缓存解决对象循环引用问题
+>* ComplexCached.Circle表示只有检测到循环引用才开启缓存
+>* ComplexCached.Circle策略基本等同AutoMapper
+>* 默认是ComplexCached.Never,不开启缓存
+
 ~~~csharp
 var node = Node.GetNode();
 var manager = PocoEmit.Mapper.Create(new MapperOptions { Cached = ComplexCached.Circle });
@@ -654,13 +715,16 @@ var dto = manager.Convert<Node, NodeDTO>(node);
 | PocoFunc | 365.4 ns |  2.73 ns |  2.92 ns | 366.9 ns |  0.96 |    0.01 | 0.0208 |      - |     360 B |        1.00 |
 
 >* 首先可以看出Poco和AutoMapper执行耗时都挺高的
->* 所以建议大家AutoMapper尽量避免类型循环引用
->* Poco也建议大家尽量避免对象循环引用
+>* 所以建议大家使用AutoMapper尽量避免类型循环引用
+>* 使用Poco也建议大家尽量避免对象循环引用
 >* Poco性能好不少,差不多2倍
 >* 内存分配上Poco优势更明显,AutoMapper分配了4倍多的内存
 
 ### 3. PocoEmit还可以通过GetContextConvertFunc来控制对象缓存
 #### 3.1 GetContextConvertFunc调用代码
+>* GetContextConvertFunc是强制开启缓存,忽略mapper的缓存配置
+>* 并设置当前类型必须缓存
+
 ~~~csharp
 var node = Node.GetNode();
 var manager = PocoEmit.Mapper.Create();
@@ -685,7 +749,51 @@ var dto = _pocoContextFunc(context, _node);
 >* PocoContextFunc性能和GetConvertFunc差不多
 >* 主要影响性能的是缓存的读写
 >* 该方法通过暴露IConvertContext参数给自定义和配置提供了想象空间
->* 是不是可以通过实现IConvertContext来实现想要的逻辑和性能
+>* IConvertContext作为参数还可以多个方法调用共享,实现更magic的效果
+>* 还可以通过实现IConvertContext来实现想要的逻辑和性能
+
+#### 3.3 IConvertContext使用方法非常简单
+>* IConvertContext默认有2个实现
+>* SingleContext用于缓存单类型的
+>* ConvertContext用于缓存多类型
+
+~~~csharp
+using var context = SingleContext<Node, NodeDTO>.Pool.Get();
+var dto = _pocoContextFunc(context, _node);
+~~~
+
+~~~csharp
+using var context = ConvertContext.Pool.Get();
+var dto = _pocoContextFunc(context, _node);
+~~~
+
+#### 3.4 自定义类实现IConvertContext也很简单
+>* IConvertContext只有3个方法需要实现
+>* Dispose只是回收内存,无回收需求实现空方法就行
+
+~~~csharp
+/// <summary>
+/// 转化执行上下文
+/// </summary>
+public interface IConvertContext : IDisposable
+{
+    /// <summary>
+    /// 设置缓存
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="dest"></param>
+    void SetCache<TSource, TDest>(TSource source, TDest dest);
+    /// <summary>
+    /// 读取缓存
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TDest"></typeparam>
+    /// <param name="source"></param>
+    /// <param name="dest"></param>
+    /// <returns></returns>
+    bool TryGetCache<TSource, TDest>(TSource source, out TDest dest);
+}
+~~~
 
 ## 四、重复引用非循环的Case
 ### 1. 一个突击小组的代码
@@ -726,24 +834,30 @@ public class Soldier
 
 ### 2. Poco默认情况下转化为5个对象
 >* 这明显并不是用户想要的结果
->* AutoMapper也是转化为5个对象
+>* AutoMapper可以通过PreserveReferences配置跟踪引用(就是缓存)
 
 ~~~csharp
 var manager = PocoEmit.Mapper.Create()
     .UseCollection();
 var team = SoldierTeam.GetTeam();
 var dto = manager.Convert<SoldierTeam, SoldierTeamDTO>(team);
+// dtoList.Length == 5
+var dtoList = dto.Members.Concat([dto.Leader, dto.Courier]).Distinct().ToArray();
 ~~~
 
 ### 3. Poco配置缓存可以解决问题
-#### 3.1 Poco转化代码
+>* ComplexCached.Always表示可能需要缓存就开启
+>* 实际是检测有类被属性多次引用就开启缓存
+>* 或有循环引用也开启缓存
+
+#### 3.1 Poco缓存转化代码
 ~~~csharp
 var manager = PocoEmit.Mapper.Create(new MapperOptions { Cached = ComplexCached.Always })
     .UseCollection();
 var team = SoldierTeam.GetTeam();
 var dto = manager.Convert<SoldierTeam, SoldierTeamDTO>(team);
 // dtoList.Length == 3
-var dtoList = poco.Members.Concat([poco.Leader, poco.Courier]).Distinct().ToArray();
+var dtoList = dto.Members.Concat([dto.Leader, dto.Courier]).Distinct().ToArray();
 ~~~
 
 #### 3.2 Poco生成以下代码
@@ -876,15 +990,16 @@ T __f<T>(System.Func<T> f) => f();
 ~~~
 
 ### 4. Poco通过GetContextConvertFunc也可以处理
-#### 4.1 Poco转化代码
+#### 4.1 GetContextConvertFunc转化代码
 ~~~csharp
 var manager = PocoEmit.Mapper.Create()
     .UseCollection();
 var team = SoldierTeam.GetTeam();
-var func = manager.GetContextConvertFunc<SoldierTeam, SoldierTeamDTO>();
+Func<IConvertContext, SoldierTeam, SoldierTeamDTO> func = manager.GetContextConvertFunc<SoldierTeam, SoldierTeamDTO>();
 using var context = SingleContext<Soldier, SoldierDTO>.Pool.Get();
+var dto = func(context, team);
 // dtoList.Length == 3
-var dtoList = poco.Members.Concat([poco.Leader, poco.Courier]).Distinct().ToArray();
+var dtoList = dto.Members.Concat([dto.Leader, dto.Courier]).Distinct().ToArray();
 ~~~
 
 #### 4.2 Poco生成以下代码
@@ -1013,32 +1128,37 @@ T __f<T>(System.Func<T> f) => f();
 ~~~
 
 ### 5. 性能测试如下
-| Method          | Mean      | Error    | StdDev   | Median    | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-|---------------- |----------:|---------:|---------:|----------:|------:|--------:|-------:|----------:|------------:|
-| Auto            |  69.99 ns | 0.435 ns | 0.465 ns |  69.73 ns |  1.85 |    0.01 | 0.0143 |     248 B |        1.03 |
-| AutoFunc        |  38.11 ns | 0.365 ns | 0.420 ns |  38.15 ns |  1.01 |    0.01 | 0.0143 |     248 B |        1.03 |
-| Poco            |  37.92 ns | 0.120 ns | 0.128 ns |  37.91 ns |  1.00 |    0.00 | 0.0139 |     240 B |        1.00 |
-| PocoFunc        |  28.16 ns | 0.051 ns | 0.055 ns |  28.15 ns |  0.74 |    0.00 | 0.0139 |     240 B |        1.00 |
-| PocoCache       | 224.20 ns | 1.567 ns | 1.805 ns | 224.34 ns |  5.91 |    0.05 | 0.0111 |     192 B |        0.80 |
-| PocoCacheFunc   | 205.64 ns | 4.253 ns | 4.898 ns | 205.67 ns |  5.42 |    0.13 | 0.0111 |     192 B |        0.80 |
-| PocoContextFunc | 205.63 ns | 0.870 ns | 0.967 ns | 206.37 ns |  5.42 |    0.03 | 0.0111 |     192 B |        0.80 |
+| Method          | Mean     | Error    | StdDev   | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
+|---------------- |---------:|---------:|---------:|------:|--------:|-------:|----------:|------------:|
+| Auto            | 306.8 ns | 10.60 ns | 12.21 ns |  1.39 |    0.06 | 0.0459 |     792 B |        4.12 |
+| AutoFunc        | 259.1 ns |  1.32 ns |  1.47 ns |  1.18 |    0.02 | 0.0459 |     792 B |        4.12 |
+| Poco            | 220.2 ns |  2.95 ns |  3.39 ns |  1.00 |    0.02 | 0.0111 |     192 B |        1.00 |
+| PocoFunc        | 206.8 ns |  2.26 ns |  2.61 ns |  0.94 |    0.02 | 0.0111 |     192 B |        1.00 |
+| PocoContextFunc | 207.4 ns |  2.74 ns |  3.15 ns |  0.94 |    0.02 | 0.0111 |     192 B |        1.00 |
 
->* 首先前四个忽略,因为性能,但是不满足需求
->* PocoCacheFunc性能和PocoContextFunc性能差不多
+>* PocoFunc性能和PocoContextFunc性能差不多
 >* 如果喜欢隔离配置的同学,可以使用缓存配置方案
 >* 如果喜欢集中配置的同学,可以使用GetContextConvertFunc
+>* AutoMapper耗时1.4倍,内存占用4倍多
 
 ## 五、总结
 ### 1. 与AutoMapper处理循环引用的原理是一样的
 >* 用其他对象调用,代替当时尚未编译的代码处理编译死循环
 >* 使用缓存解决执行死循环
+>* 缓存操作比原本对象转化耗时多太多,请大家慎用缓存
 
 ### 2. AutoMapper处理粗犷一点
 >* 所有对象转化都加上下文对象,哪怕完全用不上
 >* 检测到循环引用就加读写缓存,拖累到性能
+>* 殊不知类型循环引用,对象不一定构成循环,还要看具体的业务场景
+>* 这就相当于你去买个手机,别人就直接给你做了贷款,还不给你选择的机会
+>* 殊不知大部分人更喜欢全款买手机
+>* 用了AutoMapper如果感觉获取数据慢,可以查一下是否有循环引用
+>* 如果AutoMapper转化数据比实际数据库操作还慢也不要太过惊讶
+>* 这里链接园内大佬的一篇文章: https://www.cnblogs.com/dudu/p/5863042.html
 
 ### 3. Poco处理就细致的多
->* 只有需要缓存时才加上下文
+>* 只有需要时才加上下文
 >* 上下文来自内存池,用完回收复用,节约内存
 >* 用户可以通过配置或GetContextConvertFunc选择性开启缓存
 >* 自定义IConvertContext可以提供更多想象的空间

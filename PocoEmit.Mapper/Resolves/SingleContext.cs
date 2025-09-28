@@ -15,13 +15,12 @@ public class SingleContext<TSource, TDest>(IPool<SingleContext<TSource, TDest>> 
     #region 配置
     private readonly IPool<SingleContext<TSource, TDest>> _pool = pool;
     private readonly Dictionary<TSource, TDest> _cacher = [];
-    private bool _hasCached = false;
     #endregion
     #region IConvertContext
     /// <inheritdoc />
     public bool TryGetCache<S, T>(S s, out T t)
     {
-        if (_hasCached && s is TSource source)
+        if (s is TSource source)
         {
             if (_cacher.TryGetValue(source, out var cached))
             {
@@ -41,7 +40,6 @@ public class SingleContext<TSource, TDest>(IPool<SingleContext<TSource, TDest>> 
         if(s is TSource source && t is TDest dest)
         {
             _cacher[source] = dest;
-            _hasCached = true;
         }
     }
     #endregion
@@ -51,7 +49,6 @@ public class SingleContext<TSource, TDest>(IPool<SingleContext<TSource, TDest>> 
     public void Clear()
     {
         _cacher.Clear();
-        _hasCached = false;
     }
     /// <summary>
     /// 收回

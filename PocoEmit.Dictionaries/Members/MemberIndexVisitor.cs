@@ -3,13 +3,13 @@ using PocoEmit.Collections;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Configuration;
-using PocoEmit.Dictionaries;
+using PocoEmit.Members;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace PocoEmit.Members;
+namespace PocoEmit.Dictionaries.Members;
 
 /// <summary>
 /// 成员索引遍历(作为字典)
@@ -209,5 +209,5 @@ public class MemberIndexVisitor(IMapperOptions options, MemberBundle bundle, Typ
     /// string.Concat
     /// </summary>
 
-    private static MethodInfo _concatMethod = EmitHelper.GetMethodInfo<string>(() => string.Concat("prefix", "Item"));
+    private static MethodInfo _concatMethod = EmitHelper.GetMethodInfo(() => string.Concat("prefix", "Item"));
 }

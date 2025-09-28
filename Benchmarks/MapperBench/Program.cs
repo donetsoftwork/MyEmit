@@ -55,7 +55,7 @@ using System.Text.Json.Serialization;
 #region SoldierTeamBench
 //SoldierTeamBench soldierTeamBench = new();
 //soldierTeamBench.Setup();
-////var auto = soldierTeamBench.BuildAuto();
+//var auto = soldierTeamBench.BuildAuto();
 ////var poco = soldierTeamBench.BuildPoco();
 ////var noCache = soldierTeamBench.BuildCache();
 //var context = soldierTeamBench.BuildContextFunc();
@@ -69,7 +69,7 @@ using System.Text.Json.Serialization;
 //BenchmarkRunner.Run<ToDictionaryBench>();
 //BenchmarkRunner.Run<TreeBench>();
 //BenchmarkRunner.Run<TreeBench2>();
-BenchmarkRunner.Run<NodeBench>();
+//BenchmarkRunner.Run<NodeBench>();
 //BenchmarkRunner.Run<MenuBench>();
-//BenchmarkRunner.Run<SoldierTeamBench>();
+BenchmarkRunner.Run<SoldierTeamBench>();
 
