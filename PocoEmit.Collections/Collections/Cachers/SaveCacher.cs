@@ -69,7 +69,7 @@ internal class SaveCacher(CollectionContainer container)
     public IEmitElementSaver GetByCollection(Type collectionType, CollectionBundle bundle)
     {
         var key = new PairTypeKey(collectionType, bundle.ElementType);
-        if (TryGetValue(key, out IEmitElementSaver counter))
+        if (TryGetCache(key, out IEmitElementSaver counter))
             return counter;
         Set(key, counter = CreateByCollection(bundle));
         return counter;

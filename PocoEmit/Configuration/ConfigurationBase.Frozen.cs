@@ -26,8 +26,8 @@ public abstract partial class ConfigurationBase
     private readonly ConcurrentDictionary<Type, MemberBundle> _memberBundles;
     #endregion
     #region IConfigure<PairTypeKey, IEmitConverter>
-    void IConfigure<PairTypeKey, IEmitConverter>.Configure(in PairTypeKey key, IEmitConverter value)
-        => _convertConfiguration[key] = value;
+    void IConfigure<PairTypeKey, IEmitConverter>.Configure(in PairTypeKey key, IEmitConverter config)
+        => _convertConfiguration[key] = config;
     #endregion
     #region ICacher<PairTypeKey, IEmitConverter>
     /// <inheritdoc />
@@ -37,8 +37,8 @@ public abstract partial class ConfigurationBase
     void IStore<PairTypeKey, IEmitConverter>.Set(in PairTypeKey key, IEmitConverter value)
         => _converters[key] = value;
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IEmitConverter>.TryGetValue(in PairTypeKey key, out IEmitConverter value)
-        => _converters.TryGetValue(key, out value) || _convertConfiguration.TryGetValue(key, out value);
+    bool ICacher<PairTypeKey, IEmitConverter>.TryGetCache(in PairTypeKey key, out IEmitConverter cached)
+        => _converters.TryGetValue(key, out cached) || _convertConfiguration.TryGetValue(key, out cached);
     #endregion
     #region ICacher<Type, MemberBundle>
     /// <inheritdoc />
@@ -48,7 +48,7 @@ public abstract partial class ConfigurationBase
     void IStore<Type, MemberBundle>.Set(in Type key, MemberBundle value)
         => _memberBundles[key] = value;
     /// <inheritdoc />
-    bool ICacher<Type, MemberBundle>.TryGetValue(in Type key, out MemberBundle value)
-        => _memberBundles.TryGetValue(key, out value);
+    bool ICacher<Type, MemberBundle>.TryGetCache(in Type key, out MemberBundle cached)
+        => _memberBundles.TryGetValue(key, out cached);
     #endregion
 }

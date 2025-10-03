@@ -8,13 +8,12 @@ public class UseDefaultTest2
     public void UseDefault()
     {
         IMapper mapper = Mapper.Create()
-            .UseDefault(Repository);
+            .UseDefault(UserRepository.Instance);
         var dto = new UserDTO { Id = 1, Name = "Jxj" };
         UserDomain user = mapper.Convert<UserDTO, UserDomain>(dto);
         Assert.NotNull(user);
         Assert.NotNull(user.Repository);
     }
-
 
     class UserDomain(UserRepository repository, int id, string name)
     {
@@ -25,11 +24,11 @@ public class UseDefaultTest2
         public string Name { get; } = name;
         // ...
     }
-    static readonly UserRepository Repository = new();
     class UserRepository
     {
         void Add(UserDomain user) { }
         void Update(UserDomain entity) { }
         void Remove(UserDomain entity) { }
+        public static readonly UserRepository Instance = new();
     }
 }

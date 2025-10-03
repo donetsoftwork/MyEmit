@@ -36,8 +36,8 @@ public class DictionaryStorage<TKey, TValue>(IDictionary<TKey, TValue> provider)
     public bool ContainsKey(in TKey key)
         => _provider.ContainsKey(key);
     /// <inheritdoc />
-    public bool TryGetValue(in TKey key, out TValue value)
-        => _provider.TryGetValue(key, out value);
+    public bool TryGetCache(in TKey key, out TValue cached)
+        => _provider.TryGetValue(key, out cached);
     /// <inheritdoc />
     public void Set(in TKey key, TValue value)
         => _provider[key] = value;

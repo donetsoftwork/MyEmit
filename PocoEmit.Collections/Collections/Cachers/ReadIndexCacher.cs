@@ -43,7 +43,7 @@ internal class ReadIndexCacher(CollectionContainer container)
     /// <returns></returns>
     public IEmitIndexMemberReader GetByList(Type listType, ListBundle bundle)
     {
-        if (TryGetValue(listType, out IEmitIndexMemberReader reader))
+        if (TryGetCache(listType, out IEmitIndexMemberReader reader))
             return reader;
         Set(listType, reader = CreateByList(bundle));
         return reader;

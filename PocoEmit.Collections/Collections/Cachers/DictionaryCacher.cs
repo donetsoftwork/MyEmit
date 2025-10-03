@@ -44,7 +44,7 @@ internal class DictionaryCacher(CollectionContainer container)
     {
         if (ReflectionHelper.HasGenericType(dictionaryType, typeof(IDictionary<,>)))
             return (bundle = Get(dictionaryType)) is not null;
-        return TryGetValue(dictionaryType, out bundle) && bundle is not null;
+        return TryGetCache(dictionaryType, out bundle) && bundle is not null;
     }
     /// <summary>
     /// 获取字典成员

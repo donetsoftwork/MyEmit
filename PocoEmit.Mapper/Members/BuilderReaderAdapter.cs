@@ -17,7 +17,6 @@ public class BuilderReaderAdapter(IBuilder<Expression> builder)
     /// </summary>
     public IBuilder<Expression> Builder
         => _builder;
-
     bool ICompileInfo.Compiled
         => false;
     #endregion

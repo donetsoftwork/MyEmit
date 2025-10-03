@@ -55,7 +55,7 @@ internal class IndexVisitorCacher(CollectionContainer container)
     /// <returns></returns>
     public IElementIndexVisitor GetByList(Type listType, ListBundle bundle)
     {
-        if (TryGetValue(listType, out IElementIndexVisitor visitor))
+        if (TryGetCache(listType, out IElementIndexVisitor visitor))
             return visitor;
         Set(listType, visitor = CreateByList(listType, bundle));
         return visitor;
@@ -76,7 +76,7 @@ internal class IndexVisitorCacher(CollectionContainer container)
     /// <returns></returns>
     public IElementIndexVisitor GetByDictionary(Type dictionaryType, DictionaryBundle bundle)
     {
-        if (TryGetValue(dictionaryType, out IElementIndexVisitor visitor))
+        if (TryGetCache(dictionaryType, out IElementIndexVisitor visitor))
             return visitor;
         Set(dictionaryType, visitor = CreateByDictionary(dictionaryType, bundle));
         return visitor;

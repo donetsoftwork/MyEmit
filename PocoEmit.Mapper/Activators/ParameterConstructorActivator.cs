@@ -75,7 +75,7 @@ public class ParameterConstructorActivator(IMapperOptions options, Type returnTy
             var reader = GetReader(options, parameterMember, match, sourceReaders);
             if (reader is null)
             {
-                var builder = options.GetDefaultValueBuilder(parameter.ParameterType);
+                var builder = options.DefaultValueBuilder.Build(parameterMember);
                 // 没有适配到读取器和默认值构建失败
                 if (builder is null)
                     return null;

@@ -59,7 +59,7 @@ public static class PocoEmitDIServices
     /// <returns></returns>
     public static IServiceCollection UseCopier(this IServiceCollection services, IMapperOptions mapper)
     {
-        return services.AddSingletonTypedFactory(typeof(IPocoCopier<,>), (sp, CopierType) => mapper.GetGenericCopier(CopierType));
+        return services.AddSingletonTypedFactory(typeof(IPocoCopier<,>), (sp, copierType) => mapper.GetGenericCopier(copierType));
     }
     /// <summary>
     /// 注册转化接口
@@ -70,7 +70,7 @@ public static class PocoEmitDIServices
     /// <returns></returns>
     public static IServiceCollection UseCopier(this IServiceCollection services, IMapperOptions mapper, object serviceKey)
     {
-        return services.AddKeyedTypedFactorySingleton(typeof(IPocoCopier<,>), serviceKey, (sp, key, CopierType) => mapper.GetGenericCopier(CopierType));
+        return services.AddKeyedTypedFactorySingleton(typeof(IPocoCopier<,>), serviceKey, (sp, key, copierType) => mapper.GetGenericCopier(copierType));
     }
     #endregion
     #region GetGenericConverter

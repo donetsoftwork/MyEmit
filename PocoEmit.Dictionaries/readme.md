@@ -43,7 +43,6 @@ action(source, dic);
 
 ```csharp
 var action = _mapper.CreatetDictionaryCopyAction<Student, int, IDictionary<string, string>>();
-Assert.NotNull(action);
 Student source = new()
 {
     User = new() { Id = 2, Name = "Jxj" },
@@ -55,7 +54,7 @@ action(source, dic);
 // result.Count == 4
 ```
 
-## 五、实体转化为字典
+## 二、实体转化为字典
 
 ### 1. CreateDictionaryConvertFunc
 >* 委托编译生成,重复使用需要缓存

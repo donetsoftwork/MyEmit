@@ -87,8 +87,8 @@ public partial class MemberContainer
     bool ICacher<PropertyInfo, PropertyAccessor>.ContainsKey(in PropertyInfo key)
         => _propertyAccessors.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<PropertyInfo, PropertyAccessor>.TryGetValue(in PropertyInfo key, out PropertyAccessor value)
-        => _propertyAccessors.TryGetValue(key, out value);
+    bool ICacher<PropertyInfo, PropertyAccessor>.TryGetCache(in PropertyInfo key, out PropertyAccessor cached)
+        => _propertyAccessors.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<PropertyInfo, PropertyAccessor>.Set(in PropertyInfo key, PropertyAccessor value)
     => _propertyAccessors[key] = value;
@@ -98,8 +98,8 @@ public partial class MemberContainer
     bool ICacher<FieldInfo, FieldAccessor>.ContainsKey(in FieldInfo key)
         => _fieldAccessors.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<FieldInfo, FieldAccessor>.TryGetValue(in FieldInfo key, out FieldAccessor value)
-        => _fieldAccessors.TryGetValue(key, out value);
+    bool ICacher<FieldInfo, FieldAccessor>.TryGetCache(in FieldInfo key, out FieldAccessor cached)
+        => _fieldAccessors.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<FieldInfo, FieldAccessor>.Set(in FieldInfo key, FieldAccessor value)
         => _fieldAccessors[key] = value;
@@ -112,8 +112,8 @@ public partial class MemberContainer
     void IStore<MemberInfo, IEmitMemberReader>.Set(in MemberInfo key, IEmitMemberReader value)
         => _memberReaders[key] = value;
     /// <inheritdoc />
-    bool ICacher<MemberInfo, IEmitMemberReader>.TryGetValue(in MemberInfo key, out IEmitMemberReader value)
-        => _memberReaders.TryGetValue(key, out value);
+    bool ICacher<MemberInfo, IEmitMemberReader>.TryGetCache(in MemberInfo key, out IEmitMemberReader cached)
+        => _memberReaders.TryGetValue(key, out cached);
     #endregion
     #region ISettings<MemberInfo, IMemberWriter>
     /// <inheritdoc />
@@ -123,8 +123,8 @@ public partial class MemberContainer
     void IStore<MemberInfo, IEmitMemberWriter>.Set(in MemberInfo key, IEmitMemberWriter value)
         => _memberWriters[key] = value;
     /// <inheritdoc />
-    bool ICacher<MemberInfo, IEmitMemberWriter>.TryGetValue(in MemberInfo key, out IEmitMemberWriter value)
-        => _memberWriters.TryGetValue(key, out value);
+    bool ICacher<MemberInfo, IEmitMemberWriter>.TryGetCache(in MemberInfo key, out IEmitMemberWriter cached)
+        => _memberWriters.TryGetValue(key, out cached);
     #endregion
     #region ISettings<Type, IEnumBundle>
     /// <inheritdoc />
@@ -134,8 +134,8 @@ public partial class MemberContainer
     void IStore<Type, IEnumBundle>.Set(in Type key, IEnumBundle value)
         => _IEnumBundles[key] = value;
     /// <inheritdoc />
-    bool ICacher<Type, IEnumBundle>.TryGetValue(in Type key, out IEnumBundle value)
-        => _IEnumBundles.TryGetValue(key, out value);
+    bool ICacher<Type, IEnumBundle>.TryGetCache(in Type key, out IEnumBundle cached)
+        => _IEnumBundles.TryGetValue(key, out cached);
     #endregion
     #region 配置
     /// <summary>

@@ -117,7 +117,7 @@ public static partial class MapperServices
     {
         var option = (IMapperOptions)mapper;
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        if (option.TryGetValue(key, out IEmitCopier value0) && value0 is not null)
+        if (option.TryGetCache(key, out IEmitCopier value0) && value0 is not null)
             return value0;
         var copier = new ActionCopier(option, copy);
         mapper.Set(key, copier);

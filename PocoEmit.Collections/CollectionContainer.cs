@@ -104,8 +104,8 @@ public sealed partial class CollectionContainer
     bool ICacher<PairTypeKey, IEmitElementCounter>.ContainsKey(in PairTypeKey key)
         => _counters.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IEmitElementCounter>.TryGetValue(in PairTypeKey key, out IEmitElementCounter value)
-        => _counters.TryGetValue(key, out value);
+    bool ICacher<PairTypeKey, IEmitElementCounter>.TryGetCache(in PairTypeKey key, out IEmitElementCounter cached)
+        => _counters.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<PairTypeKey, IEmitElementCounter>.Set(in PairTypeKey key, IEmitElementCounter value)
         => _counters[key] = value;
@@ -115,8 +115,8 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, IEmitElementVisitor>.ContainsKey(in Type key)
         => _visitors.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, IEmitElementVisitor>.TryGetValue(in Type key, out IEmitElementVisitor value)
-        => _visitors.TryGetValue(key, out value);
+    bool ICacher<Type, IEmitElementVisitor>.TryGetCache(in Type key, out IEmitElementVisitor cached)
+        => _visitors.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<Type, IEmitElementVisitor>.Set(in Type key, IEmitElementVisitor value)
         => _visitors[key] = value;
@@ -126,8 +126,8 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, IEmitIndexMemberReader>.ContainsKey(in Type key)
         => _readIndexs.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, IEmitIndexMemberReader>.TryGetValue(in Type key, out IEmitIndexMemberReader value)
-        => _readIndexs.TryGetValue(key, out value);
+    bool ICacher<Type, IEmitIndexMemberReader>.TryGetCache(in Type key, out IEmitIndexMemberReader cached)
+        => _readIndexs.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<Type, IEmitIndexMemberReader>.Set(in Type key, IEmitIndexMemberReader value)
         => _readIndexs[key] = value;
@@ -137,8 +137,8 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, IElementIndexVisitor>.ContainsKey(in Type key)
         => _indexVisitors.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, IElementIndexVisitor>.TryGetValue(in Type key, out IElementIndexVisitor value)
-        => _indexVisitors.TryGetValue(key, out value);
+    bool ICacher<Type, IElementIndexVisitor>.TryGetCache(in Type key, out IElementIndexVisitor cached)
+        => _indexVisitors.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<Type, IElementIndexVisitor>.Set(in Type key, IElementIndexVisitor value)
         => _indexVisitors[key] = value;
@@ -148,8 +148,8 @@ public sealed partial class CollectionContainer
     bool ICacher<PairTypeKey, IEmitElementSaver>.ContainsKey(in PairTypeKey key)
         => _savers.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<PairTypeKey, IEmitElementSaver>.TryGetValue(in PairTypeKey key, out IEmitElementSaver value)
-        => _savers.TryGetValue(key, out value);
+    bool ICacher<PairTypeKey, IEmitElementSaver>.TryGetCache(in PairTypeKey key, out IEmitElementSaver cached)
+        => _savers.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<PairTypeKey, IEmitElementSaver>.Set(in PairTypeKey key, IEmitElementSaver value)
         => _savers[key] = value;
@@ -159,8 +159,8 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, EnumerableBundle>.ContainsKey(in Type key)
         => _enumerables.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, EnumerableBundle>.TryGetValue(in Type key, out EnumerableBundle value)
-        => _enumerables.TryGetValue(key, out value);
+    bool ICacher<Type, EnumerableBundle>.TryGetCache(in Type key, out EnumerableBundle cached)
+        => _enumerables.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<Type, EnumerableBundle>.Set(in Type key, EnumerableBundle value)
         => _enumerables[key] = value;
@@ -170,8 +170,8 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, CollectionBundle>.ContainsKey(in Type key)
         => _collections.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, CollectionBundle>.TryGetValue(in Type key, out CollectionBundle value)
-        => _collections.TryGetValue(key, out value);
+    bool ICacher<Type, CollectionBundle>.TryGetCache(in Type key, out CollectionBundle cached)
+        => _collections.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<Type, CollectionBundle>.Set(in Type key, CollectionBundle value)
         => _collections[key] = value;
@@ -181,8 +181,8 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, ListBundle>.ContainsKey(in Type key)
         => _lists.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, ListBundle>.TryGetValue(in Type key, out ListBundle value)
-        => _lists.TryGetValue(key, out value);
+    bool ICacher<Type, ListBundle>.TryGetCache(in Type key, out ListBundle cached)
+        => _lists.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<Type, ListBundle>.Set(in Type key, ListBundle value)
         => _lists[key] = value;
@@ -192,8 +192,8 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, DictionaryBundle>.ContainsKey(in Type key)
         => _dictionaries.ContainsKey(key);
     /// <inheritdoc />
-    bool ICacher<Type, DictionaryBundle>.TryGetValue(in Type key, out DictionaryBundle value)
-        => _dictionaries.TryGetValue(key, out value);
+    bool ICacher<Type, DictionaryBundle>.TryGetCache(in Type key, out DictionaryBundle cached)
+        => _dictionaries.TryGetValue(key, out cached);
     /// <inheritdoc />
     void IStore<Type, DictionaryBundle>.Set(in Type key, DictionaryBundle value)
         => _dictionaries[key] = value;

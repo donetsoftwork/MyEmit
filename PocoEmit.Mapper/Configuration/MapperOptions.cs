@@ -38,6 +38,10 @@ public class MapperOptions : PocoOptions
     /// </summary>
     public int DefaultValueCapacity = 31;
     /// <summary>
+    /// 属性默认值配置数量
+    /// </summary>
+    public int MemberDefaultValueCapacity = 31;
+    /// <summary>
     /// 上下文转化数量
     /// </summary>
     public int ContextConverterCapacity = 31;

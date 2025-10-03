@@ -2,7 +2,6 @@ using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using PocoEmit.Members;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
 using System.Reflection;
@@ -17,13 +16,13 @@ namespace PocoEmit.Copies;
 /// <param name="sourceReader"></param>
 /// <param name="destWriter"></param>
 /// <param name="converter"></param>
-public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceReader, IEmitWriter destWriter, IEmitConverter converter)
+public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceReader, IEmitMemberWriter destWriter, IEmitConverter converter)
     : IMemberConverter
 {
     #region 配置
     private readonly IMapperOptions _options = options;
     private readonly IEmitReader _sourceReader = sourceReader;
-    private readonly IEmitWriter _destWriter = destWriter;
+    private readonly IEmitMemberWriter _destWriter = destWriter;
     private readonly IEmitConverter _converter = converter;
     /// <summary>
     /// Emit配置
@@ -38,7 +37,7 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
     /// <summary>
     /// 目标成员写入器
     /// </summary>
-    public IEmitWriter DestWriter 
+    public IEmitMemberWriter DestWriter 
         => _destWriter;
     /// <summary>
     /// 成员类型转化
@@ -59,13 +58,14 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
     /// <inheritdoc />
     public Expression ConvertMember(IBuildContext context, Expression sourceMember, Expression dest)
     {
-        var sourceType = sourceMember.Type;
-        var defaultValue = _options.CreateDefault(sourceType);
+        var sourceType = sourceMember.Type;        
+        // 基础类型直接赋值(忽略null判断)
+        if (_options.CheckPrimitive(sourceType))
+            return _destWriter.Write(dest, _converter.Convert(sourceMember));
+        var defaultValue = _options.DefaultValueBuilder.Build(_destWriter)
+            ?.Build();
         if (defaultValue is null)
-        {
-            // 基础类型直接赋值(忽略null判断)
-            if (_options.CheckPrimitive(sourceType))
-                return _destWriter.Write(dest, context.Convert(_converter, sourceMember));
+        {    
             return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, context.Convert(_converter, sourceMember)));
         }
         else

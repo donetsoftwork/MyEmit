@@ -33,7 +33,7 @@ public static partial class MapperServices
     {
         var key = new PairTypeKey(sourceType, destType);
         var options = (IMapperOptions)mapper;
-        if (options.TryGetValue(key, out IEmitContextConverter contextConverter))
+        if (options.TryGetCache(key, out IEmitContextConverter contextConverter))
             return contextConverter;
         if(options.CheckPrimitive(sourceType))
             return null;

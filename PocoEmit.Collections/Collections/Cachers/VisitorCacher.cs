@@ -55,7 +55,7 @@ internal class VisitorCacher(CollectionContainer container)
     /// <returns></returns>
     public IEmitElementVisitor GetByByArray(Type arrayType)
     {
-        if (TryGetValue(arrayType, out IEmitElementVisitor visitor))
+        if (TryGetCache(arrayType, out IEmitElementVisitor visitor))
             return visitor;
         Set(arrayType, visitor = CreateByArray(arrayType));
         return visitor;
@@ -80,7 +80,7 @@ internal class VisitorCacher(CollectionContainer container)
     /// <returns></returns>
     public IEmitElementVisitor GetByDictionary(Type dictionaryType, DictionaryBundle bundle)
     {
-        if (TryGetValue(dictionaryType, out IEmitElementVisitor visitor))
+        if (TryGetCache(dictionaryType, out IEmitElementVisitor visitor))
             return visitor;
         Set(dictionaryType, visitor = CreateByDictionary(dictionaryType, bundle));
         return visitor;
@@ -105,7 +105,7 @@ internal class VisitorCacher(CollectionContainer container)
     /// <returns></returns>
     public IEmitElementVisitor GetByList(Type listType, ListBundle bundle)
     {
-        if (TryGetValue(listType, out IEmitElementVisitor visitor))
+        if (TryGetCache(listType, out IEmitElementVisitor visitor))
             return visitor;
         Set(listType, visitor = CreateByList(listType, bundle));
         return visitor;
@@ -130,7 +130,7 @@ internal class VisitorCacher(CollectionContainer container)
     /// <returns></returns>
     public IEmitElementVisitor GetByEnumerable(Type enumerableType, EnumerableBundle bundle)
     {
-        if (TryGetValue(enumerableType, out IEmitElementVisitor visitor))
+        if (TryGetCache(enumerableType, out IEmitElementVisitor visitor))
             return visitor;
         Set(enumerableType, visitor = CreateByEnumerable(enumerableType, bundle));
         return visitor;

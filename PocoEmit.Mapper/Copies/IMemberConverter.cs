@@ -38,5 +38,5 @@ public interface IMemberConverter
     /// <summary>
     /// 目标成员写入器
     /// </summary>
-    IEmitWriter DestWriter { get; }
+    IEmitMemberWriter DestWriter { get; }
 }

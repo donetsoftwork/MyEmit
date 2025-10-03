@@ -102,7 +102,7 @@ public class BuildContext(IMapperOptions options, ComplexCached complexCached)
             return null;
         if(bundle.HasCache)
         {
-            if (!_options.TryGetValue(key, out IEmitContextConverter converter))
+            if (!_options.TryGetCache(key, out IEmitContextConverter converter))
                 converter = EmitMapperHelper.CreateContextConverter(_options, key);
             return _contextAchieves[key] = converter;
         }

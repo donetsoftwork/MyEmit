@@ -1,10 +1,12 @@
 using CoreDX.Extensions.DependencyInjection;
 using FastEndpoints;
-using PocoEmit;
 using MyDeltas;
 using MyDeltas.Emit;
 using MyDeltas.Json;
+using PocoEmit;
+using PocoEmit.ServiceProvider;
 using System.Text.Json;
+using TestApi.Models;
 using TestApi.Modify;
 using TestApi.Repositories;
 
@@ -15,7 +17,7 @@ IMyDeltaFactory deltaFactory = new EmitDeltaFactory();
 builder.Host.UseServiceProviderFactory(new TypedImplementationFactoryServiceProviderFactory());
 builder.Services
     .AddSingleton(poco)
-    .AddSingleton(deltaFactory);
+    .AddSingleton(deltaFactory).AddScopedForward<User, User>();
 RegistServices(builder.Services);
 var app = builder.Build();
 app.MapGet("/", () => "Hello World!");
@@ -23,10 +25,16 @@ app.UseFastEndpoints(cfg => {
     cfg.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     cfg.Serializer.Options.Converters.Add(new MyDeltaConverterFactory(deltaFactory));
 });
+ScopeBuilder wrapper = new(app.Services);
+poco.UseDefault(wrapper);
 app.Run();
 
 static void RegistServices(IServiceCollection services)
 {
+    //IServiceProvider provider = null;
+    //provider.GetRequiredKeyedService<UserRepository>("");
+    //IKeyedServiceProvider keyedProvider = null;
+    //keyedProvider.GetRequiredKeyedService<UserRepository>("");
     services.UseConverter(PocoEmit.Mapper.Default)
         .AddSingleton<UserRepository>()
         .AddSingleton<UserModifyDTOValidator>()

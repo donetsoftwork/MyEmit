@@ -45,7 +45,7 @@ internal class EnumerableCacher(CollectionContainer container)
     {
         if (ReflectionHelper.HasGenericType(enumerableType, typeof(IEnumerable<>)))
             return (bundle = Get(enumerableType)) is not null;
-        return TryGetValue(enumerableType, out bundle) && bundle is not null;
+        return TryGetCache(enumerableType, out bundle) && bundle is not null;
     }
     /// <summary>
     /// 获取迭代器成员

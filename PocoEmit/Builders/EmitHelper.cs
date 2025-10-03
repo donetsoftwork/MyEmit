@@ -119,6 +119,19 @@ public static class EmitHelper
     public static MethodInfo GetActionMethodInfo<T1, T2>(Expression<Action<T1, T2>> expression)
         => GetBodyMethod(expression);
     /// <summary>
+    /// 从表达式提取属性
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <typeparam name="TProperty"></typeparam>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public static PropertyInfo GetPropertyInfo<TInstance, TProperty>(Expression<Func<TInstance, TProperty>> expression)
+    {
+        if(GetBodyMember(expression) is PropertyInfo property)
+            return property;
+        return null;
+    }
+    /// <summary>
     /// 从表达式提取方法
     /// </summary>
     /// <param name="expression"></param>
@@ -129,17 +142,17 @@ public static class EmitHelper
             return callExpression.Method;
         return null;
     }
-    ///// <summary>
-    ///// 从表达式提取成员
-    ///// </summary>
-    ///// <param name="expression"></param>
-    ///// <returns></returns>
-    //private static MemberInfo GetBodyMember(LambdaExpression expression)
-    //{
-    //    if (expression.Body is MemberExpression memberExpression)
-    //        return memberExpression.Member;
-    //    return null;
-    //}
+    /// <summary>
+    /// 从表达式提取成员
+    /// </summary>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    private static MemberInfo GetBodyMember(LambdaExpression expression)
+    {
+        if (expression.Body is MemberExpression memberExpression)
+            return memberExpression.Member;
+        return null;
+    }
     #endregion
     #region CheckComplexSource
     /// <summary>

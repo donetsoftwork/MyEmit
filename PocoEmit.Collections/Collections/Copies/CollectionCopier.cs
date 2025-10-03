@@ -30,7 +30,7 @@ public class CollectionCopier : EmitCollectionBase
     public CollectionCopier(Type sourceType, Type sourceElementType, Type destType, Type destElementType, IEmitElementSaver saver, IEmitElementVisitor sourceVisitor, IEmitConverter elementConverter, bool clear = true)
         : base(destType, destElementType)
     {
-        _sourceType = sourceType;
+        //_sourceType = sourceType;
         _sourceElementType = sourceElementType;
         _sourceVisitor = sourceVisitor;
         _elementConverter = elementConverter;
@@ -39,7 +39,7 @@ public class CollectionCopier : EmitCollectionBase
             _clearMethod = GetClearMethod();
     }
     #region 配置
-    private readonly Type _sourceType;
+    //private readonly Type _sourceType;
     private readonly Type _sourceElementType;
     private readonly IEmitElementVisitor _sourceVisitor;
     private readonly IEmitConverter _elementConverter;

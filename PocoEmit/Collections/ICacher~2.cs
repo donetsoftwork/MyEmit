@@ -1,7 +1,7 @@
 namespace PocoEmit.Collections;
 
 /// <summary>
-/// 数据缓存
+/// 数据缓存(系统行为)
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TValue"></typeparam>
@@ -18,8 +18,8 @@ public interface ICacher<TKey, TValue>
     /// 尝试获取
     /// </summary>
     /// <param name="key"></param>
-    /// <param name="value"></param>
+    /// <param name="cached"></param>
     /// <returns></returns>
-    bool TryGetValue(in TKey key, out TValue value);
+    bool TryGetCache(in TKey key, out TValue cached);
 }
 

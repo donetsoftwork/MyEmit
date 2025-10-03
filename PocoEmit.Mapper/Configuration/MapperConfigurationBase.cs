@@ -34,6 +34,8 @@ public abstract partial class MapperConfigurationBase
         _matchConfiguration = new ConcurrentDictionary<PairTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
         _primitiveTypes = new ConcurrentDictionary<Type, bool>(concurrencyLevel, options.PrimitiveCapacity);
         _defaultValueConfiguration = new ConcurrentDictionary<Type, IBuilder<Expression>>(concurrencyLevel, options.DefaultValueCapacity);
+        _defaultValueConfiguration.TryAdd(typeof(IMapper), ConstantBuilder.Use(this, typeof(IMapper)));
+        _memberDefaultValueConfiguration = new ConcurrentDictionary<MemberInfo, IBuilder<Expression>>(concurrencyLevel, options.MemberDefaultValueCapacity);
         _contextConverters = new ConcurrentDictionary<PairTypeKey, IEmitContextConverter>(concurrencyLevel, options.ContextConverterCapacity);
         _reflectionConstructor = DefaultReflectionConstructor.Default;
         _defaultMatcher = MemberNameMatcher.Default;
@@ -42,6 +44,7 @@ public abstract partial class MapperConfigurationBase
         _copierBuilder = new CopierBuilder(this);
         _copierFactory = new CopierFactory(this);
         _primitives = new PrimitiveConfiguration(this);
+        _defaultValueBuilder = new DefaultValueBuilder(this);
         _cached = options.Cached;
     }
     #region 配置
@@ -63,6 +66,14 @@ public abstract partial class MapperConfigurationBase
     /// 基础类型配置
     /// </summary>
     private readonly PrimitiveConfiguration _primitives;
+    /// <summary>
+    /// 默认值构造器
+    /// </summary>
+    private DefaultValueBuilder _defaultValueBuilder;
+    /// <summary>
+    /// 
+    /// </summary>
+    private ComplexCached _cached = ComplexCached.Circle;
     /// <summary>
     /// 反射获取构造函数
     /// </summary>
@@ -88,7 +99,14 @@ public abstract partial class MapperConfigurationBase
         get => _copierBuilder; 
         internal set => _copierBuilder = value ?? throw new ArgumentNullException(nameof(value));
     }
-    private ComplexCached _cached = ComplexCached.Circle;
+    /// <summary>
+    /// 默认值构造器
+    /// </summary>
+    public DefaultValueBuilder DefaultValueBuilder
+    {
+        get => _defaultValueBuilder;
+        internal set => _defaultValueBuilder = value ?? throw new ArgumentNullException(nameof(value));
+    }
     /// <inheritdoc />
     public ComplexCached Cached
         => _cached;
@@ -118,22 +136,37 @@ public abstract partial class MapperConfigurationBase
             return activator;
         return activator;
     }
-    /// <summary>
-    /// 获取默认值构建器
-    /// </summary>
-    /// <param name="destType"></param>
-    /// <returns></returns>
-    public IBuilder<Expression> GetDefaultValueBuilder(Type destType)
-    {
-        _defaultValueConfiguration.TryGetValue(destType, out IBuilder<Expression> builder);
-        return builder;
-    }
-    /// <inheritdoc />
-    public Expression CreateDefault(Type destType)
-    {
-        if (_defaultValueConfiguration.TryGetValue(destType, out IBuilder<Expression> builder))
-            return builder.Build();
-        return null;
-    }
+    ///// <summary>
+    ///// 获取默认值构建器
+    ///// </summary>
+    ///// <param name="destType"></param>
+    ///// <returns></returns>
+    //public IBuilder<Expression> GetDefaultValueBuilder(Type destType)
+    //{
+    //    _defaultValueConfiguration.TryGetValue(destType, out IBuilder<Expression> builder);
+    //    return builder;
+    //}
+    ///// <summary>
+    ///// 
+    ///// </summary>
+    ///// <param name="member"></param>
+    ///// <param name="builder"></param>
+    ///// <returns></returns>
+    //public bool TryGetDefaultValue(IEmitMemberWriter member, out IBuilder<Expression> builder)
+    //    => _memberDefaultValueConfiguration.TryGetValue(member.Info, out builder) || _defaultValueConfiguration.TryGetValue(member.ValueType, out builder);
+    ///// <inheritdoc />
+    //public Expression CreateDefault(Type destType)
+    //{
+    //    if (_defaultValueConfiguration.TryGetValue(destType, out IBuilder<Expression> builder))
+    //        return builder.Build();
+    //    return null;
+    //}
+    ///// <summary>
+    ///// 构造默认值
+    ///// </summary>
+    ///// <param name="member"></param>
+    ///// <returns></returns>
+    //public IBuilder<Expression> CreateDefault(IMember member)
+    //    => _defaultValueBuilder.Build(member);
     #endregion
 }

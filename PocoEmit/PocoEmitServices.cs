@@ -20,7 +20,7 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     internal static TValue GetCache<TKey, TValue>(this ICacher<TKey, TValue> settings, TKey key)
     {
-        settings.TryGetValue(key, out var value);
+        settings.TryGetCache(key, out var value);
         return value;
     }
     /// <summary>

@@ -43,7 +43,7 @@ internal class ListCacher(CollectionContainer container)
     {
         if (ReflectionHelper.HasGenericType(listType, typeof(IList<>)))
             return (bundle = Get(listType)) is not null;
-        return TryGetValue(listType, out bundle) && bundle is not null;
+        return TryGetCache(listType, out bundle) && bundle is not null;
     }
     /// <summary>
     /// 获取列表成员

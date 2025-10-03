@@ -6,7 +6,7 @@
     <PackageId>PocoEmit.Dictionaries</PackageId>
     <Description>Emit操作集合</Description>
     <PackageTags>OOM;Emit;Poco;Mapper;Map</PackageTags>
-    <Version>$(VersionBase).8-alpha</Version>
+    <Version>$(VersionBase).0-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.6'">

@@ -1,23 +1,18 @@
 namespace PocoEmit.Collections;
 
 /// <summary>
-/// 配置设置
+/// 配置设置(用户行为)
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
-/// <typeparam name="TValue"></typeparam>
-public interface ISettings<TKey, TValue>
+/// <typeparam name="TConfig"></typeparam>
+public interface ISettings<TKey, TConfig>
+    : IConfigure<TKey, TConfig>
 {
     /// <summary>
     /// 获取
     /// </summary>
     /// <param name="key"></param>
-    /// <param name="value"></param>
+    /// <param name="config"></param>
     /// <returns></returns>
-    bool TryGetValue(TKey key, out TValue value);
-    /// <summary>
-    /// 设置
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    void Set(TKey key, TValue value);
+    bool TryGetConfig(TKey key, out TConfig config);
 }

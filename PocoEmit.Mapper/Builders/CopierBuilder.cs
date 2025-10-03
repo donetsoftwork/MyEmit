@@ -21,7 +21,7 @@ public class CopierBuilder(IMapperOptions options)
     /// </summary>
     private readonly CopyToSelf _forSelf = new(options);
     /// <summary>
-    /// 
+    /// 同类型复制
     /// </summary>
     public CopyToSelf ForSelf 
         => _forSelf;
@@ -87,17 +87,22 @@ public class CopierBuilder(IMapperOptions options)
     /// <param name="options"></param>
     /// <param name="match"></param>
     /// <param name="sourceMembers"></param>
-    /// <param name="writer"></param>
+    /// <param name="dest"></param>
     /// <returns></returns>
-    public static MemberConverter CheckMember(IMapperOptions options, IMemberMatch match, IEnumerable<IEmitMemberReader> sourceMembers, IEmitMemberWriter writer)
+    public static MemberConverter CheckMember(IMapperOptions options, IMemberMatch match, IEnumerable<IEmitMemberReader> sourceMembers, IEmitMemberWriter dest)
     {
-        foreach (var reader in match.Select(options.Recognizer, sourceMembers, writer))
+        foreach (var reader in match.Select(options.Recognizer, sourceMembers, dest))
         {
-            var converter = options.GetEmitConverter(reader.ValueType, writer.ValueType);
+            var converter = options.GetEmitConverter(reader.ValueType, dest.ValueType);
             if (converter is null)
                 continue;
-            return new MemberConverter(options, reader, writer, converter);
+            return new MemberConverter(options, reader, dest, converter);
         }
-        return null;
+        var defaultValue = options.DefaultValueBuilder.Build(dest);
+        if (defaultValue is null)
+            return null;
+        var adapter = new BuilderReaderAdapter(defaultValue);
+        var destType = dest.ValueType;
+        return new MemberConverter(options, adapter, dest, options.GetEmitConverter(destType, destType));
     }
 }

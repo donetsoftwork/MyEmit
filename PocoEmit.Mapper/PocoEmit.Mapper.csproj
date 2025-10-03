@@ -6,7 +6,7 @@
     <PackageId>PocoEmit.Mapper</PackageId>
     <Description>Emit加速操作属性和字段</Description>
     <PackageTags>OOM;Emit;Poco;Mapper;Map</PackageTags>
-    <Version>$(VersionBase).8-alpha</Version>
+    <Version>$(VersionBase).0-alpha</Version>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RootNamespace>PocoEmit</RootNamespace>
   </PropertyGroup>
@@ -22,6 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="PocoEmit.Collections" />
+    <InternalsVisibleTo Include="PocoEmit.ServiceProvider" />
+    <InternalsVisibleTo Include="PocoEmit.Mvc" />
     <InternalsVisibleTo Include="PocoEmit.MapperUnitTests" />
   </ItemGroup>
   

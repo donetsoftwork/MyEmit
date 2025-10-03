@@ -81,7 +81,7 @@ internal class CountCacher(CollectionContainer container)
     {
         var valueType = bundle.ValueType;
         var key = new PairTypeKey(dictionaryType, valueType);
-        if(TryGetValue(key, out IEmitElementCounter counter))
+        if(TryGetCache(key, out IEmitElementCounter counter))
             return counter;
         Set(key, counter = new PropertyCounter(dictionaryType, valueType, bundle.Count));
         return counter;
@@ -107,7 +107,7 @@ internal class CountCacher(CollectionContainer container)
     {
         var elementType = bundle.ElementType;
         var key = new PairTypeKey(collectionType, elementType);
-        if (TryGetValue(key, out IEmitElementCounter counter))
+        if (TryGetCache(key, out IEmitElementCounter counter))
             return counter;
         Set(key, counter = new PropertyCounter(collectionType, elementType, bundle.Count));
         return counter;
@@ -128,7 +128,7 @@ internal class CountCacher(CollectionContainer container)
     public IEmitElementCounter GetByEnumerable(Type enumerable, Type elementType)
     {
         var key = new PairTypeKey(enumerable, elementType);
-        if (TryGetValue(key, out IEmitElementCounter counter))
+        if (TryGetCache(key, out IEmitElementCounter counter))
             return counter;
         Set(key, counter = CreateByEnumerable(elementType));
         return counter;
@@ -150,7 +150,7 @@ internal class CountCacher(CollectionContainer container)
     public IEmitElementCounter GetByArray(Type arrayType, Type elementType)
     {
         var key = new PairTypeKey(arrayType, elementType);
-        if (TryGetValue(key, out IEmitElementCounter counter))
+        if (TryGetCache(key, out IEmitElementCounter counter))
             return counter;
         Set(key, counter = CreateByArray(arrayType, elementType));
         return counter;

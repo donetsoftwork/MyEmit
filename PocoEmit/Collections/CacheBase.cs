@@ -33,7 +33,7 @@ public abstract class CacheBase<TKey, TValue>(ICacher<TKey, TValue> cacher)
     /// <returns></returns>
     public virtual TValue Get(in TKey key)
     {
-        if (_cacher.TryGetValue(key, out TValue value))
+        if (_cacher.TryGetCache(key, out TValue value))
             return value;
 #if NET9_0_OR_GREATER
         lock (_cacherLock)
@@ -41,7 +41,7 @@ public abstract class CacheBase<TKey, TValue>(ICacher<TKey, TValue> cacher)
         lock (_cacher)
 #endif
         {
-            if (_cacher.TryGetValue(key, out value))
+            if (_cacher.TryGetCache(key, out value))
                 return value;
             value = CreateNew(key);
             _cacher.Set(key, value);
@@ -52,8 +52,8 @@ public abstract class CacheBase<TKey, TValue>(ICacher<TKey, TValue> cacher)
     public bool ContainsKey(in TKey key)
         => _cacher.ContainsKey(key);
     /// <inheritdoc />
-    public bool TryGetValue(in TKey key, out TValue value)
-        => _cacher.TryGetValue(key, out value);
+    public bool TryGetCache(in TKey key, out TValue cached)
+        => _cacher.TryGetCache(key, out cached);
     /// <inheritdoc />
     public void Set(in TKey key, TValue value)
         => _cacher.Set(key, value);

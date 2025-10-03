@@ -56,7 +56,7 @@ internal class CollectionCacher(CollectionContainer container)
 #endif
         if (isCollection || ReflectionHelper.HasGenericType(collectionType, typeof(ICollection<>)))
             return (bundle = Get(collectionType)) is not null;
-        return TryGetValue(collectionType, out bundle) && bundle is not null;
+        return TryGetCache(collectionType, out bundle) && bundle is not null;
     }
     /// <summary>
     /// 获取列表成员
