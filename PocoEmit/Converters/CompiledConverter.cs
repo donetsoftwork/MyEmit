@@ -1,3 +1,5 @@
+using Hand.Reflection;
+using Hand.Structural;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System;

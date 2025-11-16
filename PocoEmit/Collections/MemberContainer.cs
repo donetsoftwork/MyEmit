@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using PocoEmit.Enums;
+using Hand.Cache;
+using Hand.Collections;
 
 namespace PocoEmit.Collections;
 
@@ -63,7 +65,7 @@ public partial class MemberContainer
     /// <summary>
     /// 枚举
     /// </summary>
-    public CacheBase<Type, IEnumBundle> Enums
+    public CacheFactoryBase<Type, IEnumBundle> Enums
         => _enumCacher;
     /// <summary>
     /// 读取器
@@ -90,7 +92,7 @@ public partial class MemberContainer
     bool ICacher<PropertyInfo, PropertyAccessor>.TryGetCache(in PropertyInfo key, out PropertyAccessor cached)
         => _propertyAccessors.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<PropertyInfo, PropertyAccessor>.Set(in PropertyInfo key, PropertyAccessor value)
+    void IStore<PropertyInfo, PropertyAccessor>.Save(in PropertyInfo key, PropertyAccessor value)
     => _propertyAccessors[key] = value;
     #endregion
     #region ICacher<FieldInfo, FieldAccessor>
@@ -101,7 +103,7 @@ public partial class MemberContainer
     bool ICacher<FieldInfo, FieldAccessor>.TryGetCache(in FieldInfo key, out FieldAccessor cached)
         => _fieldAccessors.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<FieldInfo, FieldAccessor>.Set(in FieldInfo key, FieldAccessor value)
+    void IStore<FieldInfo, FieldAccessor>.Save(in FieldInfo key, FieldAccessor value)
         => _fieldAccessors[key] = value;
     #endregion
     #region ISettings<MemberInfo, IMemberReader>
@@ -109,7 +111,7 @@ public partial class MemberContainer
     bool ICacher<MemberInfo, IEmitMemberReader>.ContainsKey(in MemberInfo key)
         => _memberReaders.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<MemberInfo, IEmitMemberReader>.Set(in MemberInfo key, IEmitMemberReader value)
+    void IStore<MemberInfo, IEmitMemberReader>.Save(in MemberInfo key, IEmitMemberReader value)
         => _memberReaders[key] = value;
     /// <inheritdoc />
     bool ICacher<MemberInfo, IEmitMemberReader>.TryGetCache(in MemberInfo key, out IEmitMemberReader cached)
@@ -120,7 +122,7 @@ public partial class MemberContainer
     bool ICacher<MemberInfo, IEmitMemberWriter>.ContainsKey(in MemberInfo key)
         => _memberWriters.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<MemberInfo, IEmitMemberWriter>.Set(in MemberInfo key, IEmitMemberWriter value)
+    void IStore<MemberInfo, IEmitMemberWriter>.Save(in MemberInfo key, IEmitMemberWriter value)
         => _memberWriters[key] = value;
     /// <inheritdoc />
     bool ICacher<MemberInfo, IEmitMemberWriter>.TryGetCache(in MemberInfo key, out IEmitMemberWriter cached)
@@ -131,7 +133,7 @@ public partial class MemberContainer
     bool ICacher<Type, IEnumBundle>.ContainsKey(in Type key)
         => _IEnumBundles.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<Type, IEnumBundle>.Set(in Type key, IEnumBundle value)
+    void IStore<Type, IEnumBundle>.Save(in Type key, IEnumBundle value)
         => _IEnumBundles[key] = value;
     /// <inheritdoc />
     bool ICacher<Type, IEnumBundle>.TryGetCache(in Type key, out IEnumBundle cached)

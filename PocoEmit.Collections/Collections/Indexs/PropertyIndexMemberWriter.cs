@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Indexs;
 using System;
 using System.Linq.Expressions;
@@ -27,7 +28,7 @@ public class PropertyIndexMemberWriter(PropertyInfo item)
     /// 获取Item索引器属性
     /// </summary>
     public static PropertyInfo GetItemProperty(Type listType)
-        => ReflectionHelper.GetPropery(listType, property => property.Name == "Item" && property.CanWrite);
+        => ReflectionMember.GetPropery(listType, property => property.Name == "Item" && property.CanWrite);
     /// <summary>
     /// 构造索引方法写入器
     /// </summary>

@@ -1,30 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\package.props" />
-  <PropertyGroup>
-    <TargetFrameworks>net4.5;net7.0;net8.0;net9.0;netstandard1.1;netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <PackageId>PocoEmit.Mapper</PackageId>
-    <Description>Emit加速操作属性和字段</Description>
-    <PackageTags>OOM;Emit;Poco;Mapper;Map</PackageTags>
-    <Version>$(VersionBase).0-alpha</Version>
-    <PackageReadmeFile>readme.md</PackageReadmeFile>
-    <RootNamespace>PocoEmit</RootNamespace>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.6'">
-    <PackageReference Include="System.Reflection" Version="4.3.0" />
-    <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="readme.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PocoEmit\PocoEmit.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="PocoEmit.Collections" />
-    <InternalsVisibleTo Include="PocoEmit.ServiceProvider" />
-    <InternalsVisibleTo Include="PocoEmit.Mvc" />
-    <InternalsVisibleTo Include="PocoEmit.MapperUnitTests" />
-  </ItemGroup>
-  
+	<Import Project="..\package.props" />
+	<PropertyGroup>
+		<TargetFrameworks>net4.5;net7.0;net8.0;net9.0;net10.0;netstandard1.1;netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
+		<PackageId>PocoEmit.Mapper</PackageId>
+		<Description>Emit加速操作属性和字段</Description>
+		<PackageTags>OOM;Emit;Poco;Mapper;Map</PackageTags>
+		<Version>$(VersionBase).0-alpha</Version>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+		<RootNamespace>PocoEmit</RootNamespace>
+	</PropertyGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.6'">
+		<PackageReference Include="System.Reflection" Version="4.3.0" />
+		<PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="readme.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\PocoEmit\PocoEmit.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<InternalsVisibleTo Include="PocoEmit.Collections" />
+		<InternalsVisibleTo Include="PocoEmit.ServiceProvider" />
+		<InternalsVisibleTo Include="PocoEmit.Mvc" />
+		<InternalsVisibleTo Include="PocoEmit.MapperUnitTests" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Hand.Core" Version="0.2.0-alpha" />
+		<PackageReference Include="Hand.Reflection" Version="0.2.0-alpha" />
+	</ItemGroup>
 </Project>

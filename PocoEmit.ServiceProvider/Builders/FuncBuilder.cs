@@ -1,3 +1,4 @@
+using Hand.Creational;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System;
@@ -13,7 +14,7 @@ namespace PocoEmit.ServiceProvider.Builders;
 /// <param name="provider"></param>
 /// <param name="func"></param>
 public class FuncBuilder<TValue>(IMapperOptions options, IServiceProviderBuilder provider, Expression<Func<IServiceProvider, TValue>> func)
-        : IBuilder<Expression>
+        : ICreator<Expression>
 {
     #region 配置
     /// <summary>
@@ -39,11 +40,11 @@ public class FuncBuilder<TValue>(IMapperOptions options, IServiceProviderBuilder
         => _func;
     #endregion
     /// <inheritdoc />
-    public Expression Build()
+    public Expression Create()
     {
         var provider = _provider.CreateProvider();
         var builder = provider.Builder;
         builder.Add(_options.Call(_func, provider.Provider));
-        return builder.Build();
+        return builder.Create();
     }
 }

@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Visitors;
@@ -12,7 +14,7 @@ namespace PocoEmit.CollectionsUnitTests.Supports;
 /// <param name="dest"></param>
 /// <param name="bodies"></param>
 public class ConvertExpressionBuilder(ParameterExpression source, ParameterExpression dest, IEnumerable<Expression> bodies)
-    : IBuilder<LambdaExpression>
+    : ICreator<LambdaExpression>
 {
     #region 配置
     private readonly ParameterExpression _source = source;
@@ -40,7 +42,7 @@ public class ConvertExpressionBuilder(ParameterExpression source, ParameterExpre
     public LambdaExpression Lambda 
         => _lambda;
     #endregion
-    LambdaExpression IBuilder<LambdaExpression>.Build()
+    LambdaExpression ICreator<LambdaExpression>.Create()
         => _lambda;
     /// <summary>
     /// 

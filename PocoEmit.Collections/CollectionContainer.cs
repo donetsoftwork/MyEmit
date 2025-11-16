@@ -8,6 +8,9 @@ using System;
 using System.Collections.Concurrent;
 using PocoEmit.Collections.Saves;
 using PocoEmit.Collections.Bundles;
+using Hand.Cache;
+using Hand.Reflection;
+using Hand.Collections;
 
 namespace PocoEmit;
 
@@ -107,7 +110,7 @@ public sealed partial class CollectionContainer
     bool ICacher<PairTypeKey, IEmitElementCounter>.TryGetCache(in PairTypeKey key, out IEmitElementCounter cached)
         => _counters.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<PairTypeKey, IEmitElementCounter>.Set(in PairTypeKey key, IEmitElementCounter value)
+    void IStore<PairTypeKey, IEmitElementCounter>.Save(in PairTypeKey key, IEmitElementCounter value)
         => _counters[key] = value;
     #endregion
     #region ICacher<Type, ICollectionVisitor>
@@ -118,7 +121,7 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, IEmitElementVisitor>.TryGetCache(in Type key, out IEmitElementVisitor cached)
         => _visitors.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<Type, IEmitElementVisitor>.Set(in Type key, IEmitElementVisitor value)
+    void IStore<Type, IEmitElementVisitor>.Save(in Type key, IEmitElementVisitor value)
         => _visitors[key] = value;
     #endregion
     #region ICacher<Type, IEmitIndexMemberReader>
@@ -129,7 +132,7 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, IEmitIndexMemberReader>.TryGetCache(in Type key, out IEmitIndexMemberReader cached)
         => _readIndexs.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<Type, IEmitIndexMemberReader>.Set(in Type key, IEmitIndexMemberReader value)
+    void IStore<Type, IEmitIndexMemberReader>.Save(in Type key, IEmitIndexMemberReader value)
         => _readIndexs[key] = value;
     #endregion
     #region ICacher<Type, IElementIndexVisitor>
@@ -140,7 +143,7 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, IElementIndexVisitor>.TryGetCache(in Type key, out IElementIndexVisitor cached)
         => _indexVisitors.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<Type, IElementIndexVisitor>.Set(in Type key, IElementIndexVisitor value)
+    void IStore<Type, IElementIndexVisitor>.Save(in Type key, IElementIndexVisitor value)
         => _indexVisitors[key] = value;
     #endregion
     #region ICacher<Type, IEmitElementSaver>
@@ -151,7 +154,7 @@ public sealed partial class CollectionContainer
     bool ICacher<PairTypeKey, IEmitElementSaver>.TryGetCache(in PairTypeKey key, out IEmitElementSaver cached)
         => _savers.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<PairTypeKey, IEmitElementSaver>.Set(in PairTypeKey key, IEmitElementSaver value)
+    void IStore<PairTypeKey, IEmitElementSaver>.Save(in PairTypeKey key, IEmitElementSaver value)
         => _savers[key] = value;
     #endregion
     #region ICacher<Type, EnumerableBundle>
@@ -162,7 +165,7 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, EnumerableBundle>.TryGetCache(in Type key, out EnumerableBundle cached)
         => _enumerables.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<Type, EnumerableBundle>.Set(in Type key, EnumerableBundle value)
+    void IStore<Type, EnumerableBundle>.Save(in Type key, EnumerableBundle value)
         => _enumerables[key] = value;
     #endregion
     #region ICacher<Type, CollectionBundle>
@@ -173,7 +176,7 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, CollectionBundle>.TryGetCache(in Type key, out CollectionBundle cached)
         => _collections.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<Type, CollectionBundle>.Set(in Type key, CollectionBundle value)
+    void IStore<Type, CollectionBundle>.Save(in Type key, CollectionBundle value)
         => _collections[key] = value;
     #endregion
     #region ICacher<Type, ListBundle>
@@ -184,7 +187,7 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, ListBundle>.TryGetCache(in Type key, out ListBundle cached)
         => _lists.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<Type, ListBundle>.Set(in Type key, ListBundle value)
+    void IStore<Type, ListBundle>.Save(in Type key, ListBundle value)
         => _lists[key] = value;
     #endregion
     #region ICacher<Type, DictionaryBundle>
@@ -195,7 +198,7 @@ public sealed partial class CollectionContainer
     bool ICacher<Type, DictionaryBundle>.TryGetCache(in Type key, out DictionaryBundle cached)
         => _dictionaries.TryGetValue(key, out cached);
     /// <inheritdoc />
-    void IStore<Type, DictionaryBundle>.Set(in Type key, DictionaryBundle value)
+    void IStore<Type, DictionaryBundle>.Save(in Type key, DictionaryBundle value)
         => _dictionaries[key] = value;
     #endregion
     /// <summary>

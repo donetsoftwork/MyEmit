@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
@@ -62,7 +63,7 @@ public static partial class PocoEmitServices
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> typeWriter)
                 return typeWriter.WriteAction;
             var writeAction = Compiler.CompileAction<TInstance, TValue>(emitWriter);
-            MemberContainer.Instance.MemberWriterCacher.Set(emitWriter.Info, new CompiledWriter<TInstance, TValue>(emitWriter, writeAction));
+            MemberContainer.Instance.MemberWriterCacher.Save(emitWriter.Info, new CompiledWriter<TInstance, TValue>(emitWriter, writeAction));
             return writeAction;
         }
         else if (emitWriter == null)
@@ -121,7 +122,7 @@ public static partial class PocoEmitServices
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> compiledWriter)
                 return compiledWriter;
             compiledWriter = new CompiledWriter<TInstance, TValue>(emitWriter, Compiler.CompileAction<TInstance, TValue>(emitWriter));
-            MemberContainer.Instance.MemberWriterCacher.Set(emitWriter.Info, compiledWriter);
+            MemberContainer.Instance.MemberWriterCacher.Save(emitWriter.Info, compiledWriter);
             return compiledWriter;
         }
         else if (emitWriter == null)

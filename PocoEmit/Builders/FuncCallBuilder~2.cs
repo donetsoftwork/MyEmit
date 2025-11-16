@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
@@ -11,7 +13,7 @@ namespace PocoEmit.Builders;
 /// <param name="key"></param>
 /// <param name="lambda"></param>
 public class ArgumentFuncCallBuilder(IPocoOptions poco, in PairTypeKey key, LambdaExpression lambda)
-    : IBuilder<LambdaExpression>
+    : ICreator<LambdaExpression>
 {
     #region 配置
     /// <summary>
@@ -46,7 +48,7 @@ public class ArgumentFuncCallBuilder(IPocoOptions poco, in PairTypeKey key, Lamb
     public void Build(LambdaExpression lambda)
         => _lambda = lambda ?? throw new ArgumentNullException(nameof(lambda));
     /// <inheritdoc />
-    LambdaExpression IBuilder<LambdaExpression>.Build()
+    LambdaExpression ICreator<LambdaExpression>.Create()
         => _lambda;
     /// <summary>
     /// 调用Func表达式

@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Reflection;
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using System;
@@ -31,7 +33,7 @@ public static partial class PocoEmitServices
     /// <param name="left"></param>
     /// <param name="right"></param>
     /// <returns></returns>
-    internal static TValue Get<TValue>(this CacheBase<PairTypeKey, TValue> settings, Type left, Type right)
+    internal static TValue Get<TValue>(this CacheFactoryBase<PairTypeKey, TValue> settings, Type left, Type right)
         => settings.Get(new PairTypeKey(left, right));
     /// <summary>
     /// 尝试设置缓存不覆盖
@@ -47,7 +49,7 @@ public static partial class PocoEmitServices
         // 如果值不为null，则不覆盖
         if (cacher.ContainsKey(key) && cacher.GetCache(key) is TValue value0)
             return value0;
-        cacher.Set(key, value);
+        cacher.Save(key, value);
         return value;
     }
     #endregion

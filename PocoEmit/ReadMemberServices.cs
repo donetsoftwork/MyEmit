@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
@@ -63,7 +64,7 @@ public static partial class PocoEmitServices
             if (emitReader.Compiled && emitReader is ICompiledReader<TInstance, TValue> compiledReader)
                 return compiledReader.ReadFunc;
             var readFunc = Compiler.CompileFunc<TInstance, TValue>(emitReader);
-            MemberContainer.Instance.MemberReaderCacher.Set(emitReader.Info, new CompiledReader<TInstance, TValue>(emitReader, readFunc));
+            MemberContainer.Instance.MemberReaderCacher.Save(emitReader.Info, new CompiledReader<TInstance, TValue>(emitReader, readFunc));
             return readFunc;
         }
         else if (emitReader is null)
@@ -122,7 +123,7 @@ public static partial class PocoEmitServices
             if (emitReader.Compiled && emitReader is ICompiledReader<TInstance, TValue> compiledReader)
                 return compiledReader;
             compiledReader = new CompiledReader<TInstance, TValue>(emitReader, Compiler.CompileFunc<TInstance, TValue>(emitReader));
-            MemberContainer.Instance.MemberReaderCacher.Set(emitReader.Info, compiledReader);
+            MemberContainer.Instance.MemberReaderCacher.Save(emitReader.Info, compiledReader);
             return compiledReader;
         }
         else if (emitReader is null)

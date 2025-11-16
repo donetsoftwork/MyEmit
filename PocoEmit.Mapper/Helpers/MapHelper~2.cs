@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Activators;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
@@ -35,7 +36,7 @@ public partial class MapHelper<TSource, TDest>
         _destRecognizer = destRecognizer;
         var matcher0 = mapper.GetMemberMatch(_key);
         _matcher = new CustomMatcher(matcher0.NameMatch, memberSettings, sourceRecognizer, destRecognizer);
-        _mapper.Configure(_key, _matcher);
+        _mapper.Set(_key, _matcher);
     }
     /// <summary>
     /// 映射辅助
@@ -137,7 +138,7 @@ public partial class MapHelper<TSource, TDest>
     /// <returns></returns>
     public MapHelper<TSource, TDest> UseActivator(Expression<Func<TSource, TDest>> expression)
     {
-        _mapper.Configure(_key, new DelegateActivator<TSource, TDest>((IPocoOptions)_mapper, expression));
+        _mapper.Set(_key, new DelegateActivator<TSource, TDest>((IPocoOptions)_mapper, expression));
         return this;
     }
     /// <summary>
@@ -147,7 +148,7 @@ public partial class MapHelper<TSource, TDest>
     /// <returns></returns>
     public MapHelper<TSource, TDest> UseActivator(Expression<Func<TDest>> expression)
     {
-        _mapper.Configure(_key, new DelegateActivator<TDest>(expression));
+        _mapper.Set(_key, new DelegateActivator<TDest>(expression));
         return this;
     }
     #endregion
@@ -157,7 +158,7 @@ public partial class MapHelper<TSource, TDest>
     /// <param name="checkAction"></param>
     public MapHelper<TSource, TDest> UseCheckAction(Action<TSource, TDest> checkAction)
     {
-        _mapper.Configure(_key, checkAction);
+        _mapper.Set(_key, checkAction);
         return this;
     }
     #endregion
@@ -172,7 +173,7 @@ public partial class MapHelper<TSource, TDest>
     /// <returns></returns>
     public IMapper UseConvertFunc(Expression<Func<TSource, TDest>> convertFunc)
     {
-        _mapper.Configure(_key, new FuncConverter((IPocoOptions)_mapper, _key, convertFunc));
+        _mapper.Set(_key, new FuncConverter((IPocoOptions)_mapper, _key, convertFunc));
         return _mapper;
     }
     #endregion

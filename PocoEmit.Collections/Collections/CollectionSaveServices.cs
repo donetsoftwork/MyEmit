@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Collections.Saves;
 using PocoEmit.Configuration;
@@ -28,7 +29,7 @@ public static partial class PocoEmitCollectionServices
         if (emitSaver.Compiled && emitSaver is ICompiledElementSaver<TCollection, TElement> compiledSaver)
             return compiledSaver.SaveAction;
         var SaverAction = Compile<TCollection, TElement>(emitSaver);
-        container.SaveCacher.Set(key, new CompiledElementSaver<TCollection, TElement>(emitSaver, SaverAction));
+        container.SaveCacher.Save(key, new CompiledElementSaver<TCollection, TElement>(emitSaver, SaverAction));
         return SaverAction;
     }
     #endregion
@@ -48,7 +49,7 @@ public static partial class PocoEmitCollectionServices
             return null;
         if (emitSaver.Compiled && emitSaver is ICompiledElementSaver<TCollection, TElement> compiledSaver)
             return compiledSaver;
-        container.SaveCacher.Set(key, compiledSaver = new CompiledElementSaver<TCollection, TElement>(emitSaver, Compile<TCollection, TElement>(emitSaver)));
+        container.SaveCacher.Save(key, compiledSaver = new CompiledElementSaver<TCollection, TElement>(emitSaver, Compile<TCollection, TElement>(emitSaver)));
         return compiledSaver;
     }
     #endregion

@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Creational;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Members;
@@ -10,7 +12,7 @@ namespace PocoEmit.ServiceProvider.Cachers;
 /// </summary>
 /// <param name="builder"></param>
 public class MemberExpressionCacher(ServiceDefaultValueBuilder builder)
-    : CacheBase<IEmitMemberWriter, IBuilder<Expression>>(builder)
+    : CacheFactoryBase<IEmitMemberWriter, ICreator<Expression>>(builder)
 {
     #region 配置
     private readonly ServiceDefaultValueBuilder _builder = builder;
@@ -21,7 +23,7 @@ public class MemberExpressionCacher(ServiceDefaultValueBuilder builder)
         => _builder;
     #endregion
     /// <inheritdoc />
-    protected override IBuilder<Expression> CreateNew(in IEmitMemberWriter key)
+    protected override ICreator<Expression> CreateNew(in IEmitMemberWriter key)
     {
         // 从配置获取
         if(_builder.TryGetConfig(key.Info, out var serviceBuilder)

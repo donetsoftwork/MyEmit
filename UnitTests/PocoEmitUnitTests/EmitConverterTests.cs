@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit;
 using PocoEmit.Converters;
 using PocoEmitUnitTests.Supports;
@@ -11,7 +12,7 @@ public class EmitConverterTests
     public void Compile_bool2bool()
     {
         var type = typeof(Color);
-        var fields = ReflectionHelper.GetStaticFields(type);
+        var fields = ReflectionMember.GetStaticFields(type);
         //var type2 = typeof(List<int>);
         //var methods = ReflectionHelper.GetMethods(type2).ToArray();
         var func = Compile<bool,bool>();

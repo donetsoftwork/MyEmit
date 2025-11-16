@@ -1,11 +1,16 @@
+using Hand.Reflection;
 using PocoEmit.CollectionsUnitTests.Supports;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
+using Xunit.Abstractions;
 
 namespace PocoEmit.CollectionsUnitTests.Complexes;
 
-public class PreviewTests : CollectionTestBase
+public class PreviewTests(ITestOutputHelper output)
+    : CollectionTestBase
 {
+    private readonly ITestOutputHelper _output = output;
+
     [Fact]
     public void UserPreview()
     {
@@ -67,13 +72,23 @@ public class PreviewTests : CollectionTestBase
         var context = new BuildContext((IMapperOptions)_mapper);
         context.Visit<Tree, TreeDTO>();
         context.CheckConvertContext();
-        Assert.Equal(5, context.Collections.Count());
+        var collections = context.Collections.ToArray();
+        if(collections.Length == 2)
+        {
+            WriteKey(collections[0].Key);
+            WriteKey(collections[1].Key);
+        }
+        Assert.Equal(5, collections.Length);
         var branch = context.GetBundle<TreeBranch, TreeBranchDTO>();
         Assert.NotNull(branch);
         Assert.True(branch.IsCircle);
         var leaf = context.GetBundle<TreeLeaf, TreeLeafDTO>();
         Assert.NotNull(leaf);
         Assert.False(leaf.IsCircle);
+    }
+    private void WriteKey(PairTypeKey key)
+    {
+        _output.WriteLine($"{key.LeftType}--{key.RightType}");
     }
     [Fact]
     public void VisitTree2()

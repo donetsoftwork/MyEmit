@@ -1,3 +1,5 @@
+using Hand.Configuration;
+using Hand.Creational;
 using PocoEmit;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
@@ -48,10 +50,10 @@ public static partial class PocoDefaultServices
     /// <param name="builder"></param>
     internal static void UseProviderDefault(this Mapper mapper, IServiceProviderBuilder builder)
     {
-        IConfigure<Type, IBuilder<Expression>> config = mapper;
+        IConfigure<Type, ICreator<Expression>> config = mapper;
         var provider = builder.CreateProvider();
-        config.Configure(provider.ProviderType, provider);
+        config.Set(provider.ProviderType, provider);
         var keyed = builder.CreateKeyed();
-        config.Configure(keyed.ProviderType, keyed);
+        config.Set(keyed.ProviderType, keyed);
     }
 }

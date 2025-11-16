@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Reflection;
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using System;
@@ -10,7 +12,7 @@ namespace PocoEmit.Copies;
 /// </summary>
 /// <param name="options"></param>
 public class CopierFactory(IMapperOptions options)
-    : CacheBase<PairTypeKey, IEmitCopier>(options)
+    : CacheFactoryBase<PairTypeKey, IEmitCopier>(options)
 {
     #region 配置
     private readonly IMapperOptions _options = options;
@@ -46,9 +48,9 @@ public class CopierFactory(IMapperOptions options)
             // 可空类型
             return _options.CopierBuilder.ForNullable(original, sourceType, key.RightType);
         }
-        if (ReflectionHelper.HasGenericType(destType, typeof(IDictionary<,>)))
+        if (ReflectionType.HasGenericType(destType, typeof(IDictionary<,>)))
             return _options.CopierBuilder.ToDictionary(key);
-        if (ReflectionHelper.HasGenericType(destType, typeof(IEnumerable<>)))
+        if (ReflectionType.HasGenericType(destType, typeof(IEnumerable<>)))
             return _options.CopierBuilder.ToCollection(key);
         // 普通类型
         return CheckMembers(key, _options.CopierBuilder.Build(key));

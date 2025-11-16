@@ -1,3 +1,4 @@
+using Hand.Creational;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Builders;
@@ -7,7 +8,7 @@ namespace PocoEmit.Builders;
 /// </summary>
 /// <param name="func"></param>
 public class FuncBuilder(LambdaExpression func)
-    : IBuilder<Expression>
+    : ICreator<Expression>
 {
     #region 配置
     private readonly LambdaExpression _func = func;
@@ -18,6 +19,6 @@ public class FuncBuilder(LambdaExpression func)
         => _func;
     #endregion
     /// <inheritdoc />
-    public Expression Build()
+    public Expression Create()
         => _func.Body;
 }

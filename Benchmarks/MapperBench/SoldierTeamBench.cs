@@ -110,7 +110,7 @@ public class SoldierTeamBench
     public SoldierTeamDTO BuildContextFunc()
     {
         var converter =  _poco.GetEmitContextConverter<SoldierTeam, SoldierTeamDTO>();
-        LambdaExpression expression = converter.Build();
+        LambdaExpression expression = converter.Create();
         string code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Console.WriteLine(code);
         //LambdaExpression expression2 = _cache.BuildConverter<List<Soldier>, List<SoldierDTO>>();

@@ -1,3 +1,4 @@
+using Hand.Cache;
 using PocoEmit.Collections;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.CollectionsUnitTests.Supports;
@@ -13,7 +14,7 @@ public class FromNameValueCollectionTests : CollectionTestBase
         ICacher<Type, DictionaryBundle> container = CollectionContainer.Instance;
         var type = typeof(NameValueCollection);
         DictionaryBundle bundle = new(typeof(string), typeof(string), type.GetProperty("AllKeys"), null, CollectionContainer.GetItemProperty(type, typeof(string)), type.GetProperty("Count"));
-        container.Set(type, bundle);
+        container.Save(type, bundle);
     }
     [Fact]
     public void Convert()

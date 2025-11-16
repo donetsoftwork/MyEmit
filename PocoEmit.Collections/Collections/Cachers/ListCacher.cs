@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Reflection;
 using PocoEmit.Collections.Bundles;
 using System;
 using System.Collections.Generic;
@@ -9,7 +11,7 @@ namespace PocoEmit.Collections.Cachers;
 /// </summary>
 /// <param name="container"></param>
 internal class ListCacher(CollectionContainer container)
-    : CacheBase<Type, ListBundle>(container)
+    : CacheFactoryBase<Type, ListBundle>(container)
 {
     #region 配置
     private readonly CollectionContainer _container = container;
@@ -22,7 +24,7 @@ internal class ListCacher(CollectionContainer container)
     /// <inheritdoc />
     protected override ListBundle CreateNew(in Type key)
     {
-        if (!ReflectionHelper.HasGenericType(key, typeof(IList<>)))
+        if (!ReflectionType.HasGenericType(key, typeof(IList<>)))
             return null;
         return CreateByType(_container, key);
     }
@@ -41,7 +43,7 @@ internal class ListCacher(CollectionContainer container)
     /// <returns></returns>
     public bool Validate(Type listType, out ListBundle bundle)
     {
-        if (ReflectionHelper.HasGenericType(listType, typeof(IList<>)))
+        if (ReflectionType.HasGenericType(listType, typeof(IList<>)))
             return (bundle = Get(listType)) is not null;
         return TryGetCache(listType, out bundle) && bundle is not null;
     }

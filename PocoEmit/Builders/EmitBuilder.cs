@@ -1,3 +1,4 @@
+using Hand.Creational;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
@@ -7,7 +8,7 @@ namespace PocoEmit.Builders;
 /// 表达式构造器
 /// </summary>
 public class EmitBuilder(List<ParameterExpression> variables, List<Expression> expressions)
-    : IBuilder<Expression>
+    : ICreator<Expression>
 {
     /// <summary>
     /// 表达式构造器
@@ -39,7 +40,7 @@ public class EmitBuilder(List<ParameterExpression> variables, List<Expression> e
         => _expressions;
     #endregion
     /// <inheritdoc />
-    public Expression Build()
+    public Expression Create()
     {
         return _expressions.Count switch
         {

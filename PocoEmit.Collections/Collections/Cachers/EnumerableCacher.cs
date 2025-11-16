@@ -1,7 +1,10 @@
+using Hand.Cache;
+using Hand.Reflection;
 using PocoEmit.Collections.Bundles;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace PocoEmit.Collections.Cachers;
@@ -11,7 +14,7 @@ namespace PocoEmit.Collections.Cachers;
 /// </summary>
 /// <param name="container"></param>
 internal class EnumerableCacher(CollectionContainer container)
-    : CacheBase<Type, EnumerableBundle>(container)
+    : CacheFactoryBase<Type, EnumerableBundle>(container)
 {
     #region 配置
     private readonly CollectionContainer _container = container;
@@ -24,7 +27,7 @@ internal class EnumerableCacher(CollectionContainer container)
     /// <inheritdoc />
     protected override EnumerableBundle CreateNew(in Type key)
     {
-        if (!ReflectionHelper.HasGenericType(key, typeof(IEnumerable<>)))
+        if (!ReflectionType.HasGenericType(key, typeof(IEnumerable<>)))
             return null;
         return CreateByType(key);
     }
@@ -43,7 +46,7 @@ internal class EnumerableCacher(CollectionContainer container)
     /// <returns></returns>
     public bool Validate(Type enumerableType, out EnumerableBundle bundle)
     {
-        if (ReflectionHelper.HasGenericType(enumerableType, typeof(IEnumerable<>)))
+        if (ReflectionType.HasGenericType(enumerableType, typeof(IEnumerable<>)))
             return (bundle = Get(enumerableType)) is not null;
         return TryGetCache(enumerableType, out bundle) && bundle is not null;
     }
@@ -54,22 +57,14 @@ internal class EnumerableCacher(CollectionContainer container)
     /// <returns></returns>
     public static EnumerableBundle CreateByType(Type enumerableType)
     {
-        Type elementType = null;
-        var arguments = ReflectionHelper.GetGenericArguments(enumerableType);
-        if (arguments.Length == 1)
-            elementType = arguments[0];
-        var getEnumeratorMethod = GetGetEnumerator(enumerableType);
-        if (getEnumeratorMethod == null)
-        {
-            if (ReflectionHelper.HasGenericType(enumerableType, typeof(IEnumerable<>)))
-            {
-                getEnumeratorMethod = GetGetEnumerator(typeof(IEnumerable<>).MakeGenericType(elementType ?? typeof(object)));
-            }
-            else
-            {
-                return null;
-            }
-        }
+        var enumerableInterface = ReflectionType.GetGenericCloseInterfaces(enumerableType, typeof(IEnumerable<>))
+            .FirstOrDefault();
+        if (enumerableInterface is null)
+            return null;
+        var arguments = ReflectionType.GetGenericArguments(enumerableInterface);
+        var elementType = arguments[0];
+        var getEnumeratorMethod = GetGetEnumerator(enumerableType)
+            ?? GetGetEnumerator(enumerableInterface);
         var enumeratorType = getEnumeratorMethod.ReturnType;
         var moveNextMethod = GetMoveNext(enumeratorType) ?? _moveNextCore;
         var currentProperty = GetCurrent(enumeratorType) ?? _currentCore;
@@ -82,7 +77,7 @@ internal class EnumerableCacher(CollectionContainer container)
         //    currentProperty = _currentCore;
         //    requireIEnumerator = true;
         //}
-        return new(enumeratorType, elementType ?? typeof(object), getEnumeratorMethod, moveNextMethod, currentProperty, requireIEnumerator);
+        return new(enumeratorType, elementType, getEnumeratorMethod, moveNextMethod, currentProperty, requireIEnumerator);
     }
     #region MethodInfo
     /// <summary>
@@ -92,14 +87,14 @@ internal class EnumerableCacher(CollectionContainer container)
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     public static MethodInfo GetGetEnumerator(Type enumerableType)
-        => ReflectionHelper.GetMethod(enumerableType, "GetEnumerator");
+        => ReflectionMember.GetMethod(enumerableType, "GetEnumerator");
     /// <summary>
     /// 获取MoveNext方法
     /// </summary>
     /// <param name="enumeratorType"></param>
     /// <returns></returns>
     private static MethodInfo GetMoveNext(Type enumeratorType)
-        => ReflectionHelper.GetMethod(enumeratorType, "MoveNext");
+        => ReflectionMember.GetMethod(enumeratorType, "MoveNext");
 
     /// <summary>
     /// 打底的MoveNext方法
@@ -113,7 +108,7 @@ internal class EnumerableCacher(CollectionContainer container)
     /// <param name="enumeratorType"></param>
     /// <returns></returns>
     public static PropertyInfo GetCurrent(Type enumeratorType)
-        => ReflectionHelper.GetPropery(enumeratorType, property => property.Name == "Current");
+        => ReflectionMember.GetPropery(enumeratorType, property => property.Name == "Current");
     /// <summary>
     /// 打底的Current属性
     /// </summary>

@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -14,6 +15,6 @@ public class EnumerableCounter(Type collectionType, Type elementType)
     /// <summary>
     /// Count扩展方法
     /// </summary>
-    public static readonly MethodInfo EnumerableCountMethod = ReflectionHelper.GetMethods(typeof(Enumerable))
+    public static readonly MethodInfo EnumerableCountMethod = ReflectionMember.GetMethods(typeof(Enumerable))
         .First(m => m.Name == "Count" && m.GetParameters().Length == 1);
 }

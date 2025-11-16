@@ -2,6 +2,10 @@ using PocoEmit.Converters;
 using PocoEmit.Collections;
 using System;
 using System.Collections.Concurrent;
+using Hand.Cache;
+using Hand.Collections;
+using Hand.Reflection;
+using Hand.Configuration;
 
 namespace PocoEmit.Configuration;
 
@@ -26,7 +30,7 @@ public abstract partial class ConfigurationBase
     private readonly ConcurrentDictionary<Type, MemberBundle> _memberBundles;
     #endregion
     #region IConfigure<PairTypeKey, IEmitConverter>
-    void IConfigure<PairTypeKey, IEmitConverter>.Configure(in PairTypeKey key, IEmitConverter config)
+    void IConfigure<PairTypeKey, IEmitConverter>.Set(in PairTypeKey key, IEmitConverter config)
         => _convertConfiguration[key] = config;
     #endregion
     #region ICacher<PairTypeKey, IEmitConverter>
@@ -34,7 +38,7 @@ public abstract partial class ConfigurationBase
     bool ICacher<PairTypeKey, IEmitConverter>.ContainsKey(in PairTypeKey key)
         => _converters.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<PairTypeKey, IEmitConverter>.Set(in PairTypeKey key, IEmitConverter value)
+    void IStore<PairTypeKey, IEmitConverter>.Save(in PairTypeKey key, IEmitConverter value)
         => _converters[key] = value;
     /// <inheritdoc />
     bool ICacher<PairTypeKey, IEmitConverter>.TryGetCache(in PairTypeKey key, out IEmitConverter cached)
@@ -45,7 +49,7 @@ public abstract partial class ConfigurationBase
     bool ICacher<Type, MemberBundle>.ContainsKey(in Type key)
         => _memberBundles.ContainsKey(key);
     /// <inheritdoc />
-    void IStore<Type, MemberBundle>.Set(in Type key, MemberBundle value)
+    void IStore<Type, MemberBundle>.Save(in Type key, MemberBundle value)
         => _memberBundles[key] = value;
     /// <inheritdoc />
     bool ICacher<Type, MemberBundle>.TryGetCache(in Type key, out MemberBundle cached)

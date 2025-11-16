@@ -1,3 +1,4 @@
+using Hand.Cache;
 using PocoEmit.Collections;
 using System;
 using System.Reflection;
@@ -14,7 +15,7 @@ public abstract partial class ConfigurationBase
     /// 读成员缓存
     /// </summary>
     class ReadFuncCacher(IPoco poco)
-        : CacheBase<MemberInfo, Func<object, object>>()
+        : CacheFactoryBase<MemberInfo, Func<object, object>>()
     {
         #region 配置
         private readonly IPoco _options = poco;
@@ -32,7 +33,7 @@ public abstract partial class ConfigurationBase
     /// 写成员缓存
     /// </summary>
     class WriteActionCacher(IPoco poco)
-        : CacheBase<MemberInfo, Action<object, object>>()
+        : CacheFactoryBase<MemberInfo, Action<object, object>>()
     {
         #region 配置
         private readonly IPoco _poco = poco;

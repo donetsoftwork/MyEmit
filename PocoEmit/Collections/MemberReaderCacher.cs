@@ -1,3 +1,4 @@
+using Hand.Cache;
 using PocoEmit.Members;
 using System.Reflection;
 
@@ -8,7 +9,7 @@ namespace PocoEmit.Collections;
 /// </summary>
 /// <param name="container"></param>
 public class MemberReaderCacher(MemberContainer container)
-    : CacheBase<MemberInfo, IEmitMemberReader>(container)
+    : CacheFactoryBase<MemberInfo, IEmitMemberReader>(container)
 {
     private readonly MemberContainer _container = container;
     #region CacheBase<MemberInfo, IMemberReader>

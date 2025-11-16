@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Activators;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
@@ -25,7 +26,7 @@ public static partial class MapperServices
     public static IMapper UseActivator<TInstance>(this IMapper mapper, Expression<Func<TInstance>> activatorFunc)
     {
         var key = typeof(TInstance);
-        mapper.Configure(key, new DelegateActivator<TInstance>(activatorFunc));
+        mapper.Set(key, new DelegateActivator<TInstance>(activatorFunc));
         return mapper;
     }
     /// <summary>
@@ -39,7 +40,7 @@ public static partial class MapperServices
     public static IMapper UseActivator<TSource, TDest>(this IMapper mapper, Expression<Func<TSource, TDest>> activatorFunc)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        mapper.Configure(key, new DelegateActivator<TSource, TDest>((IPocoOptions)mapper, activatorFunc));
+        mapper.Set(key, new DelegateActivator<TSource, TDest>((IPocoOptions)mapper, activatorFunc));
         return mapper;
     }
     /// <summary>
@@ -54,7 +55,7 @@ public static partial class MapperServices
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
         var activator = new DelegateActivator<TDest>(activatorFunc);
-        mapper.Configure(key, activator);
+        mapper.Set(key, activator);
         return mapper;
     }
     /// <summary>
@@ -79,7 +80,7 @@ public static partial class MapperServices
     public static IMapper UseConvertFunc<TSource, TDest>(this IMapper mapper, Expression<Func<TSource, TDest>> convertFunc)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        mapper.Configure(key, new FuncConverter((IPocoOptions)mapper, key, convertFunc));
+        mapper.Set(key, new FuncConverter((IPocoOptions)mapper, key, convertFunc));
         return mapper;
     }
     #endregion
@@ -94,7 +95,7 @@ public static partial class MapperServices
     public static IMapper UseDefault<TValue>(this IMapper mapper, TValue value)
     {
         var type = typeof(TValue);
-        mapper.Configure(type, ConstantBuilder.Use(value, type));
+        mapper.Set(type, ConstantBuilder.Use(value, type));
         return mapper;
     }
     /// <summary>
@@ -106,7 +107,7 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IMapper UseDefault<TValue>(this IMapper mapper, Expression<Func<TValue>> valueFunc)
     {
-        mapper.Configure(typeof(TValue), new FuncBuilder(valueFunc));
+        mapper.Set(typeof(TValue), new FuncBuilder(valueFunc));
         return mapper;
     }
     #endregion

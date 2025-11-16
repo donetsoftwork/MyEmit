@@ -116,7 +116,7 @@ public class Tree2Tests
             .UseCollection();
         var converter = mapper.GetEmitContextConverter<TreeBranch2, TreeBranchDTO2>();
         Assert.NotNull(converter);
-        var expression = converter.Build();
+        var expression = converter.Create();
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Assert.NotNull(code);
         var func = mapper.GetContextConvertFunc<TreeBranch2, TreeBranchDTO2>();

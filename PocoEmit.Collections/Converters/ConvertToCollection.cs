@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Converters;
 using PocoEmit.Collections.Counters;
@@ -35,7 +36,7 @@ public class ConvertToCollection(IMapperOptions options)
     {
         var container = CollectionContainer.Instance;
         if (sourceType.IsArray)
-            return ArrayToCollection(sourceType, ReflectionHelper.GetElementType(sourceType), destType, destBundle);
+            return ArrayToCollection(sourceType, sourceType.GetElementType(), destType, destBundle);
         if (container.DictionaryCacher.Validate(sourceType, out var dictionaryBundle))
             return DictionaryToCollection(sourceType, dictionaryBundle, destType, destBundle);
         if (container.ListCacher.Validate(sourceType, out var listBundle))
@@ -188,15 +189,15 @@ public class ConvertToCollection(IMapperOptions options)
     /// <returns></returns>
     public static Type CheckGenericImplType(Type @interface)
     {
-        if (ReflectionHelper.HasGenericType(@interface, typeof(IList<>)))
+        if (ReflectionType.HasGenericType(@interface, typeof(IList<>)))
             return typeof(List<>);
-        if (ReflectionHelper.HasGenericType(@interface, typeof(ISet<>)))
+        if (ReflectionType.HasGenericType(@interface, typeof(ISet<>)))
             return typeof(HashSet<>);
-        if (ReflectionHelper.HasGenericType(@interface, typeof(ICollection<>)))
+        if (ReflectionType.HasGenericType(@interface, typeof(ICollection<>)))
             return typeof(List<>);
-        if (ReflectionHelper.HasGenericType(@interface, typeof(IProducerConsumerCollection<>)))
+        if (ReflectionType.HasGenericType(@interface, typeof(IProducerConsumerCollection<>)))
             return typeof(ConcurrentBag<>);
-        if (ReflectionHelper.HasGenericType(@interface, typeof(IEnumerable<>)))
+        if (ReflectionType.HasGenericType(@interface, typeof(IEnumerable<>)))
             return typeof(List<>);
         return null;
     }    

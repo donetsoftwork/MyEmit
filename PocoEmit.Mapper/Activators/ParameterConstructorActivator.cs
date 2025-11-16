@@ -72,21 +72,32 @@ public class ParameterConstructorActivator(IMapperOptions options, Type returnTy
         foreach (var parameter in parameters)
         {
             var parameterMember = new ConstructorParameterMember(constructor, parameter);
-            var reader = GetReader(options, parameterMember, match, sourceReaders);
+            var reader = GetReader(options, parameterMember, match, sourceReaders)
+                ?? CheckDefaultValue(options, parameterMember);
+            // 缺少参数匹配或默认值无法调用构造函数
             if (reader is null)
-            {
-                var builder = options.DefaultValueBuilder.Build(parameterMember);
-                // 没有适配到读取器和默认值构建失败
-                if (builder is null)
-                    return null;
-                readers[i++] = new BuilderReaderAdapter(builder);
-            }
-            else
-            {
-                readers[i++] = reader;
-            }
+                return null;
+            readers[i++] = reader;
         }
         return new ParameterConstructorActivator(options, destType, constructor, readers);
+    }
+    /// <summary>
+    /// 检查默认值
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="parameterMember"></param>
+    /// <returns></returns>
+    public static IEmitReader CheckDefaultValue(IMapperOptions options, ConstructorParameterMember parameterMember)
+    {
+        var builder = options.DefaultValueBuilder.Build(parameterMember);
+        if (builder is null)
+        {
+            var defaultValue = parameterMember.DefaultValue;
+            if (defaultValue is null)
+                return null;
+            return new ConstantReaderWrapper(defaultValue);
+        }
+        return new BuilderReaderAdapter(builder);
     }
     /// <summary>
     /// 获取读取器

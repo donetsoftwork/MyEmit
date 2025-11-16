@@ -1,9 +1,10 @@
+using Hand.Reflection;
 using PocoEmit.Collections;
+using PocoEmit.Members;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using PocoEmit.Members;
 using System.Linq;
+using System.Reflection;
 
 namespace PocoEmit.Reflection;
 
@@ -105,14 +106,14 @@ public class DefaultReflectionMember(StringComparer comparer, bool includeField 
     /// <param name="instanceType"></param>
     /// <returns></returns>
     protected virtual IEnumerable<PropertyInfo> GetProperties(Type instanceType)
-        => ReflectionHelper.GetProperties(instanceType);
+        => ReflectionMember.GetProperties(instanceType);
     /// <summary>
     /// 获取所有字段
     /// </summary>
     /// <param name="instanceType"></param>
     /// <returns></returns>
     protected virtual IEnumerable<FieldInfo> GetFields(Type instanceType)
-        => ReflectionHelper.GetFields(instanceType);
+        => ReflectionMember.GetFields(instanceType);
     /// <summary>
     /// 默认反射成员实例
     /// </summary>

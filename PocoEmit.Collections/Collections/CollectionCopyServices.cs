@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Collections.Copies;
 using PocoEmit.Configuration;
 using PocoEmit.Members;
@@ -102,7 +103,7 @@ public static partial class PocoCollectionServices
     /// <returns></returns>
     internal static CollectionCopier CreateCollectionCopier(IMapperOptions options, Type instanceType, Type collectionType)
     {
-        var elementType = ReflectionHelper.GetElementType(collectionType);
+        var elementType = ReflectionType.GetElementType(collectionType);
         if (elementType is null)
             return null;
         if (options.CheckPrimitive(instanceType))

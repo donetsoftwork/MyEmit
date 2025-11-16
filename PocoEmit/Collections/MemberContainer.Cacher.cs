@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Reflection;
 using PocoEmit.Enums;
 using PocoEmit.Members;
 using System;
@@ -17,7 +19,7 @@ namespace PocoEmit.Collections;
 /// </summary>
 /// <param name="cacher"></param>
 internal class FieldCacher(ICacher<FieldInfo, FieldAccessor> cacher)
-    : CacheBase<FieldInfo, FieldAccessor>(cacher)
+    : CacheFactoryBase<FieldInfo, FieldAccessor>(cacher)
 {
     #region CacheBase<MemberInfo, IMemberWriter>
     /// <inheritdoc />
@@ -31,7 +33,7 @@ internal class FieldCacher(ICacher<FieldInfo, FieldAccessor> cacher)
 /// </summary>
 /// <param name="cacher"></param>
 internal class PropertyCacher(ICacher<PropertyInfo, PropertyAccessor> cacher)
-        : CacheBase<PropertyInfo, PropertyAccessor>(cacher)
+        : CacheFactoryBase<PropertyInfo, PropertyAccessor>(cacher)
 {
     #region CacheBase<MemberInfo, IMemberReader>
     /// <inheritdoc />
@@ -45,9 +47,9 @@ internal class PropertyCacher(ICacher<PropertyInfo, PropertyAccessor> cacher)
 /// </summary>
 /// <param name="cacher"></param>
 internal class EnumCacher(ICacher<Type, IEnumBundle> cacher)
-        : CacheBase<Type, IEnumBundle>(cacher)
+        : CacheFactoryBase<Type, IEnumBundle>(cacher)
 {
-    #region CacheBase<MemberInfo, IMemberReader>
+    #region CacheFactoryBase<MemberInfo, IMemberReader>
     /// <inheritdoc />
     protected override IEnumBundle CreateNew(in Type key)
     {
@@ -74,7 +76,7 @@ internal class EnumCacher(ICacher<Type, IEnumBundle> cacher)
 #else
         var hasFlag = enumType.IsDefined(typeof(FlagsAttribute), false);
 #endif
-        var fields = ReflectionHelper.GetStaticFields(enumType).ToArray();
+        var fields = ReflectionMember.GetStaticFields(enumType).ToArray();
         if (hasFlag)
         {
             FlagEnumBundle flagBundle = new(enumType, underType, fields.Length);

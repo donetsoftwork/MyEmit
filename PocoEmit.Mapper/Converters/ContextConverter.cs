@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Resolves;
@@ -54,7 +56,7 @@ public class ContextConverter<TSource, TDest>(IMapperOptions mapper, in PairType
         => _convertFunc is not null;
     #endregion
     /// <inheritdoc />
-    LambdaExpression IBuilder<LambdaExpression>.Build()
+    LambdaExpression ICreator<LambdaExpression>.Create()
         => _lambda;
     /// <inheritdoc />
     public bool CompileDelegate(LambdaExpression lambda)

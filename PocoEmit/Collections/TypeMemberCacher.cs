@@ -1,3 +1,4 @@
+using Hand.Cache;
 using PocoEmit.Configuration;
 using System;
 
@@ -8,7 +9,7 @@ namespace PocoEmit.Collections;
 /// </summary>
 /// <param name="poco"></param>
 public sealed class TypeMemberCacher(IPocoOptions poco)
-    : CacheBase<Type, MemberBundle>(poco)
+    : CacheFactoryBase<Type, MemberBundle>(poco)
 {
     #region 配置
     private readonly IPocoOptions _poco = poco;

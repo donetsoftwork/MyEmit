@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Converters;
 using PocoEmit.Complexes;
@@ -32,7 +33,7 @@ public class ConvertToArray(IMapperOptions options)
         //不支持多维数组
         if (destType.GetArrayRank() > 1)
             return null;
-        var destElementType = ReflectionHelper.GetElementType(destType);
+        var destElementType = destType.GetElementType();
         if(isPrimitive || PairTypeKey.CheckValueType(sourceType, destElementType))
             return ElementToArray(sourceType, destType, destElementType);
         if (sourceType.IsArray)
@@ -105,7 +106,7 @@ public class ConvertToArray(IMapperOptions options)
     /// <returns></returns>
     public ArrayConverter ArrayToArray(Type sourceType, Type destType, Type destElementType)
     {
-        var sourceElementType = ReflectionHelper.GetElementType(sourceType);
+        var sourceElementType = sourceType.GetElementType();
         var elementConverter = _options.GetEmitConverter(sourceElementType, destElementType);
         if (elementConverter is null)
             return null;

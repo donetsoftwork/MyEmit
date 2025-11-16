@@ -1,13 +1,38 @@
-# PocoEmit遥遥领先于AutoMapper之依赖注入
+# PocoEmit遥遥领先于AutoMapper之打通充血模型的任督二脉
 
-## 什么是依赖注入
->* 这里说的依赖注入不是把PocoEmit注入到容器中,那是小儿科问题
->* 这里说的依赖注入是把外部的服务注入到PocoEmit
->* 把容器注入到PocoEmit中
->* 把容器中的服务注入到PocoEmit中
->* 此功能AutoMapper是不支持的
+## 一、充血模型和失血模型
+### 1. 充血模型的优势
+>* 充血模型更加OOP
+>* 充血模型代码可读性更好
 
-## 一、首先来个Case演示一下
+#### 1.1 充血模型伪代码
+~~~csharp
+var messageDto = controller.ReadDto();
+var message = messageDto.ToEntity();
+message.Save();
+~~~
+
+#### 1.2 失血模型伪代码
+~~~csharp
+var messageDto = controller.ReadDto();
+var message = messageDto.ToEntity();
+var messageService = controller.GetMessageService();
+messageService.Save(message);
+~~~
+
+### 2. 充血模型爱你不容易
+>* 大部分程序员都知道充血模型好,想实现却很难
+>* 大部分业务逻辑都需要依赖外部服务
+>* 充血模型需要用到外部服务,又不想依赖外部服务的具体实现
+>* 很容易想到使用IOC的依赖注入来解决
+>* 我们给DTO注入服务还行,因为IOC参与了controller过程
+>* 当DTO发生转化时,新增的服务IOC还是有点力不从心
+>* 没法引用外部服务的充血模型气血不通,业务表达能力大大下降
+>* 这也是大部分人弃用充血模型的主要原因,不好用还不如不用
+>* 这个任督二脉PocoEmit可以帮你打通
+
+
+## 二、首先来个Case演示一下
 >* Dto转化为实体
 >* 但是实体有更多逻辑依赖外部服务,这些外部服务Dto不见得提供的了
 >* 这就需要注入
@@ -35,10 +60,10 @@ MessageEntity message = mapper.Convert<MessageDto, MessageEntity>(dto);
 Assert.NotNull(message.Mapper);
 ~~~
 
-## 二、再演示注入自定义的服务
+## 三、再演示注入自定义的服务
 ### 1. UserDomain比Dto多出来的Repository可以注入
 ~~~csharp
-public record UserDTO
+class UserDTO
 {
     public int Id { get; set; }
     public string Name { get; set; }
@@ -72,7 +97,7 @@ UserDomain user = mapper.Convert<UserDTO, UserDomain>(dto);
 Assert.NotNull(user.Repository);
 ~~~
 
-## 三、注入IOC容器的Case
+## 四、注入IOC容器的Case
 >* 注入IOC容器需要安装nuget包PocoEmit.ServiceProvider
 
 ### 1. 包含IOC容器的实体
@@ -87,7 +112,7 @@ class UserWithServiceProvider
 
 ### 2. 注册、转化并注入的代码
 >* UseSingleton是把容器作为唯一容器注入
->* UseScope是使用当前Scope的子容器
+>* UseScope是使用当前Scope子容器
 >* UseContext是在Mvc下,使用当前HttpContext的RequestServices子容器
 
 ~~~csharp
@@ -100,12 +125,12 @@ UserWithServiceProvider user = mapper.Convert<UserDTO, UserWithServiceProvider>(
 Assert.NotNull(user.ServiceProvider);
 ~~~
 
-## 四、当然还可以注入容器内的服务
-### 1. UserDomain多出来的UserDomain需要注入
->* 这次我们用IOC来管理UserRepository
+## 五、当然还可以注入容器内的服务
+### 1. UserDomain多出来的Repository需要注入
+>* 这次我们用IOC来管理Repository
 >* 这样才能更好的利用依赖注入
->* UserRepository可能还会依赖其他的
->* 手动维护对象可能会很麻烦,IOC容器擅长维护这些复杂关系
+>* Repository可能还会依赖其他的服务
+>* 手动维护服务对象可能会很麻烦,IOC容器擅长维护这些复杂关系
 
 ~~~csharp
     class UserDomain(UserRepository repository, int id, string name)
@@ -141,7 +166,7 @@ UserDomain user = mapper.Convert<UserDTO, UserDomain>(dto);
 Assert.NotNull(user.Repository);
 ~~~
 
-## 五、支持IOC容器的特性
+## 六、支持IOC容器的特性
 >* 支持FromKeyedServices
 >* 支持FromServices
 
@@ -177,7 +202,7 @@ class UserRepository(string tableName)
 
 ### 2. 注册、转化并注入的代码
 >* 由于识别出FromKeyedServices,就不需要UseDefault
->* 这样简洁由优雅
+>* 这样简洁又优雅
 
 ~~~csharp
 string table1 = "User1";
@@ -195,21 +220,29 @@ UserDomain user2 = mapper.Convert<UserDTO, UserDomain2>(dto);
 Assert.NotNull(user2.Repository);
 ~~~
 
-## 六、竞品类似的功能
+## 七、竞品类似的功能
 ### 1. AutoMapper不支持
 >* AutoMapper的NullSubstitute用来指定源属性为null时的默认值
+>* 用AutoMapper实现类似功能需要复杂的自定义IValueResolver来实现
 >* PocoEmit在源无法匹配或源字段为null都可能触发依赖注入
 
 ### 2. EF有类似功能
 >* 不过貌似只支持EF内部某些服务
 >* 请参阅 [EF Core实体类的依赖注入](https://www.cnblogs.com/tcjiaan/p/19077173)
 
-## 七、总结
+## 八、总结
 ### 1. OOM映射需要依赖注入
 >* DTO、实体、领域模型如果有业务逻辑就需要依赖外部服务
+>* 支持按类型注入,也支持按指定的参数或属性注入
+>* 支持FromKeyedServices和FromServices
 >* 需要外部服务就需要依赖注入
 
-### 2. IOC容器使用需要注意
+### 2. PocoEmit的依赖注入助力程序分层架构
+>* 依赖注入的加持每一层想调用啥就调用啥
+>* 同时也让每一层更好的划分让调用啥,不让调用啥更容易控制
+>* 同时也让业务需要划分多少层就划分多层变得简单
+
+### 3. IOC容器使用需要注意
 >* 简单作业单容器,使用UseSingleton即可
 >* 多线程需要使用UseScope
 >* Mvc(含WebApi)逻辑处理使用UseContext

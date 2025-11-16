@@ -89,7 +89,7 @@ public class TreeTests : CollectionTestBase
     {
         var converter = _mapper.GetEmitContextConverter<TreeBranch, TreeBranchDTO>();
         Assert.NotNull(converter);
-        var expression = converter.Build();
+        var expression = converter.Create();
         Assert.NotNull(expression);
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Assert.NotNull(code);
@@ -117,7 +117,7 @@ public class TreeTests : CollectionTestBase
             .UseCollection();
         var converter = mapper.GetEmitContextConverter<TreeBranch, TreeBranchDTO>();
         Assert.NotNull(converter);
-        var expression = converter.Build();
+        var expression = converter.Create();
         Assert.NotNull(expression);
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Assert.NotNull(code);

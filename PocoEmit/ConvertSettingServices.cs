@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
@@ -25,7 +26,7 @@ public static partial class PocoEmitServices
     public static IPoco UseConvertFunc<TSource, TDest>(this IPoco poco, Expression<Func<TSource, TDest>> convertFunc)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        poco.Configure(key, new FuncConverter((IPocoOptions)poco, key, convertFunc));
+        poco.Set(key, new FuncConverter((IPocoOptions)poco, key, convertFunc));
         return poco;
     }
     /// <summary>
@@ -59,7 +60,7 @@ public static partial class PocoEmitServices
             {
                 MethodConverter converter = new(null, method);
                 PairTypeKey key = new(parameters[0].ParameterType, returnType);
-                configuration.Configure(key, converter);
+                configuration.Set(key, converter);
             }
         }
         return configuration;
@@ -88,7 +89,7 @@ public static partial class PocoEmitServices
             {
                 MethodConverter converter = new(EmitHelper.CheckMethodCallInstance(instance), method);
                 PairTypeKey key = new(parameters[0].ParameterType, returnType);
-                configuration.Configure(key, converter);
+                configuration.Set(key, converter);
             }
         }
         return configuration;

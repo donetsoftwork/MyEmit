@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
@@ -24,7 +25,7 @@ public class EnumFromUnderConverter(IEnumBundle bundle)
     /// <summary>
     /// ToObject方法
     /// </summary>    
-    private readonly MethodInfo _toObjectMethod = bundle.HasFlag ? ReflectionHelper.GetMethod(typeof(Enum), nameof(Enum.ToObject), [typeof(Type), bundle.UnderType]) : null;
+    private readonly MethodInfo _toObjectMethod = bundle.HasFlag ? ReflectionMember.GetMethod(typeof(Enum), nameof(Enum.ToObject), [typeof(Type), bundle.UnderType]) : null;
     /// <inheritdoc />
     public PairTypeKey Key
         => _key;

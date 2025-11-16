@@ -1,3 +1,4 @@
+using Hand.Creational;
 using PocoEmit.Configuration;
 using PocoEmit.Members;
 using System.Linq.Expressions;
@@ -25,7 +26,7 @@ public class DefaultValueBuilder(IMapperOptions options)
     /// </summary>
     /// <param name="member"></param>
     /// <returns></returns>
-    public virtual IBuilder<Expression> Build(IEmitMemberWriter member)
+    public virtual ICreator<Expression> Build(IEmitMemberWriter member)
     {
         var info = member.Info;
         if (_options.TryGetConfig(info, out var memberBuilder))
@@ -38,7 +39,7 @@ public class DefaultValueBuilder(IMapperOptions options)
     /// </summary>
     /// <param name="parameter"></param>
     /// <returns></returns>
-    public virtual IBuilder<Expression> Build(ConstructorParameterMember parameter)
+    public virtual ICreator<Expression> Build(ConstructorParameterMember parameter)
     {
         _options.TryGetConfig(parameter.ValueType, out var builder);
         return builder;

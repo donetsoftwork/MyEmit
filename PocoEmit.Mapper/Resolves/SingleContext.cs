@@ -1,3 +1,4 @@
+using Hand.Creational;
 using PocoEmit.Builders;
 using System;
 using System.Collections.Generic;
@@ -72,7 +73,7 @@ public class SingleContext<TSource, TDest>(IPool<SingleContext<TSource, TDest>> 
         /// <inheritdoc />
         protected override bool Clean(ref SingleContext<TSource, TDest> resource)
         {
-            if (CheckMaxSize())
+            if (base.Clean(ref resource))
             {
                 resource.Clear();
                 return true;

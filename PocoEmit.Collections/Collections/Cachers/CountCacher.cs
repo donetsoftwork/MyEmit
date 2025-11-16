@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Reflection;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Counters;
 using PocoEmit.Configuration;
@@ -12,7 +14,7 @@ namespace PocoEmit.Collections.Cachers;
 /// </summary>
 /// <param name="container"></param>
 internal class CountCacher(CollectionContainer container)
-    : CacheBase<PairTypeKey, IEmitElementCounter>(container)
+    : CacheFactoryBase<PairTypeKey, IEmitElementCounter>(container)
 {
     #region 配置
     private readonly CollectionContainer _container = container;
@@ -83,7 +85,7 @@ internal class CountCacher(CollectionContainer container)
         var key = new PairTypeKey(dictionaryType, valueType);
         if(TryGetCache(key, out IEmitElementCounter counter))
             return counter;
-        Set(key, counter = new PropertyCounter(dictionaryType, valueType, bundle.Count));
+        Save(key, counter = new PropertyCounter(dictionaryType, valueType, bundle.Count));
         return counter;
     }
     /// <summary>
@@ -109,7 +111,7 @@ internal class CountCacher(CollectionContainer container)
         var key = new PairTypeKey(collectionType, elementType);
         if (TryGetCache(key, out IEmitElementCounter counter))
             return counter;
-        Set(key, counter = new PropertyCounter(collectionType, elementType, bundle.Count));
+        Save(key, counter = new PropertyCounter(collectionType, elementType, bundle.Count));
         return counter;
     }
     /// <summary>
@@ -130,7 +132,7 @@ internal class CountCacher(CollectionContainer container)
         var key = new PairTypeKey(enumerable, elementType);
         if (TryGetCache(key, out IEmitElementCounter counter))
             return counter;
-        Set(key, counter = CreateByEnumerable(elementType));
+        Save(key, counter = CreateByEnumerable(elementType));
         return counter;
     }
     /// <summary>
@@ -152,7 +154,7 @@ internal class CountCacher(CollectionContainer container)
         var key = new PairTypeKey(arrayType, elementType);
         if (TryGetCache(key, out IEmitElementCounter counter))
             return counter;
-        Set(key, counter = CreateByArray(arrayType, elementType));
+        Save(key, counter = CreateByArray(arrayType, elementType));
         return counter;
     }
 }

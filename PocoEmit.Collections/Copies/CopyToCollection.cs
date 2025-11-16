@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Copies;
 using PocoEmit.Configuration;
@@ -41,7 +42,7 @@ public class CopyToCollection(IMapperOptions options)
         if(!container.CollectionCacher.Validate(destType, out var destBundle))
             return null;
         if(sourceType.IsArray)
-            return ArrayToCollection(sourceType, ReflectionHelper.GetElementType(sourceType), destType, destBundle, clear);
+            return ArrayToCollection(sourceType, sourceType.GetElementType(), destType, destBundle, clear);
         if(container.DictionaryCacher.Validate(sourceType, out var dictionaryBundle))
             return DictionaryToCollection(sourceType, dictionaryBundle, destType, destBundle, clear);
         if (container.ListCacher.Validate(sourceType, out var listBundle))

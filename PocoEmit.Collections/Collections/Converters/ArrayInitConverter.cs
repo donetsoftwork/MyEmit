@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
@@ -18,7 +20,7 @@ namespace PocoEmit.Collections.Converters;
 public sealed class ArrayInitConverter(IMapperOptions options, Type arrayType, Type elementType, IEmitConverter elementConverter)
     : EmitCollectionBase(arrayType, elementType)
     , IEmitComplexConverter
-    , IBuilder<LambdaExpression>
+    , ICreator<LambdaExpression>
 {
     #region 配置
     private readonly IMapperOptions _options = options;
@@ -45,7 +47,7 @@ public sealed class ArrayInitConverter(IMapperOptions options, Type arrayType, T
     /// 构造表达式
     /// </summary>
     /// <returns></returns>
-    public LambdaExpression Build()
+    public LambdaExpression Create()
         => BuildContext.WithPrepare(_options, this)
         .Build(this);
     #endregion

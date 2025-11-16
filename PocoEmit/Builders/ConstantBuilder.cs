@@ -1,3 +1,4 @@
+using Hand.Creational;
 using System;
 using System.Linq.Expressions;
 
@@ -8,7 +9,7 @@ namespace PocoEmit.Builders;
 /// </summary>
 /// <param name="constant"></param>
 public class ConstantBuilder(ConstantExpression constant)
-    : IBuilder<ConstantExpression>
+    : ICreator<ConstantExpression>
 {
     #region 配置
     private readonly ConstantExpression _constant = constant;
@@ -19,7 +20,7 @@ public class ConstantBuilder(ConstantExpression constant)
         => _constant;
     #endregion
     /// <inheritdoc />
-    public ConstantExpression Build()
+    public ConstantExpression Create()
         => _constant;
     /// <summary>
     /// 使用常量值

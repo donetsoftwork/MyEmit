@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Creational;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using PocoEmit.Builders;
@@ -13,7 +15,7 @@ namespace PocoEmit.Mvc.Cachers;
 /// </summary>
 /// <param name="builder"></param>
 public class MvcParameterExpressionCacher(MvcDefaultValueBuilder builder)
-    : CacheBase<ConstructorParameterMember, IBuilder<Expression>>(builder)
+    : CacheFactoryBase<ConstructorParameterMember, ICreator<Expression>>(builder)
 {
     #region 配置
     private readonly MvcDefaultValueBuilder _builder = builder;
@@ -24,7 +26,7 @@ public class MvcParameterExpressionCacher(MvcDefaultValueBuilder builder)
         => _builder;
     #endregion
     /// <inheritdoc />
-    protected override IBuilder<Expression> CreateNew(in ConstructorParameterMember key)
+    protected override ICreator<Expression> CreateNew(in ConstructorParameterMember key)
     {
         var parameter = key.Parameter;
         var parameterType = key.ValueType;

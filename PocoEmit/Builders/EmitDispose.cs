@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -40,6 +41,6 @@ public class EmitDispose
     /// <summary>
     /// 获取Dispose方法
     /// </summary>
-    private static readonly MethodInfo _disposeMethod = ReflectionHelper.GetMethod(typeof(IDisposable), "Dispose");
+    private static readonly MethodInfo _disposeMethod = ReflectionMember.GetMethod(typeof(IDisposable), "Dispose");
     #endregion
 }

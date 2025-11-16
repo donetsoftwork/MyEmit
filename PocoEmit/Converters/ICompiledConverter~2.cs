@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Structural;
 using PocoEmit.Builders;
 using System.Linq.Expressions;
 
@@ -8,7 +10,7 @@ namespace PocoEmit.Converters;
 /// </summary>
 public interface ICompiledConverter
     : IEmitConverter
-    , IBuilder<LambdaExpression>
+    , ICreator<LambdaExpression>
     , IWrapper<IEmitConverter>
     , IDelegateCompile
 {

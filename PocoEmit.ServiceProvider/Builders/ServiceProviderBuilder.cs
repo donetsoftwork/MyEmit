@@ -1,3 +1,4 @@
+using Hand.Creational;
 using PocoEmit.Builders;
 using System;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace PocoEmit.ServiceProvider.Builders;
 /// <param name="provider"></param>
 /// <param name="builder"></param>
 public class ServiceProviderBuilder(Type providerType, Expression provider, EmitBuilder builder)
-    : IBuilder<Expression>
+    : ICreator<Expression>
 {
     #region 配置
     private readonly Type _providerType = providerType;
@@ -36,17 +37,17 @@ public class ServiceProviderBuilder(Type providerType, Expression provider, Emit
     #endregion
     #region IBuilder<Expression>
     /// <inheritdoc />
-    public Expression Build()
+    public Expression Create()
     {
         var expressions = _builder.Expressions;
         var last = expressions.LastOrDefault();
         if (last is null)
             return _provider;
         if(last.Type == _providerType)
-            return _builder.Build();
+            return _builder.Create();
         var builder = new EmitBuilder(_builder);
         builder.Add(_provider);
-        return builder.Build();
+        return builder.Create();
     }
     #endregion
 }

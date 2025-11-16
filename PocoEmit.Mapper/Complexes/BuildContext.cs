@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
@@ -485,7 +487,7 @@ public class BuildContext(IMapperOptions options, ComplexCached complexCached)
                 return false;
             if (achieved.CompileDelegate(lambda))
             {
-                _options.Set(key, achieved);
+                _options.Save(key, achieved);
                 return true;
             }
         }
@@ -505,11 +507,11 @@ public class BuildContext(IMapperOptions options, ComplexCached complexCached)
             lambda = complexConverter.Build(this);
             // 更新转化器
             if (lambda is not null)
-                _options.Set(key, new FuncConverter(_options, key, lambda));
+                _options.Save(key, new FuncConverter(_options, key, lambda));
         }
-        else if (converter.Compiled && converter is IBuilder<LambdaExpression> builder)
+        else if (converter.Compiled && converter is ICreator<LambdaExpression> builder)
         {
-            lambda = builder.Build();
+            lambda = builder.Create();
         }
         else if (converter is FuncConverter funcConverter)
         {
@@ -536,7 +538,7 @@ public class BuildContext(IMapperOptions options, ComplexCached complexCached)
                 return false;
             if (contexAchieve.CompileDelegate(contextLambda))
             {
-                _options.Set(key, contexAchieve);
+                _options.Save(key, contexAchieve);
                 return true;
             }
         }

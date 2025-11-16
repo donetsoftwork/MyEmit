@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
 using System;
@@ -24,7 +25,7 @@ public static partial class MapperServices
     public static IPoco UseCopyAction<TSource, TDest>(this IMapper mapper, Expression<Action<TSource, TDest>> copyAction)
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
-        mapper.Configure(key, new ActionCopier((IMapperOptions)mapper, copyAction));
+        mapper.Set(key, new ActionCopier((IMapperOptions)mapper, copyAction));
         return mapper;
     }
     /// <summary>
@@ -55,7 +56,7 @@ public static partial class MapperServices
             {
                 MethodCopier converter = new(null, method);
                 PairTypeKey key = new(parameters[0].ParameterType, parameters[1].ParameterType);
-                mapper.Configure(key, converter);
+                mapper.Set(key, converter);
             }
         }
         return mapper;
@@ -82,7 +83,7 @@ public static partial class MapperServices
             {
                 MethodCopier converter = new(target, method);
                 PairTypeKey key = new(parameters[0].ParameterType, parameters[1].ParameterType);
-                mapper.Configure(key, converter);
+                mapper.Set(key, converter);
             }
         }
         return mapper;
@@ -101,7 +102,7 @@ public static partial class MapperServices
     {
         var key = new PairTypeKey(typeof(TSource), typeof(TDest));
         var copier = new ActionCopier((IMapperOptions)mapper, copy);
-        mapper.Set(key, copier);
+        mapper.Save(key, copier);
         return copier;
     }
     /// <summary>
@@ -120,7 +121,7 @@ public static partial class MapperServices
         if (option.TryGetCache(key, out IEmitCopier value0) && value0 is not null)
             return value0;
         var copier = new ActionCopier(option, copy);
-        mapper.Set(key, copier);
+        mapper.Save(key, copier);
         return copier;
     }
     #endregion

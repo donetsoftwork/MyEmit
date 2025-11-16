@@ -1,3 +1,7 @@
+using Hand.Collections;
+using Hand.Configuration;
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Activators;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
@@ -22,8 +26,8 @@ public interface IMapper
     , IConfigure<PairTypeKey, IEmitActivator>
     , IConfigure<PairTypeKey, Delegate>
     , IConfigure<Type, bool>
-    , IConfigure<Type, IBuilder<Expression>>
-    , IConfigure<MemberInfo, IBuilder<Expression>>
+    , IConfigure<Type, ICreator<Expression>>
+    , IConfigure<MemberInfo, ICreator<Expression>>
 {
     /// <summary>
     /// 获取成员匹配

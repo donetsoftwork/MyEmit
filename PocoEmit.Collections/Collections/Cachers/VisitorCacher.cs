@@ -1,3 +1,4 @@
+using Hand.Cache;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Dictionaries;
@@ -10,7 +11,7 @@ namespace PocoEmit.Collections.Cachers;
 /// </summary>
 /// <param name="container"></param>
 internal class VisitorCacher(CollectionContainer container)
-    : CacheBase<Type, IEmitElementVisitor>(container)
+    : CacheFactoryBase<Type, IEmitElementVisitor>(container)
 {
     #region 配置
     private readonly CollectionContainer _container = container;
@@ -57,7 +58,7 @@ internal class VisitorCacher(CollectionContainer container)
     {
         if (TryGetCache(arrayType, out IEmitElementVisitor visitor))
             return visitor;
-        Set(arrayType, visitor = CreateByArray(arrayType));
+        Save(arrayType, visitor = CreateByArray(arrayType));
         return visitor;
     }
     /// <summary>
@@ -82,7 +83,7 @@ internal class VisitorCacher(CollectionContainer container)
     {
         if (TryGetCache(dictionaryType, out IEmitElementVisitor visitor))
             return visitor;
-        Set(dictionaryType, visitor = CreateByDictionary(dictionaryType, bundle));
+        Save(dictionaryType, visitor = CreateByDictionary(dictionaryType, bundle));
         return visitor;
     }
     /// <summary>
@@ -107,7 +108,7 @@ internal class VisitorCacher(CollectionContainer container)
     {
         if (TryGetCache(listType, out IEmitElementVisitor visitor))
             return visitor;
-        Set(listType, visitor = CreateByList(listType, bundle));
+        Save(listType, visitor = CreateByList(listType, bundle));
         return visitor;
     }
     /// <summary>
@@ -132,7 +133,7 @@ internal class VisitorCacher(CollectionContainer container)
     {
         if (TryGetCache(enumerableType, out IEmitElementVisitor visitor))
             return visitor;
-        Set(enumerableType, visitor = CreateByEnumerable(enumerableType, bundle));
+        Save(enumerableType, visitor = CreateByEnumerable(enumerableType, bundle));
         return visitor;
     }
 }

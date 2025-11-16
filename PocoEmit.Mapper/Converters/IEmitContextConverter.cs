@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System.Linq.Expressions;
@@ -8,7 +10,7 @@ namespace PocoEmit.Converters;
 /// Emit上下文转化
 /// </summary>
 public interface IEmitContextConverter
-    : IBuilder<LambdaExpression>
+    : ICreator<LambdaExpression>
     , IDelegateCompile
     , ICompileInfo
 {

@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Reflection;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Saves;
 using PocoEmit.Configuration;
@@ -11,7 +13,7 @@ namespace PocoEmit.Collections.Cachers;
 /// </summary>
 /// <param name="container"></param>
 internal class SaveCacher(CollectionContainer container)
-   : CacheBase<PairTypeKey, IEmitElementSaver>(container)
+   : CacheFactoryBase<PairTypeKey, IEmitElementSaver>(container)
 {
     #region 配置
     private readonly CollectionContainer _container = container;
@@ -71,7 +73,7 @@ internal class SaveCacher(CollectionContainer container)
         var key = new PairTypeKey(collectionType, bundle.ElementType);
         if (TryGetCache(key, out IEmitElementSaver counter))
             return counter;
-        Set(key, counter = CreateByCollection(bundle));
+        Save(key, counter = CreateByCollection(bundle));
         return counter;
     }
     /// <summary>

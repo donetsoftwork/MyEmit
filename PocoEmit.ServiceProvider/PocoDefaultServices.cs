@@ -3,6 +3,7 @@ using System;
 using System.Linq.Expressions;
 using PocoEmit.ServiceProvider.Builders;
 using PocoEmit.ServiceProvider;
+using Hand.Creational;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -44,9 +45,9 @@ public static partial class PocoDefaultServices
     /// <param name="type"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    internal static ServiceDefaultValueBuilder UseDefault(this ServiceDefaultValueBuilder builder, Type type, IBuilder<Expression> value)
+    internal static ServiceDefaultValueBuilder UseDefault(this ServiceDefaultValueBuilder builder, Type type, ICreator<Expression> value)
     {
-        builder.Options.Configure(type, value);
+        builder.Options.Set(type, value);
         return builder;
     }
 }

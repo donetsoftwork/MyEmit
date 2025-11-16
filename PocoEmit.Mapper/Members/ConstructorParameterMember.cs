@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace PocoEmit.Members;
@@ -17,6 +18,12 @@ public class ConstructorParameterMember(ConstructorInfo constructor, ParameterIn
     /// </summary>
     public ParameterInfo Parameter 
         => _parameter;
+    private readonly ConstantExpression _defaultValue = CheckDefaultValue(parameter);
+    /// <summary>
+    /// 默认值
+    /// </summary>
+    public ConstantExpression DefaultValue
+        => _defaultValue;
     #endregion
     /// <summary>
     /// 转化为构造函数参数成员
@@ -25,6 +32,17 @@ public class ConstructorParameterMember(ConstructorInfo constructor, ParameterIn
     /// <returns></returns>
     public static ConstructorParameterMember[] Convert(ConstructorInfo constructor)
         => Convert(constructor, constructor.GetParameters());
+    /// <summary>
+    /// 检查参数默认值
+    /// </summary>
+    /// <param name="parameter"></param>
+    /// <returns></returns>
+    public static ConstantExpression CheckDefaultValue(ParameterInfo parameter)
+    {
+        if(parameter.HasDefaultValue)
+            return Expression.Constant(parameter.DefaultValue, parameter.ParameterType);
+        return null;
+    }
     /// <summary>
     /// 转化为构造函数参数成员
     /// </summary>
@@ -40,5 +58,5 @@ public class ConstructorParameterMember(ConstructorInfo constructor, ParameterIn
             members[index++] = new(constructor, parameter);
         }
         return members;
-    }
+    }    
 }

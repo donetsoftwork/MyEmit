@@ -114,7 +114,7 @@ public partial class MapHelper<TSource, TDest>
         /// <returns></returns>
         internal DestHelper UseDefault<TValue>(MemberInfo member, TValue value)
         {
-            _helper._mapper.Configure(member, ConstantBuilder.Use(value, typeof(TValue)));
+            _helper._mapper.Set(member, ConstantBuilder.Use(value, typeof(TValue)));
             return this;
         }
         /// <summary>
@@ -126,7 +126,7 @@ public partial class MapHelper<TSource, TDest>
         /// <returns></returns>
         internal DestHelper UseDefault<TValue>(MemberInfo member, Expression<Func<TValue>> valueFunc)
         {
-            _helper._mapper.Configure(member, new FuncBuilder(valueFunc));
+            _helper._mapper.Set(member, new FuncBuilder(valueFunc));
             return this;
         }
         /// <summary>

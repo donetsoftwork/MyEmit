@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Activators;
 using PocoEmit.Builders;
 using PocoEmit.Converters;
@@ -33,9 +35,9 @@ public abstract partial class MapperConfigurationBase
         _checkMembers = new ConcurrentDictionary<PairTypeKey, Delegate>();
         _matchConfiguration = new ConcurrentDictionary<PairTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
         _primitiveTypes = new ConcurrentDictionary<Type, bool>(concurrencyLevel, options.PrimitiveCapacity);
-        _defaultValueConfiguration = new ConcurrentDictionary<Type, IBuilder<Expression>>(concurrencyLevel, options.DefaultValueCapacity);
+        _defaultValueConfiguration = new ConcurrentDictionary<Type, ICreator<Expression>>(concurrencyLevel, options.DefaultValueCapacity);
         _defaultValueConfiguration.TryAdd(typeof(IMapper), ConstantBuilder.Use(this, typeof(IMapper)));
-        _memberDefaultValueConfiguration = new ConcurrentDictionary<MemberInfo, IBuilder<Expression>>(concurrencyLevel, options.MemberDefaultValueCapacity);
+        _memberDefaultValueConfiguration = new ConcurrentDictionary<MemberInfo, ICreator<Expression>>(concurrencyLevel, options.MemberDefaultValueCapacity);
         _contextConverters = new ConcurrentDictionary<PairTypeKey, IEmitContextConverter>(concurrencyLevel, options.ContextConverterCapacity);
         _reflectionConstructor = DefaultReflectionConstructor.Default;
         _defaultMatcher = MemberNameMatcher.Default;

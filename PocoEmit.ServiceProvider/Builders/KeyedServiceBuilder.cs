@@ -1,3 +1,4 @@
+using Hand.Creational;
 using PocoEmit.Builders;
 using System;
 using System.Linq.Expressions;
@@ -11,7 +12,7 @@ namespace PocoEmit.ServiceProvider.Builders;
 /// <param name="serviceType"></param>
 /// <param name="serviceKey"></param>
 public class KeyedServiceBuilder(IServiceProviderBuilder provider, Type serviceType, object serviceKey)
-    : IBuilder<Expression>
+    : ICreator<Expression>
 {
     #region 配置
     private readonly IServiceProviderBuilder _provider = provider;
@@ -34,11 +35,11 @@ public class KeyedServiceBuilder(IServiceProviderBuilder provider, Type serviceT
         => _serviceKey;
     #endregion
     /// <inheritdoc />
-    public Expression Build()
+    public Expression Create()
     {
         var provider = _provider.CreateKeyed();
         var builder = provider.Builder;
         builder.Add(EmitProviderHelper.CallGetKeydService(provider.Provider, _serviceType, _serviceKey));
-        return builder.Build();
+        return builder.Create();
     }
 }

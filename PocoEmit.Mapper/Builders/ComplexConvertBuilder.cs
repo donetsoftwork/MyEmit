@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Activators;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
@@ -66,9 +67,9 @@ public class ComplexConvertBuilder(IMapperOptions options)
             return BuildByConvert(sourceType, destType);
         if (destType.IsArray)
             return null;
-        if (ReflectionHelper.HasGenericType(destType, typeof(IDictionary<,>)))
+        if (ReflectionType.HasGenericType(destType, typeof(IDictionary<,>)))
             return null;
-        if (ReflectionHelper.HasGenericType(destType, typeof(IEnumerable<>)))
+        if (ReflectionType.HasGenericType(destType, typeof(IEnumerable<>)))
             return null;
         if (!destIsPrimitive && TryBuildByConstructor(sourceType, destType, ref converter))
             return converter;
@@ -94,7 +95,7 @@ public class ComplexConvertBuilder(IMapperOptions options)
     public static bool TryBuildByConstructor(Type sourceType, Type destType, ref IEmitConverter converter)
     {
         // 按构造函数
-        var constructor = ReflectionHelper.GetConstructorByParameterType(destType, sourceType);
+        var constructor = ReflectionMember.GetConstructorByParameterType(destType, sourceType);
         if (constructor is null)
         {
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
@@ -105,7 +106,7 @@ public class ComplexConvertBuilder(IMapperOptions options)
             if (isValueType)
             {
                 var compatibleSourceType = typeof(Nullable<>).MakeGenericType(sourceType);
-                constructor = ReflectionHelper.GetConstructorByParameterType(destType, compatibleSourceType);
+                constructor = ReflectionMember.GetConstructorByParameterType(destType, compatibleSourceType);
                 if (constructor is null)
                     return false;
                 converter = new ConstructorCompatibleConverter(new(sourceType, destType), constructor, compatibleSourceType);
@@ -167,12 +168,12 @@ public class ComplexConvertBuilder(IMapperOptions options)
         if (PairTypeKey.CheckValueType(valueType, destType))
             return true;
         bool isNullable = false;
-        if (ReflectionHelper.IsNullable(valueType))
+        if (ReflectionType.IsNullable(valueType))
         {
             valueType = Nullable.GetUnderlyingType(valueType);
             isNullable = true;
         }
-        if (ReflectionHelper.IsNullable(destType))
+        if (ReflectionType.IsNullable(destType))
         {
             isNullable = true;
             destType = Nullable.GetUnderlyingType(destType);

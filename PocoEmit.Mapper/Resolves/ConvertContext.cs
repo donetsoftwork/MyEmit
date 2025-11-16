@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
@@ -98,7 +100,7 @@ public sealed class ConvertContext(IPool<ConvertContext> pool)
     /// <summary>
     /// 反射Convert方法
     /// </summary>
-    private static readonly MethodInfo _tryGetCacheMethod = ReflectionHelper.GetMethod(typeof(IConvertContext), nameof(IConvertContext.TryGetCache));
+    private static readonly MethodInfo _tryGetCacheMethod = ReflectionMember.GetMethod(typeof(IConvertContext), nameof(IConvertContext.TryGetCache));
     /// <summary>
     /// 反射SetCache方法
     /// </summary>
@@ -139,7 +141,7 @@ public sealed class ConvertContext(IPool<ConvertContext> pool)
         /// <inheritdoc />
         protected override bool Clean(ref ConvertContext resource)
         {
-            if (CheckMaxSize())
+            if (base.Clean(ref resource))
             {
                 resource.Clear();
                 return true;

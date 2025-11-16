@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using PocoEmit.Enums;
@@ -175,7 +176,7 @@ public class ConvertBuilder(IPocoOptions options)
     /// <returns></returns>
     protected virtual bool TryBuildByConvert(Type sourceType, Type destType, ref IEmitConverter converter)
     {
-        var method = ReflectionHelper.GetMethod(typeof(Convert), "To" + destType.Name, [sourceType]);
+        var method = ReflectionMember.GetMethod(typeof(Convert), "To" + destType.Name, [sourceType]);
         if (method is null)
             return false;
         converter = new MethodConverter(null, method);

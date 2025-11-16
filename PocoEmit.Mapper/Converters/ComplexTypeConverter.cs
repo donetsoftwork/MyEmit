@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Activators;
 using PocoEmit.Builders;
 using PocoEmit.Complexes;
@@ -19,7 +21,7 @@ namespace PocoEmit.Converters;
 /// <param name="copier"></param>
 public class ComplexTypeConverter(IMapperOptions options,in PairTypeKey key, IEmitActivator destActivator, IEmitCopier copier)
     : IEmitComplexConverter
-    , IBuilder<LambdaExpression>
+    , ICreator<LambdaExpression>
 {
     #region 配置
     /// <summary>
@@ -70,7 +72,7 @@ public class ComplexTypeConverter(IMapperOptions options,in PairTypeKey key, IEm
     /// 构造表达式
     /// </summary>
     /// <returns></returns>
-    public LambdaExpression Build()
+    public LambdaExpression Create()
         => BuildContext.WithPrepare(_options, this)
         .Build(this);
     #endregion

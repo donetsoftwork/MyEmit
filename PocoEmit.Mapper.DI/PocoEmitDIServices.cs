@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit;
 using PocoEmit.Configuration;
 using System;
@@ -93,7 +94,7 @@ public static class PocoEmitDIServices
     /// <returns></returns>
     public static object GetGenericConverter(this IPoco poco, Type converterType)
     {
-        if (!ReflectionHelper.IsGenericType(converterType, typeof(IPocoConverter<,>)))
+        if (!ReflectionType.IsGenericType(converterType, typeof(IPocoConverter<,>)))
             return null;
         var argumentsType = converterType.GetGenericArguments();
         return poco.GetObjectConverter(argumentsType[0], argumentsType[1]);
@@ -119,7 +120,7 @@ public static class PocoEmitDIServices
     /// <returns></returns>
     public static object GetGenericCopier(this IMapper mapper, Type copierType)
     {
-        if (!ReflectionHelper.IsGenericType(copierType, typeof(IPocoCopier<,>)))
+        if (!ReflectionType.IsGenericType(copierType, typeof(IPocoCopier<,>)))
             return null;
         
         var argumentsType = copierType.GetGenericArguments();

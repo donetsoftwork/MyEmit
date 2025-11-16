@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Reflection;
 using PocoEmit.Collections;
 using PocoEmit.Configuration;
 using PocoEmit.Enums;
@@ -8,7 +10,7 @@ namespace PocoEmit.Converters;
 /// 转化器工厂
 /// </summary>
 public sealed class ConverterFactory(IPocoOptions options)
-    : CacheBase<PairTypeKey, IEmitConverter>(options)
+    : CacheFactoryBase<PairTypeKey, IEmitConverter>(options)
 {
     #region 配置
     private readonly IPocoOptions _options = options;

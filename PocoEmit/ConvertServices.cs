@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
@@ -30,7 +32,7 @@ public static partial class PocoEmitServices
         if (emitConverter.Compiled && emitConverter is IPocoConverter<TSource, TDest> converter)
             return converter;
         var compiledConverter = CompileConverter<TSource, TDest>((IPocoOptions)poco, key, emitConverter);
-        poco.Set(key, compiledConverter);
+        poco.Save(key, compiledConverter);
         return compiledConverter;
     }
     #endregion
@@ -59,7 +61,7 @@ public static partial class PocoEmitServices
             return converter;
         var compiled = Inner.Compile((IPocoOptions)poco, key, converter) as IEmitConverter;
         if (compiled != null)
-            poco.Set(key, compiled);
+            poco.Save(key, compiled);
         return compiled;
     }
     #endregion
@@ -81,7 +83,7 @@ public static partial class PocoEmitServices
         if (emitConverter.Compiled && emitConverter is CompiledConverter<TSource, TDest> compiled)
             return compiled.ConvertFunc;
         compiled = CompileConverter<TSource, TDest>((IPocoOptions)poco, key, emitConverter);
-        poco.Set(key, compiled);
+        poco.Save(key, compiled);
         return compiled.ConvertFunc;
     }
     #endregion
@@ -144,8 +146,8 @@ public static partial class PocoEmitServices
     /// <returns></returns>
     public static Expression<Func<TSource, TDest>> Build<TSource, TDest>(this IEmitConverter emit)
     {
-        if(emit is IBuilder<LambdaExpression> builder)
-            return builder.Build() as Expression<Func<TSource, TDest>>;
+        if(emit is ICreator<LambdaExpression> builder)
+            return builder.Create() as Expression<Func<TSource, TDest>>;
         var source = Expression.Parameter(typeof(TSource), "source");
         var body = emit.Convert(source);
         return Expression.Lambda<Func<TSource, TDest>>(body, source);

@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Collections.Counters;
 using PocoEmit.Configuration;
@@ -19,7 +20,7 @@ public static partial class PocoEmitCollectionServices
     /// <param name="container">集合容器</param>
     /// <returns></returns>
     public static Func<TCollection, int> GetCountFunc<TCollection>(this CollectionContainer container)
-        => GetCountFuncCore<TCollection>(container, ReflectionHelper.GetElementType(typeof(TCollection)));
+        => GetCountFuncCore<TCollection>(container, ReflectionType.GetElementType(typeof(TCollection)));
     /// <summary>
     /// 子元素数量获取器
     /// </summary>
@@ -45,7 +46,7 @@ public static partial class PocoEmitCollectionServices
         if (emitCounter.Compiled && emitCounter is ICompiledCounter<TCollection> compiledCounter)
             return compiledCounter.CountFunc;
         var counterFunc = Compile<TCollection>(emitCounter);
-        container.CountCacher.Set(key, new CompiledCounter<TCollection>(emitCounter, counterFunc));
+        container.CountCacher.Save(key, new CompiledCounter<TCollection>(emitCounter, counterFunc));
         return counterFunc;
     }
     #endregion
@@ -57,7 +58,7 @@ public static partial class PocoEmitCollectionServices
     /// <param name="container">集合容器</param>
     /// <returns></returns>
     public static ICounter<TCollection> GetCounter<TCollection>(this CollectionContainer container)
-        => GetCounterCore<TCollection>(container, ReflectionHelper.GetElementType(typeof(TCollection)));
+        => GetCounterCore<TCollection>(container, ReflectionType.GetElementType(typeof(TCollection)));
     /// <summary>
     /// 子元素数量获取器
     /// </summary>
@@ -82,7 +83,7 @@ public static partial class PocoEmitCollectionServices
             return null;
         if (emitCounter.Compiled && emitCounter is ICompiledCounter<TCollection> compiledCounter)
             return compiledCounter;
-        container.CountCacher.Set(key, compiledCounter = new CompiledCounter<TCollection>(emitCounter, Compile<TCollection>(emitCounter)));
+        container.CountCacher.Save(key, compiledCounter = new CompiledCounter<TCollection>(emitCounter, Compile<TCollection>(emitCounter)));
         return compiledCounter;
     }
     #endregion
@@ -125,7 +126,7 @@ public static partial class PocoEmitCollectionServices
     /// <param name="collectionType">集合类型</param>
     /// <returns></returns>
     internal static IEmitElementCounter GetEmitCounter(this CollectionContainer container, Type collectionType)
-        => container.CountCacher.Get(collectionType, ReflectionHelper.GetElementType(collectionType));
+        => container.CountCacher.Get(collectionType, ReflectionType.GetElementType(collectionType));
     /// <summary>
     /// 子元素数量获取器
     /// </summary>

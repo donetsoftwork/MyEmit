@@ -45,7 +45,7 @@ public class OfficerTests : CollectionTestBase
         Assert.Equal(7, list.Length);
         var converter = mapper.GetEmitContextConverter<Dictionary<Officer, Officer>, Dictionary<OfficerDTO, OfficerDTO>>();
         Assert.NotNull(converter);
-        var expression = converter.Build();
+        var expression = converter.Create();
         Assert.NotNull(expression);
         //var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         //Assert.NotNull(code);

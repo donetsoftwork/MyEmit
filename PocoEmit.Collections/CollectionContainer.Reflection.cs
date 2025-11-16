@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using System;
 using System.Reflection;
 
@@ -15,7 +16,7 @@ public sealed partial class CollectionContainer
     /// <param name="collectionType"></param>
     /// <returns></returns>
     public static ConstructorInfo GetCapacityConstructor(Type collectionType)
-        => ReflectionHelper.GetConstructor(collectionType, CheckCapacityParameter);
+        => ReflectionMember.GetConstructor(collectionType, CheckCapacityParameter);
     /// <summary>
     /// 判断容量参数
     /// </summary>
@@ -38,7 +39,7 @@ public sealed partial class CollectionContainer
     /// <param name="collectionType"></param>
     /// <returns></returns>
     public static PropertyInfo GetCountProperty(Type collectionType)
-        => ReflectionHelper.GetPropery(collectionType, property => property.Name == "Count" && property.CanRead);
+        => ReflectionMember.GetPropery(collectionType, property => property.Name == "Count" && property.CanRead);
     /// <summary>
     /// 获取索引器
     /// </summary>
@@ -46,7 +47,7 @@ public sealed partial class CollectionContainer
     /// <param name="parameterTypes">参数类型</param>
     /// <returns></returns>
     public static PropertyInfo GetItemProperty(Type collectionType, params Type[] parameterTypes)
-        => ReflectionHelper.GetPropery(collectionType, property => property.Name == "Item" && ReflectionHelper.MatchParameters(property.GetIndexParameters(), parameterTypes));
+        => ReflectionMember.GetPropery(collectionType, property => property.Name == "Item" && ReflectionMember.MatchParameter(property.GetIndexParameters(), parameterTypes));
     #endregion
     #region MethodInfo
     /// <summary>
@@ -57,6 +58,6 @@ public sealed partial class CollectionContainer
     /// <param name="methodName"></param>
     /// <returns></returns>
     public static MethodInfo GetAddMethod(Type collectionType, Type elementType, string methodName = "Add")
-        => ReflectionHelper.GetMethod(collectionType, methodName, [elementType]);
+        => ReflectionMember.GetMethod(collectionType, methodName, [elementType]);
     #endregion
 }

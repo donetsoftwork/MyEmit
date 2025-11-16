@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Collections.Saves;
 using PocoEmit.Complexes;
@@ -20,7 +22,7 @@ namespace PocoEmit.Collections.Converters;
 public sealed class CollectionInitConverter(IMapperOptions options, Type collectionType, Type elementType, IEmitElementSaver saver, IEmitConverter elementConverter)
     : EmitCollectionBase(collectionType, elementType)
     , IEmitComplexConverter
-    , IBuilder<LambdaExpression>
+    , ICreator<LambdaExpression>
 {
     #region 配置
     private readonly IMapperOptions _options = options;
@@ -61,7 +63,7 @@ public sealed class CollectionInitConverter(IMapperOptions options, Type collect
     /// 构造表达式
     /// </summary>
     /// <returns></returns>
-    public LambdaExpression Build()
+    public LambdaExpression Create()
         => BuildContext.WithPrepare(_options, this)
         .Build(this);
     #endregion

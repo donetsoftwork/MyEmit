@@ -1,3 +1,7 @@
+using Hand.Cache;
+using Hand.Configuration;
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Activators;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
@@ -22,8 +26,8 @@ public interface IMapperOptions
     , ICacher<Type, bool>
     , IReflectionConstructor
     , ICacher<PairTypeKey, IEmitContextConverter>
-    , ISettings<Type, IBuilder<Expression>>
-    , ISettings<MemberInfo, IBuilder<Expression>>
+    , IConfiguration<Type, ICreator<Expression>>
+    , IConfiguration<MemberInfo, ICreator<Expression>>
 {
     /// <summary>
     /// 复制器构造器

@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Collections.Saves;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Complexes;
@@ -107,6 +108,6 @@ public class CollectionCopier : EmitCollectionBase
     /// </summary>
     /// <returns></returns>
     protected virtual MethodInfo GetClearMethod()
-        => ReflectionHelper.GetMethod(_collectionType, "Clear");
+        => ReflectionMember.GetMethod(_collectionType, "Clear");
     #endregion
 }

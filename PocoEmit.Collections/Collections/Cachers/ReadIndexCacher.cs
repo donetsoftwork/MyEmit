@@ -1,3 +1,4 @@
+using Hand.Cache;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Indexs;
 using PocoEmit.Indexs;
@@ -9,7 +10,7 @@ namespace PocoEmit.Collections.Cachers;
 /// 索引器缓存
 /// </summary>
 internal class ReadIndexCacher(CollectionContainer container)
-    : CacheBase<Type, IEmitIndexMemberReader>(container)
+    : CacheFactoryBase<Type, IEmitIndexMemberReader>(container)
 {
     #region 配置
     private readonly CollectionContainer _container = container;
@@ -45,7 +46,7 @@ internal class ReadIndexCacher(CollectionContainer container)
     {
         if (TryGetCache(listType, out IEmitIndexMemberReader reader))
             return reader;
-        Set(listType, reader = CreateByList(bundle));
+        Save(listType, reader = CreateByList(bundle));
         return reader;
     }
 }

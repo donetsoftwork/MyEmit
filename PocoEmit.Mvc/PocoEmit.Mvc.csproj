@@ -2,7 +2,7 @@
   
   <Import Project="..\package.props" />
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0;net10.0;netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageId>PocoEmit.Mvc</PackageId>
     <Description>Mapper支持Mvc注入</Description>
     <PackageTags>OOM;Emit;Poco;Mapper;Map</PackageTags>
@@ -24,5 +24,7 @@
     <ProjectReference Include="..\PocoEmit.ServiceProvider\PocoEmit.ServiceProvider.csproj" />
     <ProjectReference Include="..\PocoEmit\PocoEmit.csproj" />
   </ItemGroup>
-
+	<ItemGroup>
+		<PackageReference Include="Hand.Core" Version="0.2.0-alpha" />
+	</ItemGroup>
 </Project>

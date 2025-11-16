@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using PocoEmit.Resolves;
@@ -30,7 +31,7 @@ public static class EmitMapperHelper
     public static Expression CallConvert(Expression converter, Expression source)
     {
         var contextConvertType = converter.Type;
-        var method = ReflectionHelper.GetMethod(contextConvertType, "Convert", [source.Type]);
+        var method = ReflectionMember.GetMethod(contextConvertType, "Convert", [source.Type]);
         return Expression.Call(converter, method, source);
     }
     /// <summary>
@@ -67,7 +68,7 @@ public static class EmitMapperHelper
     public static Expression CallContextConvert(Expression converter, ParameterExpression context, Expression source)
     {
         var contextConvertType = converter.Type;
-        var method = ReflectionHelper.GetMethod(contextConvertType, "Convert", [typeof(IConvertContext), source.Type]);
+        var method = ReflectionMember.GetMethod(contextConvertType, "Convert", [typeof(IConvertContext), source.Type]);
         return Expression.Call(converter, method, context, source);
     }
     #endregion

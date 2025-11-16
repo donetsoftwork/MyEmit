@@ -1,3 +1,5 @@
+using Hand.Cache;
+using Hand.Reflection;
 using PocoEmit.Collections;
 using System;
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
@@ -10,7 +12,7 @@ namespace PocoEmit.Configuration;
 /// 基础类型配置
 /// </summary>
 public class PrimitiveConfiguration
-    : CacheBase<Type, bool>
+    : CacheFactoryBase<Type, bool>
 {
     /// <summary>
     /// 基础类型配置
@@ -19,12 +21,12 @@ public class PrimitiveConfiguration
     public PrimitiveConfiguration(ICacher<Type, bool> settings)
         : base(settings)
     {
-        Set(typeof(decimal), true);
-        Set(typeof(DateTime), true);
-        Set(typeof(DateTimeOffset), true);
-        Set(typeof(string), true);
-        Set(typeof(Guid), true); 
-        Set(typeof(Type), true);
+        Save(typeof(decimal), true);
+        Save(typeof(DateTime), true);
+        Save(typeof(DateTimeOffset), true);
+        Save(typeof(string), true);
+        Save(typeof(Guid), true);
+        Save(typeof(Type), true);
     }
     #region CacheBase<Type, bool>
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class PrimitiveConfiguration
     /// <inheritdoc />
     protected override bool CreateNew(in Type key)
     {
-        if (ReflectionHelper.IsNullable(key))
+        if (ReflectionType.IsNullable(key))
         {
             var originalType = Nullable.GetUnderlyingType(key);
             return Get(originalType);

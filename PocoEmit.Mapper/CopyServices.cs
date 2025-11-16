@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
@@ -35,7 +36,7 @@ public static partial class MapperServices
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled;
         var compiledCopier = CompileCopier<TSource, TDest>(emitCopier, mapper);
-        mapper.Set(key, compiledCopier);
+        mapper.Save(key, compiledCopier);
         return compiledCopier;
     }
     #endregion
@@ -57,7 +58,7 @@ public static partial class MapperServices
             return copier;
         var compiled = Inner.Compile(sourceType, destType, copier, mapper) as IEmitCopier;
         if (compiled != null)
-            mapper.Set(key, compiled);
+            mapper.Save(key, compiled);
         return compiled;
     }
     #endregion
@@ -81,7 +82,7 @@ public static partial class MapperServices
         if (emitCopier.Compiled && emitCopier is ICompiledCopier<TSource, TDest> compiled)
             return compiled.CopyAction;
         var copyAction = CompileAction<TSource, TDest>(emitCopier, mapper);
-        mapper.Set(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
+        mapper.Save(key, new CompiledCopier<TSource, TDest>(emitCopier, copyAction));
         return copyAction;
     }
     #endregion

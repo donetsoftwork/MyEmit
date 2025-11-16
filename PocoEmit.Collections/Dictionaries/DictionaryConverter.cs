@@ -1,3 +1,5 @@
+using Hand.Creational;
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
@@ -21,7 +23,7 @@ namespace PocoEmit.Dictionaries;
 public class DictionaryConverter(IMapperOptions options, Type instanceType, Type dictionaryType, Type keyType, Type elementType, IEmitCopier copier)
     : EmitDictionaryBase(dictionaryType, keyType, elementType)
     , IEmitComplexConverter
-    , IBuilder<LambdaExpression>
+    , ICreator<LambdaExpression>
 {
     #region 配置
     private readonly IMapperOptions _options = options;
@@ -56,7 +58,7 @@ public class DictionaryConverter(IMapperOptions options, Type instanceType, Type
     /// 构造表达式
     /// </summary>
     /// <returns></returns>
-    public LambdaExpression Build()
+    public LambdaExpression Create()
         => BuildContext.WithPrepare(_options, this)
         .Build(this);
     #endregion

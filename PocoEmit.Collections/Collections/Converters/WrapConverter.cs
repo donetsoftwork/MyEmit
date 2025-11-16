@@ -1,3 +1,6 @@
+using Hand.Creational;
+using Hand.Reflection;
+using Hand.Structural;
 using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
@@ -18,7 +21,7 @@ namespace PocoEmit.Collections.Converters;
 public class WrapConverter(IMapperOptions options, Type sourceType, Type destType, IComplexIncludeConverter original)
     : IWrapper<IComplexIncludeConverter>
     , IEmitComplexConverter
-    , IBuilder<LambdaExpression>
+    , ICreator<LambdaExpression>
 {
     #region 配置
     /// <summary>
@@ -54,7 +57,7 @@ public class WrapConverter(IMapperOptions options, Type sourceType, Type destTyp
     /// 构造表达式
     /// </summary>
     /// <returns></returns>
-    public LambdaExpression Build()
+    public LambdaExpression Create()
         => BuildContext.WithPrepare(_options, this)
         .Build(this);
     #endregion

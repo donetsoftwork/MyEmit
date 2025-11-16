@@ -1,3 +1,4 @@
+using Hand.Cache;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Dictionaries;
@@ -10,7 +11,7 @@ namespace PocoEmit.Collections.Cachers;
 /// </summary>
 /// <param name="container"></param>
 internal class IndexVisitorCacher(CollectionContainer container)
-    : CacheBase<Type, IElementIndexVisitor>(container)
+    : CacheFactoryBase<Type, IElementIndexVisitor>(container)
 {
     #region 配置
     private readonly CollectionContainer _container = container;
@@ -57,7 +58,7 @@ internal class IndexVisitorCacher(CollectionContainer container)
     {
         if (TryGetCache(listType, out IElementIndexVisitor visitor))
             return visitor;
-        Set(listType, visitor = CreateByList(listType, bundle));
+        Save(listType, visitor = CreateByList(listType, bundle));
         return visitor;
     }
     /// <summary>
@@ -78,7 +79,7 @@ internal class IndexVisitorCacher(CollectionContainer container)
     {
         if (TryGetCache(dictionaryType, out IElementIndexVisitor visitor))
             return visitor;
-        Set(dictionaryType, visitor = CreateByDictionary(dictionaryType, bundle));
+        Save(dictionaryType, visitor = CreateByDictionary(dictionaryType, bundle));
         return visitor;
     }
 }

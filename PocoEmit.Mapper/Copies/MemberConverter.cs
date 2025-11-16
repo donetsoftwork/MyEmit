@@ -63,7 +63,7 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
         if (_options.CheckPrimitive(sourceType))
             return _destWriter.Write(dest, _converter.Convert(sourceMember));
         var defaultValue = _options.DefaultValueBuilder.Build(_destWriter)
-            ?.Build();
+            ?.Create();
         if (defaultValue is null)
         {    
             return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, context.Convert(_converter, sourceMember)));

@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +43,7 @@ public class DefaultReflectionConstructor(bool parameterCountDesc)
     /// <param name="instanceType"></param>
     /// <returns></returns>
     protected virtual IEnumerable<ConstructorInfo> GetConstructors(Type instanceType)
-        => ReflectionHelper.GetConstructors(instanceType);
+        => ReflectionMember.GetConstructors(instanceType);
 
     /// <summary>
     /// 默认反射构造函数实例

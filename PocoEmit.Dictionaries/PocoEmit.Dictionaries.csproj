@@ -1,25 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\package.props" />
-  <PropertyGroup>
-    <TargetFrameworks>net4.5;net7.0;net8.0;net9.0;netstandard1.1;netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <PackageId>PocoEmit.Dictionaries</PackageId>
-    <Description>Emit操作集合</Description>
-    <PackageTags>OOM;Emit;Poco;Mapper;Map</PackageTags>
-    <Version>$(VersionBase).0-alpha</Version>
-    <PackageReadmeFile>readme.md</PackageReadmeFile>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.6'">
-    <PackageReference Include="System.Reflection" Version="4.3.0" />
-    <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="readme.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PocoEmit.Collections\PocoEmit.Collections.csproj" />
-    <ProjectReference Include="..\PocoEmit.Mapper\PocoEmit.Mapper.csproj" />
-    <ProjectReference Include="..\PocoEmit\PocoEmit.csproj" />
-  </ItemGroup>
+	<Import Project="..\package.props" />
+	<PropertyGroup>
+		<TargetFrameworks>net4.5;net7.0;net8.0;net9.0;net10.0;netstandard1.1;netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
+		<PackageId>PocoEmit.Dictionaries</PackageId>
+		<Description>Emit操作集合</Description>
+		<PackageTags>OOM;Emit;Poco;Mapper;Map</PackageTags>
+		<Version>$(VersionBase).0-alpha</Version>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+	</PropertyGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.6'">
+		<PackageReference Include="System.Reflection" Version="4.3.0" />
+		<PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="readme.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\PocoEmit.Collections\PocoEmit.Collections.csproj" />
+		<ProjectReference Include="..\PocoEmit.Mapper\PocoEmit.Mapper.csproj" />
+		<ProjectReference Include="..\PocoEmit\PocoEmit.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Hand.Core" Version="0.2.0-alpha" />
+		<PackageReference Include="Hand.Reflection" Version="0.2.0-alpha" />
+	</ItemGroup>
 </Project>
 

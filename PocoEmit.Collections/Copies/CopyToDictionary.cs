@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Collections.Bundles;
 using PocoEmit.Configuration;
 using PocoEmit.Dictionaries;
@@ -97,8 +98,8 @@ public class CopyToDictionary(IMapperOptions options)
         var keyConverter = _options.GetEmitConverter(sourceKeyType, keyType);
         if (keyConverter is null)
             return null;
-        var sourcetElementType = ReflectionHelper.GetElementType(sourceType);
-        var elementConverter = _options.GetEmitConverter(sourcetElementType, elementType);
+        var sourceElementType = sourceType.GetElementType();
+        var elementConverter = _options.GetEmitConverter(sourceElementType, elementType);
         if (elementConverter is null)
             return null;
         return new(destType, keyType, elementType, itemProperty, sourceVisitor, keyConverter, elementConverter, false);
@@ -118,8 +119,8 @@ public class CopyToDictionary(IMapperOptions options)
         var keyConverter = _options.GetEmitConverter(sourceKeyType, keyType);
         if (keyConverter is null)
             return null;
-        var sourcetElementType = ReflectionHelper.GetElementType(sourceType);
-        var elementConverter = _options.GetEmitConverter(sourcetElementType, elementType);
+        var sourceElementType = ReflectionType.GetElementType(sourceType);
+        var elementConverter = _options.GetEmitConverter(sourceElementType, elementType);
         if (elementConverter is null)
             return null;
         var sourceVisitor = CollectionContainer.Instance.IndexVisitorCacher.Get(sourceType);

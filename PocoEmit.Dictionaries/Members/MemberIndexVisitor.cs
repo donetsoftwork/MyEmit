@@ -1,3 +1,4 @@
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Collections.Bundles;
@@ -101,12 +102,12 @@ public class MemberIndexVisitor(IMapperOptions options, MemberBundle bundle, Typ
             {
                 expressions.Add(callback(Expression.Constant(fullName), Expression.Convert(reader.Read(instance), typeof(object))));
             }
-            else if (ReflectionHelper.HasGenericType(itemType, typeof(IDictionary<,>)))
+            else if (ReflectionType.HasGenericType(itemType, typeof(IDictionary<,>)))
             {
                 TravelDictionary(fullName, instance, variables, expressions, itemType, dictionaryCacher.Get(itemType), elementType, reader, callback);
             }
             else if (itemType.IsArray
-                || ReflectionHelper.HasGenericType(itemType, typeof(IEnumerable<>))
+                || ReflectionType.HasGenericType(itemType, typeof(IEnumerable<>))
                 || options.CheckPrimitive(itemType))
             {
                 continue;
@@ -161,11 +162,11 @@ public class MemberIndexVisitor(IMapperOptions options, MemberBundle bundle, Typ
             var itemType = member.ValueType;
             if (PairTypeKey.CheckValueType(member.ValueType, elementType))
                 return true;
-            else if (ReflectionHelper.HasGenericType(itemType, typeof(IDictionary<,>)))
+            else if (ReflectionType.HasGenericType(itemType, typeof(IDictionary<,>)))
                 return ValidateDictionaryType(dictionaryCacher.Get(itemType), elementType);
 
             else if (itemType.IsArray
-                || ReflectionHelper.HasGenericType(itemType, typeof(IEnumerable<>))
+                || ReflectionType.HasGenericType(itemType, typeof(IEnumerable<>))
                 || options.CheckPrimitive(itemType))
                 continue;
             else if (ValidateDictionary(options, bundles, options.MemberCacher.Get(itemType), elementType))

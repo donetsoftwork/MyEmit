@@ -1,3 +1,6 @@
+using Hand.Cache;
+using Hand.Collections;
+using Hand.Creational;
 using Microsoft.Extensions.DependencyInjection;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
@@ -17,8 +20,8 @@ namespace PocoEmit.ServiceProvider;
 /// </summary>
 public class ServiceDefaultValueBuilder
     : DefaultValueBuilder
-    , ICacher<ConstructorParameterMember, IBuilder<Expression>>
-    , ICacher<IEmitMemberWriter, IBuilder<Expression>>
+    , ICacher<ConstructorParameterMember, ICreator<Expression>>
+    , ICacher<IEmitMemberWriter, ICreator<Expression>>
 {
     #region 配置
     /// <summary>
@@ -33,19 +36,19 @@ public class ServiceDefaultValueBuilder
     /// <summary>
     /// 参数默认值构造器
     /// </summary>
-    private readonly CacheBase<ConstructorParameterMember, IBuilder<Expression>> _parameterBuilder;
+    private readonly CacheFactoryBase<ConstructorParameterMember, ICreator<Expression>> _parameterBuilder;
     /// <summary>
     /// 属性默认值构造器
     /// </summary>
-    private readonly CacheBase<IEmitMemberWriter, IBuilder<Expression>> _memberBuilder;
+    private readonly CacheFactoryBase<IEmitMemberWriter, ICreator<Expression>> _memberBuilder;
     /// <summary>
     /// 属性默认值缓存
     /// </summary>
-    private readonly ConcurrentDictionary<IEmitMemberWriter, IBuilder<Expression>> _memberCacher = [];
+    private readonly ConcurrentDictionary<IEmitMemberWriter, ICreator<Expression>> _memberCacher = [];
     /// <summary>
     /// 参数默认值缓存
     /// </summary>
-    private readonly ConcurrentDictionary<ConstructorParameterMember, IBuilder<Expression>> _parameterCacher = [];
+    private readonly ConcurrentDictionary<ConstructorParameterMember, ICreator<Expression>> _parameterCacher = [];
     #endregion
     /// <summary>
     /// 服务默认值构造器
@@ -72,27 +75,27 @@ public class ServiceDefaultValueBuilder
     protected virtual MemberExpressionCacher CreateMemberBuilder()
         => new(this);
     #region ICacher<ConstructorParameterMember, IBuilder<Expression>>
-    bool ICacher<ConstructorParameterMember, IBuilder<Expression>>.ContainsKey(in ConstructorParameterMember key)
+    bool ICacher<ConstructorParameterMember, ICreator<Expression>>.ContainsKey(in ConstructorParameterMember key)
         => _parameterCacher.ContainsKey(key);
-    bool ICacher<ConstructorParameterMember, IBuilder<Expression>>.TryGetCache(in ConstructorParameterMember key, out IBuilder<Expression> cached)
+    bool ICacher<ConstructorParameterMember, ICreator<Expression>>.TryGetCache(in ConstructorParameterMember key, out ICreator<Expression> cached)
         => _parameterCacher.TryGetValue(key, out cached);
-    void IStore<ConstructorParameterMember, IBuilder<Expression>>.Set(in ConstructorParameterMember key, IBuilder<Expression> value)
+    void IStore<ConstructorParameterMember, ICreator<Expression>>.Save(in ConstructorParameterMember key, ICreator<Expression> value)
         => _parameterCacher[key] = value;
     #endregion
     #region ICacher<IEmitMemberWriter, IBuilder<Expression>>
-    bool ICacher<IEmitMemberWriter, IBuilder<Expression>>.ContainsKey(in IEmitMemberWriter key)
+    bool ICacher<IEmitMemberWriter, ICreator<Expression>>.ContainsKey(in IEmitMemberWriter key)
         => _memberCacher.ContainsKey(key);
-    bool ICacher<IEmitMemberWriter, IBuilder<Expression>>.TryGetCache(in IEmitMemberWriter key, out IBuilder<Expression> cached)
+    bool ICacher<IEmitMemberWriter, ICreator<Expression>>.TryGetCache(in IEmitMemberWriter key, out ICreator<Expression> cached)
         => _memberCacher.TryGetValue(key, out cached);
-    void IStore<IEmitMemberWriter, IBuilder<Expression>>.Set(in IEmitMemberWriter key, IBuilder<Expression> value)
+    void IStore<IEmitMemberWriter, ICreator<Expression>>.Save(in IEmitMemberWriter key, ICreator<Expression> value)
         => _memberCacher[key] = value;
     #endregion
     #region DefaultValueBuilder
     /// <inheritdoc />
-    public override IBuilder<Expression> Build(ConstructorParameterMember parameter)
+    public override ICreator<Expression> Build(ConstructorParameterMember parameter)
         => _parameterBuilder.Get(parameter);
     /// <inheritdoc />
-    public override IBuilder<Expression> Build(IEmitMemberWriter member)
+    public override ICreator<Expression> Build(IEmitMemberWriter member)
          => _memberBuilder.Get(member);
     #endregion
     #region 基础功能
@@ -110,7 +113,7 @@ public class ServiceDefaultValueBuilder
     /// <param name="serviceType"></param>
     /// <param name="serviceBuilder"></param>
     /// <returns></returns>
-    public bool TryGetConfig(Type serviceType, out IBuilder<Expression> serviceBuilder)
+    public bool TryGetConfig(Type serviceType, out ICreator<Expression> serviceBuilder)
         => _options.TryGetConfig(serviceType, out serviceBuilder);
     /// <summary>
     /// 按属性获取配置
@@ -118,7 +121,7 @@ public class ServiceDefaultValueBuilder
     /// <param name="member"></param>
     /// <param name="serviceBuilder"></param>
     /// <returns></returns>
-    public bool TryGetConfig(MemberInfo member, out IBuilder<Expression> serviceBuilder)
+    public bool TryGetConfig(MemberInfo member, out ICreator<Expression> serviceBuilder)
         => _options.TryGetConfig(member, out serviceBuilder);
     #endregion
 }
