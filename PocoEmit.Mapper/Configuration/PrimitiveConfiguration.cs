@@ -30,7 +30,7 @@ public class PrimitiveConfiguration
     }
     #region CacheBase<Type, bool>
     /// <inheritdoc />
-    public override bool Get(in Type key)
+    public override bool Get(Type key)
     {
         if(IsPrimitive(key))
             return true;

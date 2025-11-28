@@ -7,8 +7,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="MyDeltas.Emit" Version="0.3.1.8-alpha" />
-    <PackageReference Include="PocoEmit.Mvc" Version="0.7.0-alpha" />
+    <PackageReference Include="MyDeltas.Emit" Version="0.4.0.1-alpha" />
+    <PackageReference Include="PocoEmit.Mvc" Version="0.8.1-alpha" />
   </ItemGroup>
   
   <ItemGroup>

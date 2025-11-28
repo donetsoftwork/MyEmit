@@ -27,7 +27,8 @@
 		<InternalsVisibleTo Include="PocoEmit.MapperUnitTests" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Hand.Core" Version="0.2.0-alpha" />
+    <PackageReference Include="Hand.Core" Version="0.2.1-alpha" />
+    <PackageReference Include="Hand.AutoCache" Version="0.2.1-alpha" />
 		<PackageReference Include="Hand.Reflection" Version="0.2.0-alpha" />
 	</ItemGroup>
 </Project>

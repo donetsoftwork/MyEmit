@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="CoreDX.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="FastEndpoints" Version="7.0.1" />
-    <PackageReference Include="MyDeltas.Emit" Version="0.3.1.7-alpha" />
+    <PackageReference Include="MyDeltas.Emit" Version="0.4.0.1-alpha" />
   </ItemGroup>
 
   <ItemGroup>

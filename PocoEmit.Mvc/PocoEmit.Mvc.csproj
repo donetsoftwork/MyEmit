@@ -25,6 +25,7 @@
     <ProjectReference Include="..\PocoEmit\PocoEmit.csproj" />
   </ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Hand.Core" Version="0.2.0-alpha" />
+    <PackageReference Include="Hand.Core" Version="0.2.1-alpha" />
+    <PackageReference Include="Hand.AutoCache" Version="0.2.1-alpha" />
 	</ItemGroup>
 </Project>
