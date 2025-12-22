@@ -15,7 +15,6 @@ public sealed class Mapper : MapperConfigurationBase
     private Mapper(MapperOptions options)
         : base(options) 
     {
-
     }
     #region Create
     /// <summary>

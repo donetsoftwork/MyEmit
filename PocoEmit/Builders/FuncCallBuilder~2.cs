@@ -1,7 +1,6 @@
 using Hand.Creational;
 using Hand.Reflection;
 using PocoEmit.Configuration;
-using System;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Builders;
@@ -24,7 +23,10 @@ public class ArgumentFuncCallBuilder(IPocoOptions poco, in PairTypeKey key, Lamb
     /// 
     /// </summary>
     protected readonly PairTypeKey _key = key;
-    private LambdaExpression _lambda = lambda;
+    /// <summary>
+    /// Func表达式
+    /// </summary>
+    protected LambdaExpression _lambda = lambda;
     /// <summary>
     /// 对象处理
     /// </summary>
@@ -41,12 +43,12 @@ public class ArgumentFuncCallBuilder(IPocoOptions poco, in PairTypeKey key, Lamb
     public LambdaExpression Lambda 
         => _lambda;
     #endregion
-    /// <summary>
-    /// 构建表达式
-    /// </summary>
-    /// <param name="lambda"></param>
-    public void Build(LambdaExpression lambda)
-        => _lambda = lambda ?? throw new ArgumentNullException(nameof(lambda));
+    ///// <summary>
+    ///// 构建表达式
+    ///// </summary>
+    ///// <param name="lambda"></param>
+    //public void Build(LambdaExpression lambda)
+    //    => _lambda = lambda ?? throw new ArgumentNullException(nameof(lambda));
     /// <inheritdoc />
     LambdaExpression ICreator<LambdaExpression>.Create()
         => _lambda;
@@ -56,5 +58,7 @@ public class ArgumentFuncCallBuilder(IPocoOptions poco, in PairTypeKey key, Lamb
     /// <param name="argument"></param>
     /// <returns></returns>
     public Expression Call(Expression argument)
-        => _poco.Call(_lambda, argument);
+    {
+        return _poco.Call(_lambda ?? throw new System.NullReferenceException($"{nameof(Lambda)} of {GetType()}"), argument);
+    }
 }

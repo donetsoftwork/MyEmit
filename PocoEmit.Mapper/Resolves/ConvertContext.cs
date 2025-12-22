@@ -78,7 +78,7 @@ public sealed class ConvertContext(IPool<ConvertContext> pool)
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    public static Expression CallTryGetCache(ParameterExpression context, in PairTypeKey key, Expression source, Expression dest)
+    public static Expression CallTryGetCache(Expression context, in PairTypeKey key, Expression source, Expression dest)
         => Expression.Call(context, _tryGetCacheMethod.MakeGenericMethod(key.LeftType, key.RightType), source, dest);
     /// <summary>
     /// 调用设置缓存
@@ -88,7 +88,7 @@ public sealed class ConvertContext(IPool<ConvertContext> pool)
     /// <param name="source"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    public static Expression CallSetCache(ParameterExpression context, in PairTypeKey key, Expression source, Expression dest)
+    public static Expression CallSetCache(Expression context, in PairTypeKey key, Expression source, Expression dest)
         => Expression.Call(context, _setCacheMethod.MakeGenericMethod(key.LeftType, key.RightType), source, dest);
     #endregion
     #region Reflection

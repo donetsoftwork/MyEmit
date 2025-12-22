@@ -64,12 +64,12 @@ using System.Text.Json.Serialization;
 //var dto6 = CustomerTests.ByFast();
 //var dto4 = CustomerTests.CustomerToDTO(CustomerConvertBench.Customer);
 //Console.ReadLine();
-//BenchmarkRunner.Run<CustomerConvertBench>();
+BenchmarkRunner.Run<CustomerConvertBench>();
 //BenchmarkRunner.Run<UserConvertBench>();
 //BenchmarkRunner.Run<ToDictionaryBench>();
 //BenchmarkRunner.Run<TreeBench>();
 //BenchmarkRunner.Run<TreeBench2>();
 //BenchmarkRunner.Run<NodeBench>();
 //BenchmarkRunner.Run<MenuBench>();
-BenchmarkRunner.Run<SoldierTeamBench>();
+//BenchmarkRunner.Run<SoldierTeamBench>();
 

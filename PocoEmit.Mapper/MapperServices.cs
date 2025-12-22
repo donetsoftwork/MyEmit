@@ -44,7 +44,7 @@ public static partial class MapperServices
         return mapper;
     }
     /// <summary>
-    /// 设置带参委托来激活
+    /// 设置委托来激活
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TDest"></typeparam>
@@ -94,8 +94,7 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IMapper UseDefault<TValue>(this IMapper mapper, TValue value)
     {
-        var type = typeof(TValue);
-        mapper.Set(type, ConstantBuilder.Use(value, type));
+        mapper.Set(typeof(TValue), ConstantBuilder.Create(value));
         return mapper;
     }
     /// <summary>
@@ -107,7 +106,7 @@ public static partial class MapperServices
     /// <returns></returns>
     public static IMapper UseDefault<TValue>(this IMapper mapper, Expression<Func<TValue>> valueFunc)
     {
-        mapper.Set(typeof(TValue), new FuncBuilder(valueFunc));
+        mapper.Set(typeof(TValue), new FuncBuilder<TValue>(valueFunc));
         return mapper;
     }
     #endregion

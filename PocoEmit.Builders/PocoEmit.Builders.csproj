@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\package.props" />
+  <PropertyGroup>
+    <TargetFrameworks>net4.5;net7.0;net8.0;net9.0;net10.0;netstandard1.1;netstandard1.3;netstandard1.6;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <PackageId>PocoEmit.Builders</PackageId>
+    <Description>Emit工具类</Description>
+    <PackageTags>Emit;</PackageTags>
+    <Version>$(VersionBase).0-alpha</Version>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <RootNamespace>PocoEmit</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.6'">
+    <PackageReference Include="System.Reflection" Version="4.3.0" />
+    <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="readme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PocoEmit" />
+    <InternalsVisibleTo Include="PocoEmit.Mapper" />
+    <InternalsVisibleTo Include="PocoEmit.Collections" />
+    <InternalsVisibleTo Include="PocoEmitUnitTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Hand.Core" Version="0.2.1-alpha" />
+    <PackageReference Include="Hand.Reflection" Version="0.2.0-alpha" />
+  </ItemGroup>
+</Project>

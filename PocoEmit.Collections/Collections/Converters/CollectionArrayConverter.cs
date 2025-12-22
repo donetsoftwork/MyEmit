@@ -8,7 +8,6 @@ using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Collections.Converters;
@@ -72,9 +71,7 @@ public class CollectionArrayConverter(IMapperOptions options, Type sourceType, T
     #region IEmitConverter
     /// <inheritdoc />
     Expression IEmitConverter.Convert(Expression source)
-        => BuildContext.WithPrepare(_options, this)
-        .Enter(_key)
-        .CallComplexConvert(_key, source);
+        => throw new NotImplementedException();
     #endregion
     #region IBuilder<LambdaExpression>
     /// <summary>
@@ -94,41 +91,41 @@ public class CollectionArrayConverter(IMapperOptions options, Type sourceType, T
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
+    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
     {
-        var count = Expression.Variable(typeof(int), "count");
-        var index = Expression.Variable(typeof(int), "index");
-        var sourceItem = Expression.Variable(_sourceElementType, "sourceItem");
+        var dest = builder.Declare(_collectionType, "dest");
+        var count = builder.Declare<int>("count");
+        var index = builder.Declare<int>("index");
+        var sourceItem = builder.Temp(_sourceElementType);
 
-        var list = new List<Expression>() {
-            Expression.Assign(count, _length.Count(source)),
-            Expression.Assign(index, Expression.Constant(0)),
-            Expression.Assign(dest, New(count))
-        };
+        builder.Assign(count, _length.Count(source));
+        builder.Assign(index, Expression.Constant(0));
+        builder.Assign(dest, New(count));
+
         var cache = context.SetCache(convertContext, _key, source, dest);
         if (cache is not null)
-            list.Add(cache);
-        yield return Expression.Block(
-            [count, index, sourceItem],
-            [
-                ..list,
-                _visitor.Travel(source, item => CopyElement(context, dest, index, item, sourceItem, _elementConverter))
-            ]
-        );
+            builder.Add(cache);
+
+        builder.Add(_visitor.Travel(builder, source, item => CopyElement(context, builder, dest, index, item, sourceItem, _elementConverter)));
+        return dest;
     }
     /// <summary>
     /// 复制子元素
     /// </summary>
     /// <param name="context"></param>
+    /// <param name="builder"></param>
     /// <param name="dest"></param>
     /// <param name="index"></param>
     /// <param name="item"></param>
     /// <param name="sourceItem"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    public static Expression CopyElement(IBuildContext context, Expression dest, Expression index, Expression item, ParameterExpression sourceItem, IEmitConverter converter)
-        => Expression.Block(
-            Expression.Assign(sourceItem, item),
-            Expression.Assign(Expression.ArrayAccess(dest, Expression.PostIncrementAssign(index)), context.Convert(converter, sourceItem))
-            );
+    public static Expression CopyElement(IBuildContext context, ComplexBuilder builder, Expression dest, Expression index, Expression item, ParameterExpression sourceItem, IEmitConverter converter)
+    {
+        var scope = builder.CreateScope(sourceItem);
+        scope.Assign(item);
+        var result = context.Convert(scope, converter, sourceItem);
+        scope.Assign(Expression.ArrayAccess(dest, Expression.PostIncrementAssign(index)), result);
+        return scope.Create();
+    }
 }

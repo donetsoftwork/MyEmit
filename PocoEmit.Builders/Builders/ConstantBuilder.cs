@@ -1,0 +1,31 @@
+using Hand.Creational;
+using System.Linq.Expressions;
+
+namespace PocoEmit.Builders;
+
+/// <summary>
+/// 常量表达式构建器
+/// </summary>
+/// <param name="constant"></param>
+public class ConstantBuilder(ConstantExpression constant)
+    : ICreator<ConstantExpression>
+{
+    #region 配置
+    private readonly ConstantExpression _constant = constant;
+    /// <summary>
+    /// 常量表达式
+    /// </summary>
+    public ConstantExpression Constant
+        => _constant;
+    #endregion
+    /// <inheritdoc />
+    public ConstantExpression Create()
+        => _constant;
+    /// <summary>
+    /// 构造常量值
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static ConstantBuilder<TValue> Create<TValue>(TValue value)
+        => new(value);
+}

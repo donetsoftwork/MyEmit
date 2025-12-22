@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Collections.Visitors;
 using System;
 using System.Linq.Expressions;
@@ -22,26 +23,24 @@ public class DictionaryIndexVisitor(Type dictionaryType, Type keyType, Type elem
     private readonly PropertyInfo _itemProperty = itemProperty;
     #endregion
     /// <inheritdoc />
-    Expression IIndexVisitor.Travel(Expression collection, Func<Expression, Expression, Expression> callback)
-        => Travel(collection, _keysProperty, _itemProperty, callback);
+    Expression IIndexVisitor.Travel(IEmitBuilder builder, Expression collection, Func<Expression, Expression, Expression> callback)
+        => Travel(builder, collection, _keysProperty, _itemProperty, callback);
     /// <summary>
     /// 遍历字典
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="dic"></param>
     /// <param name="keysProperty"></param>
     /// <param name="itemProperty"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static Expression Travel(Expression dic, PropertyInfo keysProperty, PropertyInfo itemProperty, Func<Expression, Expression, Expression> callback)
+    public static Expression Travel(IEmitBuilder builder, Expression dic, PropertyInfo keysProperty, PropertyInfo itemProperty, Func<Expression, Expression, Expression> callback)
     {
         var keysVisitor = CollectionContainer.Instance.VisitorCacher.Get(keysProperty.PropertyType);
         if (keysVisitor is null)
             return Expression.Empty();
-        var keys = Expression.Variable(keysProperty.PropertyType, "keys");
-        return Expression.Block(
-            [keys],
-            Expression.Assign(keys, Expression.Property(dic, keysProperty)),
-            keysVisitor.Travel(keys, key => callback(key, Expression.MakeIndex(dic, itemProperty, [key])))
-        );
+        var keys = builder.Declare(keysProperty.PropertyType, "keys");
+        builder.Assign(keys, Expression.Property(dic, keysProperty));
+        return keysVisitor.Travel(builder, keys, key => callback(key, Expression.MakeIndex(dic, itemProperty, [key])));
     }
 }

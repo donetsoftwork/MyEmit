@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
@@ -56,29 +57,33 @@ public sealed class MemberConverter(IMapperOptions options, IEmitReader sourceRe
     public Expression GetSourceMember(Expression source)
         => _sourceReader.Read(source);
     /// <inheritdoc />
-    public Expression ConvertMember(IBuildContext context, Expression sourceMember, Expression dest)
+    public Expression ConvertMember(IBuildContext context, IEmitBuilder builder, Expression sourceMember, Expression dest)
     {
         var sourceType = sourceMember.Type;        
         // 基础类型直接赋值(忽略null判断)
         if (_options.CheckPrimitive(sourceType))
             return _destWriter.Write(dest, _converter.Convert(sourceMember));
-        var defaultValue = _options.DefaultValueBuilder.Build(_destWriter)
-            ?.Create();
-        if (defaultValue is null)
-        {    
-            return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, context.Convert(_converter, sourceMember)));
-        }
-        else
-        {
-#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
-            var isValueType = sourceType.GetTypeInfo().IsValueType;
-#else
-            var isValueType = sourceType.IsValueType;
-#endif
-            // 值类型直接赋值(忽略null判断和默认值)
-            if (isValueType)
-                return _destWriter.Write(dest, sourceMember);
-            return Expression.IfThenElse(Expression.Equal(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, defaultValue), _destWriter.Write(dest, context.Convert(_converter, sourceMember)));
-        }
+        var scope = builder.CreateScope();
+        var destWrite = _destWriter.Write(dest, context.Convert(scope, _converter, sourceMember));
+        scope.Add(destWrite);
+        return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), scope.Create());
+//        var defaultValue = _options.DefaultValueBuilder.Build(_destWriter)
+//            ?.Create();
+//        if (defaultValue is null)
+//        {    
+//            return Expression.IfThen(Expression.NotEqual(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, context.Convert(builder, _converter, sourceMember)));
+//        }
+//        else
+//        {
+//#if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
+//            var isValueType = sourceType.GetTypeInfo().IsValueType;
+//#else
+//            var isValueType = sourceType.IsValueType;
+//#endif
+//            // 值类型直接赋值(忽略null判断和默认值)
+//            if (isValueType)
+//                return _destWriter.Write(dest, sourceMember);
+//            return Expression.IfThenElse(Expression.Equal(sourceMember, Expression.Constant(null)), _destWriter.Write(dest, defaultValue), _destWriter.Write(dest, context.Convert(builder, _converter, sourceMember)));
+//        }
     }
 }

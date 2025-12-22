@@ -10,6 +10,7 @@ namespace PocoEmit.Members;
 /// </summary>
 public class BuilderReaderAdapter(ICreator<Expression> builder)
     : IEmitReader
+    , IArgumentExecuter
 {
     #region 配置
     private readonly ICreator<Expression> _builder = builder;
@@ -18,11 +19,20 @@ public class BuilderReaderAdapter(ICreator<Expression> builder)
     /// </summary>
     public ICreator<Expression> Builder
         => _builder;
+    private readonly IEmitExecuter _executer = builder as IEmitExecuter;
     /// <inheritdoc />
     bool ICompileInfo.Compiled
         => false;
+
     #endregion
     /// <inheritdoc />
     Expression IEmitReader.Read(Expression instance)
         => _builder.Create();
+    /// <inheritdoc />
+    public Expression Execute(IEmitBuilder builder, Expression argument)
+    {
+        if(_executer is null)
+            return _builder.Create();
+        return _executer.Execute(builder);
+    }
 }

@@ -78,7 +78,6 @@ public class EnumBuilder(IPocoOptions poco)
     /// <returns></returns>
     public static EnumFromUnderConverter EnumFromUnderlying(IEnumBundle enumBundle)
         => new(enumBundle);
-
     /// <summary>
     /// 枚举转化为字符串
     /// </summary>

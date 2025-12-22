@@ -170,9 +170,11 @@ public static partial class PocoEmitServices
     /// <param name="key"></param>
     /// <param name="emitConverter"></param>
     /// <returns></returns>
-    internal static CompiledConverter<TSource, TDest> CompileConverter<TSource, TDest>(this IPocoOptions poco,in PairTypeKey key, IEmitConverter emitConverter)
+    internal static CompiledConverter<TSource, TDest> CompileConverter<TSource, TDest>(this IPocoOptions poco, in PairTypeKey key, IEmitConverter emitConverter)
     {
         var lambda = emitConverter.Build<TSource, TDest>();
+        if(lambda is null)
+            throw new NullReferenceException(nameof(lambda));
         var func = Compiler._instance.CompileDelegate(lambda);
         return new(poco, key, emitConverter, lambda, func);
     }

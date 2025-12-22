@@ -1,0 +1,27 @@
+using Hand.Cache;
+using PocoEmit.Collections;
+using PocoEmit.Members;
+using System.Reflection;
+
+namespace PocoEmit.Cachers;
+
+/// <summary>
+/// 成员写入器缓存
+/// </summary>
+/// <param name="container"></param>
+public class MemberWriterCacher(MemberContainer container)
+    : CacheFactoryBase<MemberInfo, IEmitMemberWriter>(container)
+{
+    private readonly MemberContainer _container = container;
+    #region CacheBase<MemberInfo, IMemberWriter>
+    /// <inheritdoc />
+    protected override IEmitMemberWriter CreateNew(in MemberInfo key)
+    {
+        if (key is FieldInfo field)
+            return _container.Fields.Get(field);
+        else if (key is PropertyInfo property && property.CanWrite)
+            return _container.Propertes.Get(property);
+        return null;
+    }
+    #endregion
+}

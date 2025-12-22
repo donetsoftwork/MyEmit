@@ -13,6 +13,7 @@ namespace PocoEmit.Converters;
 /// <param name="key"></param>
 public class EmitConverter(bool isPrimitiveSource, in PairTypeKey key)
     : IEmitConverter
+    , IArgumentExecuter
 {
     /// <summary>
     /// Emit类型转化
@@ -27,7 +28,7 @@ public class EmitConverter(bool isPrimitiveSource, in PairTypeKey key)
     /// 源类型是否为基础类型
     /// </summary>
     protected bool _isPrimitiveSource = isPrimitiveSource;
-    private PairTypeKey _key = key;
+    private readonly PairTypeKey _key = key;
     /// <summary>
     /// 映射目标类型
     /// </summary>
@@ -45,54 +46,42 @@ public class EmitConverter(bool isPrimitiveSource, in PairTypeKey key)
         => false;
     #endregion
     /// <inheritdoc />
-    public virtual Expression Convert(Expression value)
-        => Convert(value, _isPrimitiveSource, _destType, ConvertCore);
+    public Expression Convert(Expression source)
+    {
+        var builder = new EmitBuilder();
+        builder.Add(Execute(builder, source));
+        return builder.Create();
+    }
     /// <summary>
     /// 核心转化
     /// </summary>
-    /// <param name="value"></param>
+    /// <param name="source"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    protected virtual Expression ConvertCore(Expression value, Type destType)
-        => Expression.Convert(value, destType);
-    /// <summary>
-    /// 转化类型
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="isPrimitive"></param>
-    /// <param name="destType"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    public static Expression Convert(Expression value, bool isPrimitive, Type destType, Func<Expression, Type, Expression> converter)
+    protected virtual Expression ConvertCore(Expression source, Type destType)
+        => Expression.Convert(source, destType);
+    #region IArgumentExecuter
+    /// <inheritdoc />
+    public virtual Expression Execute(IEmitBuilder builder, Expression argument)
     {
-        var sourceType = value.Type;
+        var sourceType = argument.Type;
         if (PairTypeKey.CheckNullCondition(sourceType))
         {
-            if (EmitHelper.CheckComplexSource(value, isPrimitive))
-            {
-                var source = Expression.Variable(sourceType, "source");
-                return Expression.Block(
-                    [source],
-                    Expression.Assign(source, value),
-                    Expression.Condition(
-                        Expression.Equal(source, Expression.Constant(null, sourceType)),
-                        Expression.Default(destType),
-                        converter(source, destType)
-                        )
-                    );
-            }
-            else
-            {
-                return Expression.Condition(
-                    Expression.Equal(value, Expression.Constant(null, sourceType)),
-                    Expression.Default(destType),
-                    converter(value, destType)
-                    );
-            }
+            var source = argument;
+            if (EmitHelper.CheckComplexSource(argument, _isPrimitiveSource))
+                source = builder.Temp(sourceType, argument);
+
+            return EmitHelper.IfDefault(
+                source,
+                Expression.Default(_destType),
+                ConvertCore(source, _destType),
+                _destType
+                );
         }
         else
         {
-            return converter(value, destType);
+            return ConvertCore(argument, _destType);
         }
     }
+    #endregion
 }

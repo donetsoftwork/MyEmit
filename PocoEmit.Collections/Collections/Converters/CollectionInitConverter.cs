@@ -54,9 +54,7 @@ public sealed class CollectionInitConverter(IMapperOptions options, Type collect
     #region IEmitConverter
     /// <inheritdoc />
     Expression IEmitConverter.Convert(Expression source)
-        => BuildContext.WithPrepare(_options, this)
-        .Enter(_key)
-        .CallComplexConvert(_key, source);
+        => throw new NotImplementedException();
     #endregion
     #region IBuilder<LambdaExpression>
     /// <summary>
@@ -76,19 +74,22 @@ public sealed class CollectionInitConverter(IMapperOptions options, Type collect
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
+    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
     {
-        yield return Expression.Assign(dest, Expression.ListInit(Expression.New(_collectionType), Expression.ElementInit(_saver.AddMethod, CheckElement(context, source))));
+        var dest = builder.Declare(_collectionType, "dest");
+        builder.Assign(dest, Expression.ListInit(Expression.New(_collectionType), Expression.ElementInit(_saver.AddMethod, CheckElement(context, builder, source))));
         var cache = context.SetCache(convertContext, _key, source, dest);
         if (cache is not null)
-            yield return cache;
+            builder.Add(cache);
+        return dest;
     }
     /// <summary>
     /// 检查子元素
     /// </summary>
     /// <param name="context"></param>
+    /// <param name="builder"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    private Expression CheckElement(IBuildContext context, Expression source)
-        => context.Convert(_elementConverter, source);
+    private Expression CheckElement(IBuildContext context, ComplexBuilder builder, Expression source)
+        => context.Convert(builder, _elementConverter, source);
 }

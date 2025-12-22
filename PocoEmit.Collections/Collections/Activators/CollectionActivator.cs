@@ -1,4 +1,5 @@
 using PocoEmit.Activators;
+using PocoEmit.Builders;
 using PocoEmit.Collections.Counters;
 using PocoEmit.Complexes;
 using System;
@@ -36,7 +37,7 @@ public class CollectionActivator(Type collectionType, Type elementType, Construc
         => _collectionType;
     #endregion
     /// <inheritdoc />
-    public Expression New(IBuildContext context, Expression argument)
+    public Expression New(IBuildContext context, ComplexBuilder builder, Expression argument)
     {
         if (_sourceCount is null)
             return Expression.New(_collectionType);

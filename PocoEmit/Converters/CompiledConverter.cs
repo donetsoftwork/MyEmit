@@ -62,10 +62,14 @@ public sealed class CompiledConverter<TSource, TDest>(IPocoOptions options,in Pa
     /// <inheritdoc />
     public bool CompileDelegate(LambdaExpression lambda)
     {
-        Build(lambda);
-        _convertFunc = Compiler._instance.CompileDelegate(lambda) as Func<TSource, TDest>;
-        if(_convertFunc is null)
-            return false;
-        return true;
+        if (lambda is Expression<Func<TSource, TDest>> func)
+        {
+            _lambda = lambda ?? throw new ArgumentNullException(nameof(lambda));
+            _convertFunc = Compiler._instance.CompileDelegate(func);
+            if (_convertFunc is null)
+                return false;
+            return true;
+        }
+        return false;
     }
 }

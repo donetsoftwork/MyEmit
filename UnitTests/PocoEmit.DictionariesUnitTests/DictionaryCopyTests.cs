@@ -8,6 +8,10 @@ public class DictionaryCopyTests : CollectionTestBase
     [Fact]
     public void CreatetDictionaryCopyAction()
     {
+        //var expression = _mapper.BuildDictionaryCopier<Student, Dictionary<string, string>>();
+        //Assert.NotNull(expression);
+        //var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        //Assert.NotNull(code);
         var action = _mapper.CreatetDictionaryCopyAction<Student, Dictionary<string, string>>();
         Assert.NotNull(action);
         Student source = new()

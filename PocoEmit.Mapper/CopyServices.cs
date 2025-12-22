@@ -149,33 +149,33 @@ public static partial class MapperServices
     public static Expression<Action<TSource, TDest>> Build<TSource, TDest>(this IEmitCopier emit, IMapper mapper)
         where TDest : class
     {
+        //var sourceType = typeof(TSource);
+        //var destType = typeof(TDest);
         var source = Expression.Parameter(typeof(TSource), "source");
         var dest = Expression.Parameter(typeof(TDest), "dest");
         var options = (IMapperOptions)mapper;
         var context = BuildContext.WithPrepare(options, emit)
             .Enter(new PairTypeKey(typeof(TSource), typeof(TDest)));
-        var list = CleanVisitor.Clean(emit.Copy(context, source, dest));
 
-        var convertContextParameter = context.ConvertContextParameter;        
+        ParameterExpression[] parameters = [source, dest];
+        var builder = new ComplexBuilder(source);
+
+        var convertContextParameter = context.ConvertContextParameter;
+        Expression body;
         if (convertContextParameter is null)
         {
-            var checkList = list.ToArray();
-            var body = checkList.Length == 1 ? checkList[0] : Expression.Block(checkList);
-            return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
-
+            emit.BuildAction(context, builder, source, dest);
+            body = builder.CreateAction(parameters);
         }
         else
         {
-            var body = Expression.Block(
-                [convertContextParameter],
-                [
-                    context.InitContext(convertContextParameter),
-                    .. list,
-                    EmitDispose.Dispose(convertContextParameter)
-                ]
-            );
-            return Expression.Lambda<Action<TSource, TDest>>(body, source, dest);
-        }        
+            builder.AddVariable(convertContextParameter);
+            builder.Add(context.InitContext(convertContextParameter));
+            emit.BuildAction(context, builder, source, dest);
+            builder.Add(EmitDispose.Dispose(convertContextParameter));
+            body = builder.CreateAction(parameters);
+        }
+        return Expression.Lambda<Action<TSource, TDest>>(body, parameters);
     }
     #endregion
     /// <summary>

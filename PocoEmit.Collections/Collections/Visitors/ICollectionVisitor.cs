@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using System;
 using System.Linq.Expressions;
 
@@ -11,8 +12,9 @@ public interface IEmitElementVisitor : IEmitCollection
     /// <summary>
     /// 集合遍历
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="collection"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    Expression Travel(Expression collection, Func<Expression, Expression> callback);
+    Expression Travel(IEmitBuilder builder, Expression collection, Func<Expression, Expression> callback);
 }

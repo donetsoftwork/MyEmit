@@ -5,9 +5,7 @@ using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Copies;
-using PocoEmit.Visitors;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Converters;
@@ -30,6 +28,7 @@ public class ComplexTypeConverter(IMapperOptions options,in PairTypeKey key, IEm
     protected readonly IMapperOptions _options = options;
     private readonly PairTypeKey _key = key;
     private readonly Type _sourceType = key.LeftType; 
+    private readonly Type _destType = key.RightType;
     private readonly IEmitActivator _destActivator = destActivator;
     private readonly IEmitCopier _copier = copier;
 
@@ -47,6 +46,11 @@ public class ComplexTypeConverter(IMapperOptions options,in PairTypeKey key, IEm
     public Type SourceType
         => _sourceType;
     /// <summary>
+    /// 目标类型
+    /// </summary>
+    public Type DestType
+        => _destType;
+    /// <summary>
     /// 激活映射目标
     /// </summary>
     public IEmitActivator DestActivator 
@@ -63,9 +67,12 @@ public class ComplexTypeConverter(IMapperOptions options,in PairTypeKey key, IEm
     #region IEmitConverter
     /// <inheritdoc />
     Expression IEmitConverter.Convert(Expression source)
-        => BuildContext.WithPrepare(_options, this)
-        .Enter(_key)
-        .CallComplexConvert(_key, source);
+    {
+        throw new NotImplementedException();
+        //return BuildContext.WithPrepare(_options, this)
+        //.Enter(_key)
+        //.CallComplexConvert(_key, source);
+    }
     #endregion
     #region IBuilder<LambdaExpression>
     /// <summary>
@@ -84,24 +91,16 @@ public class ComplexTypeConverter(IMapperOptions options,in PairTypeKey key, IEm
     public LambdaExpression BuildWithContext(IBuildContext context)
         => context.Context.BuildWithContext(this);
     #endregion
-    /// <summary>
-    /// 转化核心方法
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="source"></param>
-    /// <param name="dest"></param>
-    /// <param name="convertContext"></param>
-    /// <returns></returns>
-    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
+    /// <inheritdoc />
+    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContex)
     {
-        yield return Expression.Assign(dest, _destActivator.New(context, source));
-        var cache = context.SetCache(convertContext, _key, source, dest);
+        var dest = builder.Declare(_destType, "dest");
+        builder.Assign(dest, _destActivator.New(context, builder, source));
+        var cache = context.SetCache(convertContex, _key, source, dest);
         if (cache is not null)
-            yield return cache;
-        if (_copier is null)
-            yield break;
-        foreach (var item in _copier.Copy(context, source, dest))
-            yield return CleanVisitor.Clean(item);
+            builder.Add(cache);
+        _copier?.BuildAction(context, builder, source, dest);
+        return dest;
     }
     /// <inheritdoc />
     public void Preview(IComplexBundle parent)

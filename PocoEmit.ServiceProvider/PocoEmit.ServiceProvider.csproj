@@ -19,6 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\PocoEmit.Builders\PocoEmit.Builders.csproj" />
 		<ProjectReference Include="..\PocoEmit.Mapper\PocoEmit.Mapper.csproj" />
 		<ProjectReference Include="..\PocoEmit\PocoEmit.csproj" />
 	</ItemGroup>

@@ -53,9 +53,7 @@ public class CollectionConverter(IMapperOptions options, Type sourceType, Type c
     #region IEmitConverter
     /// <inheritdoc />
     Expression IEmitConverter.Convert(Expression source)
-        => BuildContext.WithPrepare(_options, this)
-        .Enter(_key)
-        .CallComplexConvert(_key, source);
+        => throw new NotImplementedException();
     #endregion
     #region IBuilder<LambdaExpression>
     /// <summary>
@@ -75,13 +73,14 @@ public class CollectionConverter(IMapperOptions options, Type sourceType, Type c
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
+    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
     {
-        yield return Expression.Assign(dest, New(context, source));
+        var dest = builder.Declare(_collectionType, "dest");
+        builder.Assign(dest, New(context, builder, source));
         var cache = context.SetCache(convertContext, _key, source, dest);
         if (cache is not null)
-            yield return cache;
-        foreach (var item in _copier.Copy(context, source, dest))
-            yield return item;        
+            builder.Add(cache);
+        _copier.BuildAction(context, builder, source, dest);
+        return dest;
     }
 }

@@ -1,11 +1,10 @@
+using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Complexes;
-using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using PocoEmit.Copies;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -62,40 +61,42 @@ public class DictionaryCopier(Type dictionaryType, Type keyType, Type elementTyp
     void IComplexPreview.Preview(IComplexBundle parent)
         => parent.Visit(_elementConverter);
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
     {
         dest = CheckInstance(dest);
-        yield return _sourceVisitor.Travel(source, (k, v) => CopyElement(context, dest, k, v, _keyConverter, _elementConverter));
+        builder.Add(_sourceVisitor.Travel(builder, source, (k, v) => CopyElement(context, builder, dest, k, v, _keyConverter, _elementConverter)));
     }
     /// <summary>
     /// 复制子元素
     /// </summary>
     /// <param name="context"></param>
+    /// <param name="builder"></param>
     /// <param name="dest"></param>
-    /// <param name="key"></param>
-    /// <param name="element"></param>
+    /// <param name="sourceKey"></param>
+    /// <param name="sourceElement"></param>
     /// <param name="keyConverter"></param>
     /// <param name="elementConverter"></param>
     /// <returns></returns>
-    public Expression CopyElement(IBuildContext context, Expression dest, Expression key, Expression element, IEmitConverter keyConverter, IEmitConverter elementConverter)
-    {
-        if (_ignoreDefault)
+    public Expression CopyElement(IBuildContext context, IEmitBuilder builder, Expression dest, Expression sourceKey, Expression sourceElement, IEmitConverter keyConverter, IEmitConverter elementConverter)
+    {        
+        var scope = builder.CreateScope();
+        var key = scope.Declare(_keyType, "key");        
+        scope.Assign(key, context.Convert(scope, keyConverter, sourceKey));
+        var sourceItem = scope.Temp(sourceElement.Type, sourceElement);
+        var item = Expression.MakeIndex(dest, _itemProperty, [key]);
+
+        var assignScope = builder.CreateScope();
+        var result = context.Convert(assignScope, elementConverter, sourceItem);
+        assignScope.Assign(item, result);
+
+        if (PairTypeKey.CheckNullCondition(_keyType))
         {
-            var elementType = element.Type;
-            var elementConvert = context.Convert(elementConverter, element);
-            if (EmitHelper.CheckComplexSource(element, false))
-            {
-                var value0 = Expression.Parameter(elementType, "value0");
-                return Expression.Block([value0],
-                    Expression.Assign(value0, element),
-                    Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [context.Convert(keyConverter, key)]), context.Convert(elementConverter, value0)))
-                );
-            }
-            else
-            {
-                return Expression.IfThen(Expression.NotEqual(element, Expression.Default(elementType)), Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [context.Convert(keyConverter, key)]), context.Convert(elementConverter, element)));
-            }                
+            scope.IfNotDefault(key, assignScope.Create());
         }
-        return Expression.Assign(Expression.MakeIndex(dest, _itemProperty, [context.Convert(keyConverter, key)]), context.Convert(elementConverter, element));
+        else
+        {
+            scope.Assign(item, assignScope.Create());
+        }
+        return scope.Create();
     }
 }

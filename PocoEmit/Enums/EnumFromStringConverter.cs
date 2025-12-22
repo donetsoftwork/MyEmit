@@ -15,7 +15,7 @@ namespace PocoEmit.Enums;
 /// <param name="enumType"></param>
 /// <param name="fields"></param>
 public class EnumFromStringConverter(Type enumType, IEnumField[] fields)
-     : IEmitConverter
+    : IEmitConverter
 {
     /// <summary>
     /// 枚举转化为字符串
@@ -50,41 +50,29 @@ public class EnumFromStringConverter(Type enumType, IEnumField[] fields)
     /// <inheritdoc />
     public Expression Convert(Expression source)
     {
-        var conditions = CreateConditions(source, _fields);
-        return EmitHelper.BuildConditions(_enumType, conditions);
-    }    
-    #region CreateConditions
-    /// <summary>
-    /// 构造条件分支
-    /// </summary>
-    /// <returns></returns>
-    public static List<KeyValuePair<Expression, Expression>> CreateConditions(Expression source, IEnumField[] fields)
-    {
-        var conditions = new List<KeyValuePair<Expression, Expression>>(fields.Length);
+        var builder = new SwitchBuilder(Expression.Constant(true), _enumType);
         var memberCheck = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var field in fields)
+        foreach (var field in _fields)
         {
             var member = field.Member;
             if (string.IsNullOrWhiteSpace(member) || memberCheck.Contains(member))
                 continue;
-            conditions.Add(new KeyValuePair<Expression, Expression>(
-                CreateCondition(source, member),
-                field.Expression
-            ));
+            // case StringComparer.OrdinalIgnoreCase.Equals(source, "First") :
+            //   return Enum.First;
+            builder.Case(field.Expression, CreateCondition(source, member));
             memberCheck.Add(member);
         }
-        foreach (var field in fields)
+        foreach (var field in _fields)
         {
             var member = field.Name;
             if (memberCheck.Contains(member))
                 continue;
-            conditions.Add(new KeyValuePair<Expression, Expression>(
-                CreateCondition(source, member),
-                field.Expression
-            ));
+            // case StringComparer.OrdinalIgnoreCase.Equals(source, "One") :
+            //   return Enum.First;
+            builder.Case(field.Expression, CreateCondition(source, member));
             memberCheck.Add(member);
         }
-        return conditions;
+        return builder.Build(Expression.Default(_enumType));
     }
     /// <summary>
     /// 构造条件
@@ -94,7 +82,6 @@ public class EnumFromStringConverter(Type enumType, IEnumField[] fields)
     /// <returns></returns>
     public static Expression CreateCondition(Expression source, string name)
         => Expression.Call(_comparer, _comparisonMethod, source, Expression.Constant(name));
-    #endregion
     /// <summary>
     /// 枚举判断相同
     /// </summary>

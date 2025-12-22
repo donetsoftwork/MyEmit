@@ -50,6 +50,10 @@ public class TreeTests : CollectionTestBase
 
         var mapper = Mapper.Create(new MapperOptions { LambdaInvoke = true });
         mapper.UseCollection();
+        var expression = _mapper.BuildConverter<TreeBranch, TreeBranchDTO2>();
+        Assert.NotNull(expression);
+        var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
+        Assert.NotNull(code);
         var func = mapper.GetConvertFunc<TreeBranch, TreeBranchDTO2>();
         TreeBranchDTO2 dto = func(trunk);
         Assert.NotNull(dto);
@@ -68,6 +72,7 @@ public class TreeTests : CollectionTestBase
         var trunk = CreateTreeBranch();
         var branch1 = trunk.Branches[0];
         var expression = _mapper.BuildConverter<TreeBranch, TreeBranchDTO>();
+        Assert.NotNull(expression);
         var code = FastExpressionCompiler.ToCSharpPrinter.ToCSharpString(expression);
         Assert.NotNull(code);
         var func = FastExpressionCompiler.ExpressionCompiler.CompileFast(expression);

@@ -30,9 +30,19 @@ public class ServiceBuilder(IServiceProviderBuilder provider, Type serviceType)
     /// <inheritdoc />
     public Expression Create()
     {
-        var provider = _provider.CreateProvider();
-        var builder = provider.Builder;
-        builder.Add(EmitProviderHelper.CallGetService(provider.Provider, _serviceType));
+        var builder = new EmitBuilder();
+        var service = Create(builder);
+        builder.Add(service);
         return builder.Create();
+    }
+    /// <summary>
+    /// 构造表达式构造器
+    /// </summary>
+    /// <returns></returns>
+    public Expression Create(EmitBuilder builder)
+    {
+        var provider = _provider.CreateProvider();
+        builder.Join(provider.Builder);
+        return EmitProviderHelper.CallGetService(builder, provider.Provider, _serviceType);
     }
 }

@@ -16,6 +16,7 @@ namespace PocoEmit.Enums;
 /// <param name="destBundle"></param>
 public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundle)
     : IEmitConverter
+    , IArgumentExecuter
 {
     #region 配置
     private readonly PairTypeKey _key = new(sourceBundle.EnumType, destBundle.EnumType);
@@ -45,16 +46,25 @@ public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundl
     /// <inheritdoc />
     public Expression Convert(Expression source)
     {
-        if(_sourceBundle.HasFlag && _sourceBundle is FlagEnumBundle sourceFlagBundle)
+        var builder = new EmitBuilder();
+        builder.Add(Execute(builder, source));
+        return builder.Create();
+    }
+    #region IArgumentExecuter
+    /// <inheritdoc />
+    public Expression Execute(IEmitBuilder builder, Expression argument)
+    {
+        if (_sourceBundle.HasFlag && _sourceBundle is FlagEnumBundle sourceFlagBundle)
         {
-            if(_destBundle.HasFlag && _destBundle is FlagEnumBundle destFlagBundle)
-                return FlagToFlag(source, sourceFlagBundle.Fields, destFlagBundle);
-            return FlagToEnum(source, sourceFlagBundle.Fields);
+            if (_destBundle.HasFlag && _destBundle is FlagEnumBundle destFlagBundle)
+                return FlagToFlag(builder, argument, sourceFlagBundle.Fields, destFlagBundle);
+            return FlagToEnum(builder, argument, sourceFlagBundle.Fields);
         }
         //if (_destBundle.HasFlag && _destBundle is FlagEnumBundle destFlagBundle)
         //    return EnumToFlag(source, destFlagBundle);
-        return EnumToEnum(source, [.. _sourceBundle.Fields]);
+        return EnumToEnum(argument, [.. _sourceBundle.Fields]);
     }
+    #endregion
     /// <summary>
     /// 枚举转化为枚举
     /// </summary>
@@ -69,58 +79,46 @@ public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundl
             var destField = Map(sourceField, _destBundle);
             if (destField == null)
                 continue;
+            // case Enum1.First: return Enum2.First;
             cases.Add(Expression.SwitchCase(
                 destField.Expression,
                 sourceField.Expression
             ));
         }
-        return Expression.Switch(source,
+        return Expression.Switch(
+            _destEnumType,
+            source,
             Expression.Default(_destEnumType),
-            [.. cases]
+            null,
+            cases
         );
     }
     #region FlagToEnum
     /// <summary>
     /// 位域转化为枚举
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="source"></param>
     /// <param name="sourceFields"></param>
     /// <returns></returns>
-    public Expression FlagToEnum(Expression source, List<FlagEnumField> sourceFields)
+    public Expression FlagToEnum(IEmitBuilder builder, Expression source, List<FlagEnumField> sourceFields)
     {
-        var sourceUnderType = _sourceBundle.UnderType;
-        var sourceUnder = Expression.Parameter(sourceUnderType, "sourceUnder");
-        var dest = Expression.Parameter(_destEnumType, "dest");
-        var conditions = CreateFlagToEnumConditions(sourceUnder, dest, sourceFields, _destBundle);
-        var condition = EmitHelper.BuildConditions(conditions);
-        return Expression.Block([sourceUnder, dest],
-            Expression.Assign(sourceUnder, _sourceToUnderConverter.FromEnum(source)),
-            //Expression.Assign(dest, Expression.Default(_destEnumType)),
-            condition,
-            dest
-        );
-    }
-    /// <summary>
-    /// 构造条件分支
-    /// </summary>
-    /// <returns></returns>
-    public static List<KeyValuePair<Expression, Expression>> CreateFlagToEnumConditions(Expression sourceUnder, Expression dest, List<FlagEnumField> sourceFields, IEnumBundle destBundle)
-    {
-        var conditions = new List<KeyValuePair<Expression, Expression>>(sourceFields.Count);
+        // int value = (int)enum;
+        var sourceUnder = builder.Temp(_sourceBundle.UnderType, builder.Execute(_sourceToUnderConverter, source));
+        var switchBuilder = new SwitchBuilder(Expression.Constant(true), _destEnumType);
         foreach (var sourceField in sourceFields)
         {
             var under = sourceField.Under;
             if (System.Convert.ToUInt64(under.Value) == 0UL)
                 continue;
-            var destField = Map(sourceField, destBundle);
+            var destField = Map(sourceField, _destBundle);
             if (destField == null)
                 continue;
-            conditions.Add(new KeyValuePair<Expression, Expression>(
-                CreateFlagCondition(sourceUnder, under),
-                Expression.Assign(dest, destField.Expression)
-            ));
+            // case (value & Enum.First == Enum.First) :
+            //   return 1;
+            switchBuilder.Case(destField.Expression, CreateFlagCondition(sourceUnder, under));
         }
-        return conditions;
+        return switchBuilder.Build(Expression.Default(_destEnumType));
     }
     #endregion
     /// <summary>
@@ -129,7 +127,7 @@ public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundl
     /// <param name="source"></param>
     /// <param name="under"></param>
     /// <returns></returns>
-    public static Expression CreateFlagCondition(Expression source, Expression under)
+    private static BinaryExpression CreateFlagCondition(Expression source, Expression under)
         => Expression.Equal(under, Expression.And(source, under));
     ///// <summary>
     ///// 枚举转化为位域
@@ -144,52 +142,41 @@ public class EnumToEnumConverter(IEnumBundle sourceBundle, IEnumBundle destBundl
     /// <summary>
     /// 位域转化为位域
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="source"></param>
     /// <param name="sourceFields"></param>
     /// <param name="destFlagBundle"></param>
     /// <returns></returns>
-    public Expression FlagToFlag(Expression source, List<FlagEnumField> sourceFields, FlagEnumBundle destFlagBundle)
+    public Expression FlagToFlag(IEmitBuilder builder, Expression source, List<FlagEnumField> sourceFields, FlagEnumBundle destFlagBundle)
     {
         var sourceUnderType = _sourceBundle.UnderType;
         var destUnderType = _destBundle.UnderType;
-        var sourceUnder = Expression.Parameter(sourceUnderType, "sourceUnder");
-        var destUnder = Expression.Parameter(destUnderType, "destUnder");
-        var conditions = new List<Expression>(sourceFields.Count + 3)
-        {
-            Expression.Assign(sourceUnder, _sourceToUnderConverter.FromFlag(source)),
-            //Expression.Assign(destUnder, Expression.Default(destUnderType))
-        };
-        CheckFlagToFlagConditions(conditions, sourceUnder, destUnder, sourceFields, destFlagBundle);
-        conditions.Add(_destFromUnderConverter.ToFlag(destUnder));
-
-        return Expression.Block([sourceUnder, destUnder],
-            conditions
-        );
-    }
-    /// <summary>
-    /// 构造条件分支
-    /// </summary>
-    /// <returns></returns>
-    public static void CheckFlagToFlagConditions(ICollection<Expression> conditions, Expression sourceUnder, Expression destUnder, List<FlagEnumField> sourceFields, FlagEnumBundle destBundle)
-    {
+        // sourceUnder和destUnder很可能类型一下,不能用Temp
+        // int sourceUnder = (int)source;
+        var sourceUnder = builder.Declare(sourceUnderType, "sourceUnder");
+        builder.Assign(sourceUnder, _sourceToUnderConverter.Convert(source));
+        // int destUnder = default;
+        var destUnder = builder.Declare(destUnderType, "destUnder");
+        builder.Assign(destUnder, Expression.Default(destUnderType));
+        //var switchBuilder = new SwitchBuilder(Expression.Constant(true), _destEnumType);
         foreach (var sourceField in sourceFields)
         {
             var sourceFieldUnder = sourceField.Under;
             if (System.Convert.ToUInt64(sourceFieldUnder.Value) == 0UL)
                 continue;
-            var destFields = MapFlag(sourceField, destBundle);
+            var destFields = MapFlag(sourceField, destFlagBundle);
             if (destFields.Length == 0)
                 continue;
             var flag = destFields.Aggregate(0UL, (a, b) => a | b.Flag);
-            if(flag == 0UL)
+            if (flag == 0UL)
                 continue;
-            var underType = destBundle.UnderType;
-            var destFieldUnder = Expression.Constant(System.Convert.ChangeType(flag, underType));
-            conditions.Add(Expression.IfThen(
-                CreateFlagCondition(sourceUnder, sourceFieldUnder),
-                Expression.OrAssign(destUnder, destFieldUnder)
-            ));
+            var destFieldUnder = Expression.Constant(System.Convert.ChangeType(flag, destUnderType));
+            // if (value & SourceEnum.First == SourceEnum.First) 
+            //   destUnder = destUnder | DestEnum.First;
+            builder.IfThen(CreateFlagCondition(sourceUnder, sourceFieldUnder), Expression.OrAssign(destUnder, destFieldUnder));
         }
+        // return (DestEnum)destUnder;
+        return _destFromUnderConverter.ToFlag(destUnder);
     }
     /// <summary>
     /// 按源字段映射到目标字段(优先Member)

@@ -43,6 +43,6 @@ public sealed class SelfMethodConverter(in PairTypeKey key, MethodInfo method)
     /// <summary>
     /// ToString
     /// </summary>
-    public static SelfMethodConverter ConvertToString(Type sourceType) 
-        => new(new(sourceType,typeof(string)), ToStringMethod);
+    public static SelfMethodConverter ConvertToString(Type sourceType)
+        => new(new(sourceType, typeof(string)), ToStringMethod);
 }

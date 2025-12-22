@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Collections;
 using PocoEmit.Collections.Visitors;
 using System;
@@ -21,15 +22,16 @@ public class DictionaryValuesVisitor(Type dictionaryType, Type elementType, Prop
     private readonly PropertyInfo _valuesProperty = valuesProperty;
     #endregion
     /// <inheritdoc />
-    Expression IEmitElementVisitor.Travel(Expression collection, Func<Expression, Expression> callback)
-        => Travel(collection, _valuesProperty/*, _valuesVisitor*/, callback);
+    Expression IEmitElementVisitor.Travel(IEmitBuilder builder, Expression collection, Func<Expression, Expression> callback)
+        => Travel(builder, collection, _valuesProperty/*, _valuesVisitor*/, callback);
     /// <summary>
     /// 遍历字典Values
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="dic"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static Expression Travel(Expression dic, Func<Expression, Expression> callback)
+    public static Expression Travel(IEmitBuilder builder, Expression dic, Func<Expression, Expression> callback)
     {
         var dictionaryType = dic.Type;
         var bundle = CollectionContainer.Instance.DictionaryCacher.Get(dictionaryType);
@@ -37,27 +39,24 @@ public class DictionaryValuesVisitor(Type dictionaryType, Type elementType, Prop
         if (valuesProperty is null)
             return Expression.Empty();
         //EnumerableVisitor valuesVisitor = new(dictionaryType);
-        return Travel(dic, valuesProperty/*, valuesVisitor*/, callback);
+        return Travel(builder, dic, valuesProperty/*, valuesVisitor*/, callback);
     }
     /// <summary>
     /// 遍历字典Values
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="dic"></param>
     /// <param name="valuesProperty"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static Expression Travel(Expression dic, PropertyInfo valuesProperty/*, IEmitElementVisitor valuesVisitor*/, Func<Expression, Expression> callback)
+    public static Expression Travel(IEmitBuilder builder, Expression dic, PropertyInfo valuesProperty/*, IEmitElementVisitor valuesVisitor*/, Func<Expression, Expression> callback)
     {
         //IEmitElementVisitor valuesVisitor = CollectionContainer.Instance.VisitorCacher.Get(valuesProperty.PropertyType);
         //if(valuesVisitor is null) 
         //    return Expression.Empty();    
-        var values = Expression.Variable(valuesProperty.PropertyType, "values");
+        var values = builder.Declare(valuesProperty.PropertyType, "values");
         //var instance = Expression.Variable(_collectionType, "dic");
-        return Expression.Block(
-            [values],
-            //Expression.Assign(instance, CheckInstance(collection)),
-            Expression.Assign(values, Expression.Property(dic, valuesProperty)),
-            EnumerableVisitor.Travel(values, value => callback(value))
-        );
+        builder.Assign(values, Expression.Property(dic, valuesProperty));
+        return EnumerableVisitor.Travel(builder, values, value => callback(value));
     }
 }

@@ -18,12 +18,12 @@ public class SingletonBuilder(ConstantExpression provider)
     /// </summary>
     /// <param name="provider"></param>
     public SingletonBuilder(IServiceProvider provider)
-        : this(Expression.Constant(provider, typeof(IKeyedServiceProvider)))
+        : this(Expression.Constant(provider, typeof(IServiceProvider)))
     {
     }
     #region 配置
     private readonly ConstantExpression _provider = provider;
-    private readonly ServiceProviderBuilder _builder = new(typeof(IServiceProvider), provider, new());
+    private readonly ProviderBuilder _builder = new(typeof(IServiceProvider), provider, new());
     /// <summary>
     /// IServiceProvider
     /// </summary>
@@ -32,14 +32,14 @@ public class SingletonBuilder(ConstantExpression provider)
     /// <summary>
     /// IServiceProvider
     /// </summary>
-    public ServiceProviderBuilder Builder 
+    public ProviderBuilder Builder 
         => _builder;
     #endregion
     /// <inheritdoc />
-    public ServiceProviderBuilder CreateProvider()
+    public ProviderBuilder CreateProvider()
         => _builder;
     /// <inheritdoc />
-    public ServiceProviderBuilder CreateKeyed()
+    public ProviderBuilder CreateKeyed()
         => CreateKeyed(_provider, Expression.Parameter(typeof(IKeyedServiceProvider), "provider"));
     /// <summary>
     /// 构造IKeyedServiceProvider
@@ -47,6 +47,6 @@ public class SingletonBuilder(ConstantExpression provider)
     /// <param name="provider"></param>
     /// <param name="keyed"></param>
     /// <returns></returns>
-    private static ServiceProviderBuilder CreateKeyed(ConstantExpression provider, ParameterExpression keyed)
+    private static ProviderBuilder CreateKeyed(ConstantExpression provider, ParameterExpression keyed)
         => new(typeof(IKeyedServiceProvider), keyed, new VariableBuilder(keyed, Expression.Convert(provider, typeof(IKeyedServiceProvider))));
 }

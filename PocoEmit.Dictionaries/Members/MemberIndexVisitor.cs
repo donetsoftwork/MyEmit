@@ -51,12 +51,13 @@ public class MemberIndexVisitor(IMapperOptions options, MemberBundle bundle, Typ
     Type IElementIndexVisitor.KeyType
         => typeof(string);
     #endregion
-    Expression IIndexVisitor.Travel(Expression instance, Func<Expression, Expression, Expression> callback)
-        => TravelIndex(_options, string.Empty, _bundle, _names, instance, _elementType, callback);
+    Expression IIndexVisitor.Travel(IEmitBuilder builder, Expression instance, Func<Expression, Expression, Expression> callback)
+        => TravelIndex(_options, builder, string.Empty, _bundle, _names, instance, _elementType, callback);
     /// <summary>
     /// 索引遍历
     /// </summary>
     /// <param name="options"></param>
+    /// <param name="builder"></param>
     /// <param name="prefix"></param>
     /// <param name="bundle"></param>
     /// <param name="names"></param>
@@ -64,27 +65,24 @@ public class MemberIndexVisitor(IMapperOptions options, MemberBundle bundle, Typ
     /// <param name="elementType"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static Expression TravelIndex(IMapperOptions options, string prefix, MemberBundle bundle, IEnumerable<string> names, Expression instance, Type elementType, Func<Expression, Expression, Expression> callback)
+    public static Expression TravelIndex(IMapperOptions options, IEmitBuilder builder, string prefix, MemberBundle bundle, IEnumerable<string> names, Expression instance, Type elementType, Func<Expression, Expression, Expression> callback)
     {
         var members = bundle.EmitReaders;
-        var variables = new List<ParameterExpression>();
-        var expressions = new List<Expression>(members.Count);
-        TravelMembers(prefix, members, names, options, instance, variables, expressions, elementType, callback);
-        return Expression.Block(variables, expressions);
+        TravelMembers(builder, prefix, members, names, options, instance, elementType, callback);
+        return null;
     }
     /// <summary>
     /// 遍历成员
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="prefix"></param>
     /// <param name="members"></param>
     /// <param name="names"></param>
     /// <param name="options"></param>
     /// <param name="instance"></param>
-    /// <param name="variables"></param>
-    /// <param name="expressions"></param>
     /// <param name="elementType"></param>
     /// <param name="callback"></param>
-    public static void TravelMembers(string prefix, IDictionary<string, IEmitMemberReader> members, IEnumerable<string> names, IMapperOptions options, Expression instance, List<ParameterExpression> variables, List<Expression> expressions, Type elementType, Func<Expression, Expression, Expression> callback)
+    public static void TravelMembers(IEmitBuilder builder, string prefix, IDictionary<string, IEmitMemberReader> members, IEnumerable<string> names, IMapperOptions options, Expression instance, Type elementType, Func<Expression, Expression, Expression> callback)
     {
         var dictionaryCacher = CollectionContainer.Instance.DictionaryCacher;
         foreach (var name in names)
@@ -96,15 +94,15 @@ public class MemberIndexVisitor(IMapperOptions options, MemberBundle bundle, Typ
             var itemType = reader.ValueType;
             if (PairTypeKey.CheckValueType(itemType, elementType))
             {
-                expressions.Add(callback(Expression.Constant(fullName), reader.Read(instance)));
+                builder.Add(callback(Expression.Constant(fullName), reader.Read(instance)));
             }
             else if (elementType == typeof(object))
             {
-                expressions.Add(callback(Expression.Constant(fullName), Expression.Convert(reader.Read(instance), typeof(object))));
+                builder.Add(callback(Expression.Constant(fullName), Expression.Convert(reader.Read(instance), typeof(object))));
             }
             else if (ReflectionType.HasGenericType(itemType, typeof(IDictionary<,>)))
             {
-                TravelDictionary(fullName, instance, variables, expressions, itemType, dictionaryCacher.Get(itemType), elementType, reader, callback);
+                TravelDictionary(builder, fullName, instance, itemType, dictionaryCacher.Get(itemType), elementType, reader, callback);
             }
             else if (itemType.IsArray
                 || ReflectionType.HasGenericType(itemType, typeof(IEnumerable<>))
@@ -118,17 +116,9 @@ public class MemberIndexVisitor(IMapperOptions options, MemberBundle bundle, Typ
                 var count = itemMembers.Count;
                 if (count == 0)
                     continue;
-                List<ParameterExpression> itemVariables = [];
-                List<Expression> itemExpressions = new(count);
-                var item = Expression.Parameter(itemType, name);
-                TravelMembers(fullName, itemMembers, itemMembers.Keys, options, item, itemVariables, itemExpressions, elementType, callback);
-                if (itemExpressions.Count > 0)
-                {
-                    variables.Add(item);
-                    expressions.Add(Expression.Assign(item, reader.Read(instance)));
-                    variables.AddRange(itemVariables);
-                    expressions.AddRange(itemExpressions);
-                }
+                var item = builder.Declare(itemType, name);
+                builder.Assign(item, reader.Read(instance));
+                TravelMembers(builder, fullName, itemMembers, itemMembers.Keys, options, item, elementType, callback);
             }
         }
     }
@@ -185,30 +175,27 @@ public class MemberIndexVisitor(IMapperOptions options, MemberBundle bundle, Typ
     /// <summary>
     /// 遍历字典
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="prefix"></param>
     /// <param name="parent"></param>
-    /// <param name="variables"></param>
-    /// <param name="expressions"></param>
     /// <param name="dictionaryType"></param>
     /// <param name="bundle"></param>
     /// <param name="elementType"></param>
     /// <param name="dicReader"></param>
     /// <param name="callback"></param>
-    public static void TravelDictionary(string prefix, Expression parent, List<ParameterExpression> variables, List<Expression> expressions, Type dictionaryType, DictionaryBundle bundle, Type elementType, IEmitMemberReader dicReader, Func<Expression, Expression, Expression> callback)
+    public static void TravelDictionary(IEmitBuilder builder, string prefix, Expression parent, Type dictionaryType, DictionaryBundle bundle, Type elementType, IEmitMemberReader dicReader, Func<Expression, Expression, Expression> callback)
     {
         if (bundle is null)
             return;
         var dicElementType = bundle.ValueType;
         if (!PairTypeKey.CheckValueType(dicElementType, elementType))
             return;
-        var dic = Expression.Parameter(dictionaryType, "dic");
-        variables.Add(dic);
-        expressions.Add(Expression.Assign(dic, dicReader.Read(parent)));
-        expressions.Add(DictionaryIndexVisitor.Travel(dic, bundle.Keys, bundle.Items, (k, v) => callback(Expression.Call(null, _concatMethod, Expression.Constant(prefix), k), v)));
+        var dic = builder.Declare(dictionaryType, "dic");
+        builder.Assign(dic, dicReader.Read(parent));
+        builder.Add(DictionaryIndexVisitor.Travel(builder, dic, bundle.Keys, bundle.Items, (k, v) => callback(Expression.Call(null, _concatMethod, Expression.Constant(prefix), k), v)));
     }
     /// <summary>
     /// string.Concat
     /// </summary>
-
-    private static MethodInfo _concatMethod = EmitHelper.GetMethodInfo(() => string.Concat("prefix", "Item"));
+    private static readonly MethodInfo _concatMethod = EmitHelper.GetMethodInfo(() => string.Concat("prefix", "Item"));
 }

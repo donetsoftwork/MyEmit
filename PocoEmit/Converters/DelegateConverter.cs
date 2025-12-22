@@ -11,7 +11,7 @@ namespace PocoEmit.Converters;
 /// <param name="poco"></param>
 /// <param name="key"></param>
 /// <param name="convertFunc"></param>
-public class FuncConverter(IPocoOptions poco,in PairTypeKey key, LambdaExpression convertFunc)
+public class FuncConverter(IPocoOptions poco, in PairTypeKey key, LambdaExpression convertFunc)
     : ArgumentFuncCallBuilder(poco, key, convertFunc)
     , IEmitConverter
 {

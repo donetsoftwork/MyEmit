@@ -3,7 +3,6 @@ using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Copies;
@@ -42,13 +41,13 @@ public sealed class CompatibleCopier(IEmitCopier original, Type innerSourceType,
         => false;
     #endregion
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
     {
         if (_innerSourceType != source.Type)
             source = Expression.Convert(source, _innerSourceType);
         if (_destType != dest.Type)
             dest = Expression.Convert(dest, _destType);
-        return _original.Copy(context, source, dest);
+        _original.BuildAction(context, builder, source, dest);
     }
     /// <inheritdoc />
     public void Preview(IComplexBundle parent)

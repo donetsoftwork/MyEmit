@@ -20,7 +20,7 @@ public static partial class PocoDefaultServices
     /// <param name="mapper"></param>
     /// <param name="provider"></param>
     /// <returns></returns>
-    public static ServiceDefaultValueBuilder UseSingleton(this IMapper mapper, IServiceProvider provider)
+    public static ServiceDefaultValueProvider UseSingleton(this IMapper mapper, IServiceProvider provider)
         => UseProvider((Mapper)mapper, new SingletonBuilder(provider));
     /// <summary>
     /// 使用容器作用域
@@ -28,18 +28,18 @@ public static partial class PocoDefaultServices
     /// <param name="mapper"></param>
     /// <param name="root"></param>
     /// <returns></returns>
-    public static ServiceDefaultValueBuilder UseScope(this IMapper mapper, IServiceProvider root)
-        => UseProvider((Mapper)mapper, new ScopeBuilder(root));
+    public static ServiceDefaultValueProvider UseScope(this IMapper mapper, IServiceProvider root)
+        => UseProvider((Mapper)mapper, new ScopeServiceBuilder(root));
     /// <summary>
     /// 使用定位器
     /// </summary>
     /// <param name="mapper"></param>
     /// <param name="builder"></param>
     /// <returns></returns>
-    private static ServiceDefaultValueBuilder UseProvider(Mapper mapper, IServiceProviderBuilder builder)
+    private static ServiceDefaultValueProvider UseProvider(Mapper mapper, IServiceProviderBuilder builder)
     {
-        var defaultValue = new ServiceDefaultValueBuilder(mapper, builder);
-        mapper.DefaultValueBuilder = defaultValue;
+        var defaultValue = new ServiceDefaultValueProvider(mapper, builder);
+        mapper.DefaultValueProvider = defaultValue;
         UseProviderDefault(mapper, builder);
         return defaultValue;
     }

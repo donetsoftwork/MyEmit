@@ -1,7 +1,6 @@
 using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Copies;
@@ -19,8 +18,8 @@ public class ActionCopier(IPocoOptions poco, LambdaExpression copyAction)
     bool ICompileInfo.Compiled
         => false;
     /// <inheritdoc />
-    IEnumerable<Expression> IEmitCopier.Copy(IBuildContext context, Expression source, Expression dest)
-        => [Call(source, dest)];
+    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+        => builder.Add(Call(source, dest));
     /// <inheritdoc />
     void IComplexPreview.Preview(IComplexBundle parent) { }
 }

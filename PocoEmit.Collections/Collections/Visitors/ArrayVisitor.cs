@@ -29,35 +29,35 @@ public class ArrayVisitor(Type arrayType, Type elementType)
         => typeof(int);
     #endregion
     /// <inheritdoc />
-    Expression IIndexVisitor.Travel(Expression collection, Func<Expression, Expression, Expression> callback)
-        => Travel(collection, callback);
+    Expression IIndexVisitor.Travel(IEmitBuilder builder, Expression collection, Func<Expression, Expression, Expression> callback)
+        => Travel(builder, collection, callback);
     /// <inheritdoc />
-    Expression IEmitElementVisitor.Travel(Expression collection, Func<Expression, Expression> callback)
-        => Travel(collection, (_, item) => callback(item));
+    Expression IEmitElementVisitor.Travel(IEmitBuilder builder, Expression collection, Func<Expression, Expression> callback)
+        => Travel(builder, collection, (_, item) => callback(item));
     #region Travel
     /// <summary>
     /// 数组遍历
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="array"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static Expression Travel(Expression array, Func<Expression, Expression> callback)
-        => Travel(array, (_, item) => callback(item));
+    public static Expression Travel(IEmitBuilder builder, Expression array, Func<Expression, Expression> callback)
+        => Travel(builder, array, (_, item) => callback(item));
     /// <summary>
     /// 数组遍历
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="array"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static Expression Travel(Expression array, Func<Expression, IndexExpression, Expression> callback)
+    public static Expression Travel(IEmitBuilder builder, Expression array, Func<Expression, IndexExpression, Expression> callback)
     {
-        var index = Expression.Variable(typeof(int), "index");
-        var len = Expression.Variable(typeof(int), "len");
-        return Expression.Block([index, len],
-            Expression.Assign(len, Expression.ArrayLength(array)),
-            Expression.Assign(index, Expression.Constant(0)),
-            EmitHelper.For(index, len, i => callback(i, Expression.ArrayAccess(array, i)))
-        );
+        var count = builder.Declare<int>("count");
+        var index = builder.Declare<int>("index");
+        builder.Assign(count, Expression.ArrayLength(array));
+        builder.Assign(index, Expression.Constant(0));
+        return EmitHelper.For(index, count, i => callback(i, Expression.ArrayAccess(array, i)));
     }
     #endregion
 }

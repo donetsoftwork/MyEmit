@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Members;
 using System.Linq.Expressions;
@@ -20,10 +21,11 @@ public interface IMemberConverter
     /// 转化成员
     /// </summary>
     /// <param name="context"></param>
+    /// <param name="builder"></param>
     /// <param name="sourceMember"></param>
     /// <param name="dest"></param>
     /// <returns></returns>
-    Expression ConvertMember(IBuildContext context, Expression sourceMember, Expression dest);
+    Expression ConvertMember(IBuildContext context, IEmitBuilder builder, Expression sourceMember, Expression dest);
     ///// <summary>
     ///// 转化成员
     ///// </summary>

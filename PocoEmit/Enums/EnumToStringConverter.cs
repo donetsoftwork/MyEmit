@@ -47,13 +47,18 @@ public class EnumToStringConverter(Type enumType, IEnumField[] fields)
             var member = field.Member;
             if (string.IsNullOrWhiteSpace(member))
                 member = field.Name;
+            // case Enum.First :
+            //   return "First";
             cases[i++] = Expression.SwitchCase(
                 Expression.Constant(member),
                 field.Expression
             );
         }
-        return Expression.Switch(source,
+        return Expression.Switch(
+            typeof(string),
+            source,
             Expression.Call(source, SelfMethodConverter.ToStringMethod),
+            null,
             cases
         );
     }

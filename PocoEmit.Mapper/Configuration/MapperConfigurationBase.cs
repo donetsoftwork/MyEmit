@@ -36,7 +36,7 @@ public abstract partial class MapperConfigurationBase
         _matchConfiguration = new ConcurrentDictionary<PairTypeKey, IMemberMatch>(concurrencyLevel, options.MatchCapacity);
         _primitiveTypes = new ConcurrentDictionary<Type, bool>(concurrencyLevel, options.PrimitiveCapacity);
         _defaultValueConfiguration = new ConcurrentDictionary<Type, ICreator<Expression>>(concurrencyLevel, options.DefaultValueCapacity);
-        _defaultValueConfiguration.TryAdd(typeof(IMapper), ConstantBuilder.Use(this, typeof(IMapper)));
+        _defaultValueConfiguration.TryAdd(typeof(IMapper), ConstantBuilder.Create<IMapper>(this));
         _memberDefaultValueConfiguration = new ConcurrentDictionary<MemberInfo, ICreator<Expression>>(concurrencyLevel, options.MemberDefaultValueCapacity);
         _contextConverters = new ConcurrentDictionary<PairTypeKey, IEmitContextConverter>(concurrencyLevel, options.ContextConverterCapacity);
         _reflectionConstructor = DefaultReflectionConstructor.Default;
@@ -46,7 +46,7 @@ public abstract partial class MapperConfigurationBase
         _copierBuilder = new CopierBuilder(this);
         _copierFactory = new CopierFactory(this);
         _primitives = new PrimitiveConfiguration(this);
-        _defaultValueBuilder = new DefaultValueBuilder(this);
+        _defaultValueProvider = new DefaultValueProvider(this);
         _cached = options.Cached;
     }
     #region 配置
@@ -69,9 +69,9 @@ public abstract partial class MapperConfigurationBase
     /// </summary>
     private readonly PrimitiveConfiguration _primitives;
     /// <summary>
-    /// 默认值构造器
+    /// 默认值提供器
     /// </summary>
-    private DefaultValueBuilder _defaultValueBuilder;
+    private DefaultValueProvider _defaultValueProvider;
     /// <summary>
     /// 
     /// </summary>
@@ -104,10 +104,10 @@ public abstract partial class MapperConfigurationBase
     /// <summary>
     /// 默认值构造器
     /// </summary>
-    public DefaultValueBuilder DefaultValueBuilder
+    public DefaultValueProvider DefaultValueProvider
     {
-        get => _defaultValueBuilder;
-        internal set => _defaultValueBuilder = value ?? throw new ArgumentNullException(nameof(value));
+        get => _defaultValueProvider;
+        internal set => _defaultValueProvider = value ?? throw new ArgumentNullException(nameof(value));
     }
     /// <inheritdoc />
     public ComplexCached Cached

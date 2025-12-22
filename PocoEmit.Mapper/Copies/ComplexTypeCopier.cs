@@ -36,32 +36,22 @@ public class ComplexTypeCopier(IMapperOptions options, IEnumerable<IMemberConver
             member.Preview(parent);
     }
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
     {
-        int index = 0;
-        List<ParameterExpression> variables = [];
-        List<Expression> converters = [];
         foreach (var member in _members)
         {
-            var sourceMember = member.GetSourceMember(source);
+            var sourceMember = builder.Execute(member.SourceReader, source);
             var sourceMemberType = sourceMember.Type;
             if (EmitHelper.CheckComplexSource(sourceMember, _options.CheckPrimitive(sourceMemberType)))
             {
-                var sourceMemberVariable = EmitHelper.Variable(sourceMember, ref index);
-                variables.Add(sourceMemberVariable);
-                converters.Add(Expression.Assign(sourceMemberVariable, sourceMember));
-                converters.Add(member.ConvertMember(context, sourceMemberVariable, dest));
+                var sourceMemberVariable = builder.Temp(sourceMemberType, sourceMember);
+                builder.Add(member.ConvertMember(context, builder, sourceMemberVariable, dest));
             }
             else
             {
-                converters.Add(member.ConvertMember(context, sourceMember, dest));
+                builder.Add(member.ConvertMember(context, builder, sourceMember, dest));
             }
         }
-        if (variables.Count > 0)
-        {
-            return [Expression.Block(variables, converters)];
-        }
-        return converters;
     }
     /// <summary>
     /// 完成

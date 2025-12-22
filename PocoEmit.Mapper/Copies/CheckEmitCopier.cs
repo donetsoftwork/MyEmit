@@ -1,7 +1,6 @@
 using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -34,11 +33,10 @@ public class CheckEmitCopier(IEmitCopier inner, Expression target, MethodInfo me
         => _inner;
     #endregion
     /// <inheritdoc />
-    public override IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
+    public override void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
     {
-        foreach(var item in _inner.Copy(context, source, dest))
-            yield return item;
-        yield return CallMethod(source, dest);
+        _inner.BuildAction(context, builder, source, dest);
+        builder.Add(CallMethod(source, dest));
     }
     /// <inheritdoc />
     public override void Preview(IComplexBundle parent)

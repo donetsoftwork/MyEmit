@@ -10,12 +10,12 @@ using System.Reflection;
 namespace PocoEmit.Mvc;
 
 /// <summary>
-/// 上下文容器
+/// 容器上下文构造器
 /// </summary>
 /// <param name="root"></param>
 /// <param name="accessor"></param>
 public class ContextBuilder(IServiceProvider root, ConstantExpression accessor)
-    : ScopeBuilder(root)
+    : ScopeServiceBuilder(root)
 {
     /// <summary>
     /// 上下文容器
@@ -35,10 +35,10 @@ public class ContextBuilder(IServiceProvider root, ConstantExpression accessor)
         => _accessor;
     #endregion
     /// <inheritdoc />
-    public override ServiceProviderBuilder CreateProvider()
+    public override ProviderBuilder CreateProvider()
         => CreateProvider(_root, _accessor, Expression.Parameter(typeof(IServiceProvider), "provider"));
     /// <inheritdoc />
-    public override ServiceProviderBuilder CreateKeyed()
+    public override ProviderBuilder CreateKeyed()
         => CreateKeyed(_root, _accessor, Expression.Parameter(typeof(IKeyedServiceProvider), "provider"));
     ///// <inheritdoc />
     //public override IServiceProvider GetServiceProvider()
@@ -63,20 +63,17 @@ public class ContextBuilder(IServiceProvider root, ConstantExpression accessor)
     /// <param name="accessor"></param>
     /// <param name="provider"></param>
     /// <returns></returns>
-    private static ServiceProviderBuilder CreateProvider(ConstantExpression root, ConstantExpression accessor, ParameterExpression provider)
+    private static ProviderBuilder CreateProvider(ConstantExpression root, ConstantExpression accessor, ParameterExpression provider)
     {
         var context = Expression.Parameter(typeof(HttpContext), "context");
         // var context = accessor.HttpContext
-        var contextBuilder = new VariableBuilder(context, Expression.Property(accessor, _httpContextProperty));
-        // if(context is not null) provider = context.RequestServices;
-        contextBuilder.AddIfNotNull(Expression.Assign(provider, Expression.Property(context, _requestServicesProperty))); 
-
-        var builder = new VariableBuilder(provider, [.. contextBuilder.Expressions]);
-        builder.AddVariable(context);
-        // if(provider is null) provider = root.GetService<IServiceProvider>();
-        builder.AssignIfNull(EmitProviderHelper.CallGetService(root, typeof(IServiceProvider)));
-        // if(provider is null) provider = root;
-        builder.AssignIfNull(root);
+        var builder = new VariableBuilder(context, Expression.Property(accessor, _httpContextProperty));
+        builder.Change(provider);
+        // if(context is null)
+        //  provider = GetProvider(root);
+        // else
+        //  provider = context.RequestServices;
+        builder.AssignIfDefault(context, EmitProviderHelper.CallGetProvider(root), Expression.Property(context, _requestServicesProperty));        
         return new(typeof(IServiceProvider), provider, builder);
     }
     /// <summary>
@@ -86,20 +83,17 @@ public class ContextBuilder(IServiceProvider root, ConstantExpression accessor)
     /// <param name="accessor"></param>
     /// <param name="provider"></param>
     /// <returns></returns>
-    private static ServiceProviderBuilder CreateKeyed(ConstantExpression root, ConstantExpression accessor, ParameterExpression provider)
+    private static ProviderBuilder CreateKeyed(ConstantExpression root, ConstantExpression accessor, ParameterExpression provider)
     {
         var context = Expression.Parameter(typeof(HttpContext), "context");
         // var context = accessor.HttpContext
-        var contextBuilder = new VariableBuilder(context, Expression.Property(accessor, _httpContextProperty));
-        // if(context is not null) provider = context.RequestServices as IKeyedServiceProvider;
-        contextBuilder.AddIfNotNull(Expression.Assign(provider, Expression.Convert(Expression.Property(context, _requestServicesProperty), typeof(IKeyedServiceProvider))));
-
-        var builder = new VariableBuilder(provider, [.. contextBuilder.Expressions]);
-        builder.AddVariable(context);
-        // if(provider is null) provider = root.GetService<IKeyedServiceProvider>();
-        builder.AssignIfNull(EmitProviderHelper.CallGetService(root, typeof(IKeyedServiceProvider)));
-        // if(provider is null) provider = root as IKeyedServiceProvider;
-        builder.AssignIfNull(Expression.Convert(root, typeof(IKeyedServiceProvider)));
+        var builder = new VariableBuilder(context, Expression.Property(accessor, _httpContextProperty));
+        builder.Change(provider);
+        // if(context is null)
+        //  provider = GetKeyedProvider(root);
+        // else
+        //  provider = (IKeyedServiceProvider)context.RequestServices;
+        builder.AssignIfDefault(context, EmitProviderHelper.CallGetKeyedProvider(root), Expression.Convert(Expression.Property(context, _requestServicesProperty), typeof(IKeyedServiceProvider)));
         return new(typeof(IKeyedServiceProvider), provider, builder);
     }
     /// <summary>

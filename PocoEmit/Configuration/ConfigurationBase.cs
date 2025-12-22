@@ -1,5 +1,6 @@
 using Hand.Reflection;
 using PocoEmit.Builders;
+using PocoEmit.Cachers;
 using PocoEmit.Collections;
 using PocoEmit.Converters;
 using PocoEmit.Reflection;

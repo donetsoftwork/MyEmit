@@ -67,8 +67,8 @@ public class ComplexConvertBuilder(IMapperOptions options)
             return BuildByConvert(sourceType, destType);
         if (destType.IsArray)
             return null;
-        if (ReflectionType.HasGenericType(destType, typeof(IDictionary<,>)))
-            return null;
+        //if (ReflectionType.HasGenericType(destType, typeof(IDictionary<,>)))
+        //    return null;
         if (ReflectionType.HasGenericType(destType, typeof(IEnumerable<>)))
             return null;
         if (!destIsPrimitive && TryBuildByConstructor(sourceType, destType, ref converter))

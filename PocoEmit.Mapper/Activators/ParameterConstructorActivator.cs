@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Maping;
@@ -44,14 +45,14 @@ public class ParameterConstructorActivator(IMapperOptions options, Type returnTy
             parent.Visit(reader as ConvertValueReader);
     }
     /// <inheritdoc />
-    public override Expression New(IBuildContext context, Expression argument)
-        => Expression.New(_constructor, CreateParameters(context, argument));
-    private Expression[] CreateParameters(IBuildContext context, Expression source)
+    public override Expression New(IBuildContext context, ComplexBuilder builder, Expression argument)
+        => Expression.New(_constructor, CreateParameters(context, builder, argument));
+    private Expression[] CreateParameters(IBuildContext context, ComplexBuilder builder, Expression source)
     {
         var arguments = new Expression[_readers.Length];
         var i = 0;
         foreach (var reader in _readers)
-            arguments[i++] = context.Read(reader, source);
+            arguments[i++] = context.Read(builder, reader, source);
         return arguments;
     }
     /// <summary>
@@ -89,7 +90,7 @@ public class ParameterConstructorActivator(IMapperOptions options, Type returnTy
     /// <returns></returns>
     public static IEmitReader CheckDefaultValue(IMapperOptions options, ConstructorParameterMember parameterMember)
     {
-        var builder = options.DefaultValueBuilder.Build(parameterMember);
+        var builder = options.DefaultValueProvider.BuildCore(parameterMember);
         if (builder is null)
         {
             var defaultValue = parameterMember.DefaultValue;

@@ -35,8 +35,8 @@ public sealed class CompiledCopier<TSource, TDest>(IEmitCopier original, Action<
         => true;
     #endregion
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
-        => _original.Copy(context, source, dest);
+    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+        => _original.BuildAction(context, builder, source, dest);
     /// <inheritdoc />
     void IPocoCopier<TSource, TDest>.Copy(TSource from, TDest to)
         => _copyAction(from, to);

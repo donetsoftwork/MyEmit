@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -34,8 +35,8 @@ public class MethodCopier(Expression target, MethodInfo method)
         => false;
     #endregion
     /// <inheritdoc />
-    public virtual IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
-        => [CallMethod(source, dest)];
+    public virtual void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+        => builder.Add(CallMethod(source, dest));
     /// <summary>
     /// 调用方法
     /// </summary>

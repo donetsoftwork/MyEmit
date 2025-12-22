@@ -1,4 +1,5 @@
 using PocoEmit.Activators;
+using PocoEmit.Builders;
 using PocoEmit.Collections.Counters;
 using PocoEmit.Complexes;
 using System;
@@ -31,7 +32,7 @@ public class ArrayActivator(Type arrayType, Type elementType, IEmitCounter lengt
         => _collectionType;
     #endregion
     /// <inheritdoc />
-    Expression IEmitActivator.New(IBuildContext context, Expression argument)
+    Expression IEmitActivator.New(IBuildContext context, ComplexBuilder builder, Expression argument)
         => New(_length.Count(argument));
     /// <summary>
     /// 构造数组

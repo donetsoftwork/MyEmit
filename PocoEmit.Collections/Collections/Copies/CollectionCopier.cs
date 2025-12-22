@@ -1,4 +1,5 @@
 using Hand.Reflection;
+using PocoEmit.Builders;
 using PocoEmit.Collections.Saves;
 using PocoEmit.Collections.Visitors;
 using PocoEmit.Complexes;
@@ -77,30 +78,32 @@ public class CollectionCopier : EmitCollectionBase
     void IComplexPreview.Preview(IComplexBundle parent)
         => parent.Visit(_elementConverter);
     /// <inheritdoc />
-    public IEnumerable<Expression> Copy(IBuildContext context, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
     {
         dest = CheckInstance(dest);
         if (_clearMethod is not null)
-            yield return Expression.Call(dest, _clearMethod);
-        yield return _sourceVisitor.Travel(source, item => CopyElement(context, dest, item));
+            builder.Add(Expression.Call(dest, _clearMethod));
+        builder.Add(_sourceVisitor.Travel(builder, source, item => CopyElement(context, builder, dest, item)));
     }
     /// <summary>
     /// 复制子元素
     /// </summary>
     /// <param name="context"></param>
+    /// <param name="builder"></param>
     /// <param name="dest"></param>
-    /// <param name="item"></param>
+    /// <param name="sourceItem"></param>
     /// <returns></returns>
-    public Expression CopyElement(IBuildContext context, Expression dest, Expression item)
+    public Expression CopyElement(IBuildContext context, ComplexBuilder builder, Expression dest, Expression sourceItem)
     {
-        var sourceItem = Expression.Parameter(_sourceElementType, "sourceItem");
-        var destItem = Expression.Parameter(_elementType, "destItem");
-        return Expression.Block(
-            [sourceItem, destItem],
-            Expression.Assign(sourceItem, item),
-            Expression.Assign(destItem, context.Convert(_elementConverter, sourceItem)),
-            _saver.Add(dest, destItem)
-            );
+        var scope = builder.CreateScope();
+        //var sourceItem = builder.Declare(_sourceElementType, "sourceItem");
+        //var destItem = builder.Declare(_elementType, "destItem");
+        //builder.Assign(sourceItem, item);
+        //builder.Assign(destItem, context.Convert(builder, _elementConverter, item));
+        var destItem = context.Convert(scope, _elementConverter, sourceItem);
+        var save = _saver.Add(dest, destItem);
+        scope.Add(save);
+        return scope.Create();
     }
     #region MethodInfo
     /// <summary>

@@ -37,13 +37,16 @@ string name = reader.Read(user);
 ## 二、 成员写入
 > 按属性或字段名写入
 
-## 1.1 按实际类型写入
+### 1. 用委托
+>调用GetWriteAction方法
+
+#### 1.1 按实际类型写入
 ```csharp
 Action<Test, int> writeAction = Poco.Default.GetWriteAction<User, int>("Id");
 int id = 1;
 writeAction(user, id);
 ```
-## 2.2 按object类型写入
+#### 1.2 按object类型写入
 ```csharp
 // 按实际类型写入
 Action<Test, object> writeAction = Poco.Default.GetWriteAction<User, object>("Id");

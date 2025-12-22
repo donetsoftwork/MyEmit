@@ -1,5 +1,4 @@
 using Hand.Reflection;
-using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System.Linq.Expressions;
 

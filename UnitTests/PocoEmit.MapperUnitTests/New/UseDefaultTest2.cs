@@ -13,6 +13,7 @@ public class UseDefaultTest2
         UserDomain user = mapper.Convert<UserDTO, UserDomain>(dto);
         Assert.NotNull(user);
         Assert.NotNull(user.Repository);
+        Assert.Equal(UserRepository.Instance, user.Repository);
     }
 
     class UserDomain(UserRepository repository, int id, string name)

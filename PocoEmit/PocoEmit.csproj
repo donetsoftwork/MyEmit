@@ -29,4 +29,7 @@
     <PackageReference Include="Hand.AutoCache" Version="0.2.1-alpha" />
 		<PackageReference Include="Hand.Reflection" Version="0.2.0-alpha" />
 	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\PocoEmit.Builders\PocoEmit.Builders.csproj" />
+	</ItemGroup>
 </Project>

@@ -37,9 +37,19 @@ public class KeyedServiceBuilder(IServiceProviderBuilder provider, Type serviceT
     /// <inheritdoc />
     public Expression Create()
     {
-        var provider = _provider.CreateKeyed();
-        var builder = provider.Builder;
-        builder.Add(EmitProviderHelper.CallGetKeydService(provider.Provider, _serviceType, _serviceKey));
+        var builder = new EmitBuilder();
+        var service = Create(builder);
+        builder.Add(service);
         return builder.Create();
+    }
+    /// <summary>
+    /// 构造表达式构造器
+    /// </summary>
+    /// <returns></returns>
+    public Expression Create(EmitBuilder builder)
+    {
+        var provider = _provider.CreateKeyed();
+        builder.Join(provider.Builder);
+        return EmitProviderHelper.CallGetKeydService(builder, provider.Provider, _serviceType, _serviceKey);
     }
 }

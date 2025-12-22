@@ -6,7 +6,6 @@ using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Collections.Converters;
@@ -48,9 +47,7 @@ public class WrapConverter(IMapperOptions options, Type sourceType, Type destTyp
     #region IEmitConverter
     /// <inheritdoc />
     Expression IEmitConverter.Convert(Expression source)
-        => BuildContext.WithPrepare(_options, this)
-        .Enter(_key)
-        .CallComplexConvert(_key, source);
+        => throw new NotImplementedException();
     #endregion
     #region IBuilder<LambdaExpression>
     /// <summary>
@@ -69,16 +66,9 @@ public class WrapConverter(IMapperOptions options, Type sourceType, Type destTyp
     public LambdaExpression BuildWithContext(IBuildContext context)
         => context.Context.BuildWithContext(this);
     #endregion
-    /// <summary>
-    /// 转化核心方法
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="source"></param>
-    /// <param name="dest"></param>
-    /// <param name="convertContext"></param>
-    /// <returns></returns>
-    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
-        => _original.BuildBody(context, source, dest, convertContext);
+    /// <inheritdoc />
+    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
+        => _original.BuildFunc(context, builder, source, convertContext);
     /// <inheritdoc />
     void IComplexPreview.Preview(IComplexBundle parent)
     {

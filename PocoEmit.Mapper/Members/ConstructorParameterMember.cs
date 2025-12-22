@@ -39,8 +39,20 @@ public class ConstructorParameterMember(ConstructorInfo constructor, ParameterIn
     /// <returns></returns>
     public static ConstantExpression CheckDefaultValue(ParameterInfo parameter)
     {
-        if(parameter.HasDefaultValue)
+        // .net6/7 HasDefaultValue有问题
+        if (parameter.HasDefaultValue)
+#if NET8_0_OR_GREATER
             return Expression.Constant(parameter.DefaultValue, parameter.ParameterType);
+#else
+            try
+            {
+                return Expression.Constant(parameter.DefaultValue, parameter.ParameterType);
+            }
+            catch
+            {
+                return null;
+            }
+#endif
         return null;
     }
     /// <summary>

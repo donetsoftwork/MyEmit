@@ -16,12 +16,12 @@ public static class PocoMvcDefaultServices
     /// <param name="root"></param>
     /// <param name="accessor"></param>
     /// <returns></returns>
-    public static MvcDefaultValueBuilder UseContext(this IMapper mapper, IServiceProvider root, IHttpContextAccessor accessor)
+    public static MvcDefaultValueProvider UseContext(this IMapper mapper, IServiceProvider root, IHttpContextAccessor accessor)
     {
         var options = (Mapper)mapper;
         var bulder = new ContextBuilder(root, accessor);
-        var defaultValue = new MvcDefaultValueBuilder(options, bulder);
-        options.DefaultValueBuilder = defaultValue;
+        var defaultValue = new MvcDefaultValueProvider(options, bulder);
+        options.DefaultValueProvider = defaultValue;
         options.UseProviderDefault(bulder);
         return defaultValue;
     }

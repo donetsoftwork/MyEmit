@@ -1,7 +1,5 @@
 using Hand.Cache;
 using Hand.Reflection;
-using PocoEmit.Collections;
-using PocoEmit.Configuration;
 using System;
 
 namespace PocoEmit;

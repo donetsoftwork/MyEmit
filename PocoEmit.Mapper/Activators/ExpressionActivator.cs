@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using System;
 using System.Linq.Expressions;
@@ -28,6 +29,6 @@ public class ExpressionActivator(Expression expression, Type returnType)
         => _returnType;
     #endregion
     /// <inheritdoc />
-    public virtual Expression New(IBuildContext context, Expression argument)
+    public virtual Expression New(IBuildContext context, ComplexBuilder builder, Expression argument)
         => _expression;
 }

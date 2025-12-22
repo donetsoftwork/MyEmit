@@ -1,5 +1,4 @@
 using Hand.Structural;
-using PocoEmit.Builders;
 using PocoEmit.Configuration;
 using System;
 using System.Linq.Expressions;
@@ -34,8 +33,8 @@ public sealed class CompatibleConverter(bool isPrimitiveSource, IEmitConverter o
         => false;
     #endregion
     /// <inheritdoc />
-    protected override Expression ConvertCore(Expression value, Type destType)
-        => ConvertDestCore(_original.Convert(ConvertOriginalSourceCore(value, _originalSourceType)), _destType);
+    protected override Expression ConvertCore(Expression source, Type destType)
+        => ConvertDestCore(_original.Convert(ConvertOriginalSourceCore(source, _originalSourceType)), _destType);
     //=> ConvertDest(ConvertOriginal(value));
     #region ConvertOriginal
     ///// <summary>
@@ -48,11 +47,11 @@ public sealed class CompatibleConverter(bool isPrimitiveSource, IEmitConverter o
     /// <summary>
     /// 源核心转化
     /// </summary>
-    /// <param name="value"></param>
+    /// <param name="source"></param>
     /// <param name="originalSourceType"></param>
     /// <returns></returns>
-    private Expression ConvertOriginalSourceCore(Expression value, Type originalSourceType)
-        => originalSourceType == value.Type ? value : Expression.Convert(value, originalSourceType);
+    private static Expression ConvertOriginalSourceCore(Expression source, Type originalSourceType)
+        => originalSourceType == source.Type ? source : Expression.Convert(source, originalSourceType);
     #endregion
     #region ConvertDest
     ///// <summary>
@@ -68,7 +67,7 @@ public sealed class CompatibleConverter(bool isPrimitiveSource, IEmitConverter o
     /// <param name="value"></param>
     /// <param name="destType"></param>
     /// <returns></returns>
-    private Expression ConvertDestCore(Expression value, Type destType)
+    private static Expression ConvertDestCore(Expression value, Type destType)
         => destType == value.Type ? value : Expression.Convert(value, destType);
     #endregion
 }

@@ -5,7 +5,6 @@ using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Collections.Converters;
@@ -38,9 +37,7 @@ public sealed class ArrayInitConverter(IMapperOptions options, Type arrayType, T
     #region IEmitConverter
     /// <inheritdoc />
     Expression IEmitConverter.Convert(Expression source)
-        => BuildContext.WithPrepare(_options, this)
-        .Enter(_key)
-        .CallComplexConvert(_key, source);
+        => throw new NotImplementedException();
     #endregion
     #region IBuilder<LambdaExpression>
     /// <summary>
@@ -60,21 +57,24 @@ public sealed class ArrayInitConverter(IMapperOptions options, Type arrayType, T
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public IEnumerable<Expression> BuildBody(IBuildContext context, Expression source, Expression dest, ParameterExpression convertContext)
+    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
     {
-        yield return Expression.Assign(dest, Expression.NewArrayInit(_elementType, CheckElement(context, source)));
+        var dest = builder.Declare(_collectionType, "dest");
+        builder.Assign(dest, Expression.NewArrayInit(_elementType, CheckElement(context, builder, source)));
         var cache = context.SetCache(convertContext, _key, source, dest);
         if (cache is not null)
-            yield return cache;
+            builder.Add(cache);
+        return dest;
     }
     /// <summary>
     /// 检查子元素
     /// </summary>
     /// <param name="context"></param>
+    /// <param name="builder"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    private Expression CheckElement(IBuildContext context, Expression source)
-        => context.Convert(_elementConverter, source);
+    private Expression CheckElement(IBuildContext context, ComplexBuilder builder, Expression source)
+        => context.Convert(builder, _elementConverter, source);
     /// <inheritdoc />
     void IComplexPreview.Preview(IComplexBundle parent)
     {

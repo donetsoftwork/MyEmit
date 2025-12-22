@@ -10,9 +10,9 @@ public interface IServiceProviderBuilder
     /// <summary>
     /// IServiceProvider
     /// </summary>
-    ServiceProviderBuilder CreateProvider();
+    ProviderBuilder CreateProvider();
     /// <summary>
     /// IKeyedServiceProvider
     /// </summary>
-    ServiceProviderBuilder CreateKeyed();
+    ProviderBuilder CreateKeyed();
 }

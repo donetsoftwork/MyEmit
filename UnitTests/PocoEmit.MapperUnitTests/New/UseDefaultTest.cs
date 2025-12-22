@@ -30,5 +30,6 @@ public class UseDefaultTest
         var dto = new MessageDto { Message = "Hello UseMessageId" };
         MessageDomain message = mapper.Convert<MessageDto, MessageDomain>(dto);
         Assert.NotNull(message);
+        Assert.NotNull(message.Id);
     }
 }

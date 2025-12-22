@@ -1,7 +1,6 @@
 using Hand.Reflection;
 using PocoEmit.Builders;
 using PocoEmit.Collections;
-using PocoEmit.Configuration;
 using PocoEmit.Members;
 using System;
 using System.Linq.Expressions;
@@ -62,7 +61,7 @@ public static partial class PocoEmitServices
         {
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> typeWriter)
                 return typeWriter.WriteAction;
-            var writeAction = Compiler.CompileAction<TInstance, TValue>(emitWriter);
+            var writeAction = CompileAction<TInstance, TValue>(emitWriter);
             MemberContainer.Instance.MemberWriterCacher.Save(emitWriter.Info, new CompiledWriter<TInstance, TValue>(emitWriter, writeAction));
             return writeAction;
         }
@@ -70,7 +69,7 @@ public static partial class PocoEmitServices
         {
             return null;
         }
-        return Compiler.CompileAction<TInstance, TValue>(emitWriter);
+        return CompileAction<TInstance, TValue>(emitWriter);
     }
     #endregion
     #region GetMemberWriter
@@ -121,7 +120,7 @@ public static partial class PocoEmitServices
         {
             if (emitWriter.Compiled && emitWriter is ICompiledWriter<TInstance, TValue> compiledWriter)
                 return compiledWriter;
-            compiledWriter = new CompiledWriter<TInstance, TValue>(emitWriter, Compiler.CompileAction<TInstance, TValue>(emitWriter));
+            compiledWriter = new CompiledWriter<TInstance, TValue>(emitWriter, CompileAction<TInstance, TValue>(emitWriter));
             MemberContainer.Instance.MemberWriterCacher.Save(emitWriter.Info, compiledWriter);
             return compiledWriter;
         }
@@ -129,7 +128,7 @@ public static partial class PocoEmitServices
         {
             return null;
         }
-        return new CompiledWriter<TInstance, TValue>(emitWriter, Compiler.CompileAction<TInstance, TValue>(emitWriter));
+        return new CompiledWriter<TInstance, TValue>(emitWriter, CompileAction<TInstance, TValue>(emitWriter));
     }
     #endregion
     #region Check
@@ -207,5 +206,16 @@ public static partial class PocoEmitServices
         var value = Expression.Parameter(typeof(TValue), "value");
         return Expression.Lambda<Action<TInstance, TValue>>(emit.Write(instance, value), instance, value);
     }
+    #endregion
+    #region Compile
+    /// <summary>
+    /// 编译成员写入器
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="writer"></param>
+    /// <returns></returns>
+    public static Action<TInstance, TValue> CompileAction<TInstance, TValue>(this IEmitMemberWriter writer)
+        => Compiler._instance.CompileDelegate(writer.Build<TInstance, TValue>());
     #endregion
 }

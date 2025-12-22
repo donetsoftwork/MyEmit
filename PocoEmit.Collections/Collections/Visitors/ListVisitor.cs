@@ -32,43 +32,42 @@ public class ListVisitor(Type listType, Type elementType, PropertyInfo countProp
     #endregion
     #region Travel
     /// <inheritdoc />
-    Expression IEmitElementVisitor.Travel(Expression collection, Func<Expression, Expression> callback)
-        => Travel(collection, _countProperty, _itemProperty, (_, value) => callback(value));
+    Expression IEmitElementVisitor.Travel(IEmitBuilder builder, Expression collection, Func<Expression, Expression> callback)
+        => Travel(builder, collection, _countProperty, _itemProperty, (_, value) => callback(value));
     /// <inheritdoc />
-    Expression IIndexVisitor.Travel(Expression collection, Func<Expression, Expression, Expression> callback)
-        => Travel(collection, _countProperty, _itemProperty, callback);
+    Expression IIndexVisitor.Travel(IEmitBuilder builder, Expression collection, Func<Expression, Expression, Expression> callback)
+        => Travel(builder, collection, _countProperty, _itemProperty, callback);
     /// <summary>
     /// 遍历
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="list"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static Expression Travel(Expression list, Func<Expression, Expression, Expression> callback)
+    public static Expression Travel(IEmitBuilder builder, Expression list, Func<Expression, Expression, Expression> callback)
     {
         var collectionType = list.Type;
         var bundle = CollectionContainer.Instance.ListCacher.Get(collectionType);
         if (bundle == null)
             return Expression.Empty();
-        return Travel(list, bundle.Count, bundle.Items, callback);
+        return Travel(builder, list, bundle.Count, bundle.Items, callback);
     }
     /// <summary>
     /// 遍历
     /// </summary>
+    /// <param name="builder"></param>
     /// <param name="list"></param>
     /// <param name="count"></param>
     /// <param name="item"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static Expression Travel(Expression list, PropertyInfo count, PropertyInfo item, Func<Expression, Expression, Expression> callback)
+    public static Expression Travel(IEmitBuilder builder, Expression list, PropertyInfo count, PropertyInfo item, Func<Expression, Expression, Expression> callback)
     {
-        var index = Expression.Variable(typeof(int), "index");
-        var len = Expression.Variable(typeof(int), "len");
-        return Expression.Block(
-            [index, len],
-            Expression.Assign(index, Expression.Constant(0)),
-            Expression.Assign(len, Expression.Property(list, count)),
-            EmitHelper.For(index, len, i => callback(i, Expression.Property(list, item, i)))
-        );
+        var index = builder.Declare<int>("index");
+        var len = builder.Declare<int>("len");
+        builder.Assign(index, Expression.Constant(0));
+        builder.Assign(len, Expression.Property(list, count));
+        return EmitHelper.For(index, len, i => callback(i, Expression.Property(list, item, i)));
     }
     #endregion
 }

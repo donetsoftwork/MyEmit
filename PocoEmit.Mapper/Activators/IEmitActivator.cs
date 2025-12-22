@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using System;
 using System.Linq.Expressions;
@@ -14,12 +15,13 @@ public interface IEmitActivator
     /// </summary>
     Type ReturnType { get; }
     /// <summary>
-    /// 激活
+    /// 
     /// </summary>
     /// <param name="context">复杂类型缓存</param>
+    /// <param name="builder">复杂类型缓存</param>
     /// <param name="argument">参数</param>
     /// <returns></returns>
-    Expression New(IBuildContext context, Expression argument);
+    Expression New(IBuildContext context, ComplexBuilder builder, Expression argument);
     ///// <summary>
     ///// 激活
     ///// </summary>
