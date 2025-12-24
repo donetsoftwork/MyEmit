@@ -17,6 +17,6 @@ public class ConstructorActivator(Type returnType, ConstructorInfo constructor)
     , IEmitActivator
 {
     /// <inheritdoc />
-    public virtual Expression New(IBuildContext context, ComplexBuilder builder, Expression argument)
+    public virtual Expression New(IBuildContext context, IEmitBuilder builder, Expression argument)
         => Expression.New(_constructor);
 }

@@ -70,14 +70,14 @@ public class EmitBuilder(List<ParameterExpression> variables, List<Expression> e
     /// <param name="parameters"></param>
     /// <returns></returns>
     public Expression Create(params ParameterExpression[] parameters)
-        => CreateCore(CheckVariables(_variables, parameters), _expressions);
+        => Create(CheckVariables(_variables, parameters), _expressions);
     /// <summary>
     /// 打包核心逻辑
     /// </summary>
     /// <param name="variables"></param>
     /// <param name="expressions"></param>
     /// <returns></returns>
-    protected static Expression CreateCore(IEnumerable<ParameterExpression> variables,  List<Expression> expressions)
+    public static Expression Create(IEnumerable<ParameterExpression> variables,  List<Expression> expressions)
     {
         return expressions.Count switch
         {

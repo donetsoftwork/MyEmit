@@ -1,3 +1,4 @@
+using PocoEmit.Builders;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -36,16 +37,12 @@ public class CleanVisitor : ExpressionVisitor
                     {
                         if (assignBlock.Result == left)
                         {
-                            var expressions = assignBlock.Expressions.Where(item => !item.Equals(left)).ToArray();
-                            if (expressions.Length == 1)
-                            {
-                                assignExpression = expressions[0];
-                            }
-                            else
-                            {
-                                var variables = rightVariables.Where(item => !item.Equals(parameter));
-                                assignExpression = Expression.Block(variables, expressions);
-                            }
+                            var variables = rightVariables
+                                .Where(item => !item.Equals(parameter));
+                            var expressions = assignBlock.Expressions
+                                .Where(item => !item.Equals(left))
+                                .ToList();
+                            return EmitBuilder.Create(variables, expressions);
                         }
                     }
                     return assignExpression;

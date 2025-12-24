@@ -61,7 +61,7 @@ public class DictionaryCopier(Type dictionaryType, Type keyType, Type elementTyp
     void IComplexPreview.Preview(IComplexBundle parent)
         => parent.Visit(_elementConverter);
     /// <inheritdoc />
-    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, IEmitBuilder builder, Expression source, Expression dest)
     {
         dest = CheckInstance(dest);
         builder.Add(_sourceVisitor.Travel(builder, source, (k, v) => CopyElement(context, builder, dest, k, v, _keyConverter, _elementConverter)));
@@ -95,7 +95,7 @@ public class DictionaryCopier(Type dictionaryType, Type keyType, Type elementTyp
         }
         else
         {
-            scope.Assign(item, assignScope.Create());
+            scope.Add(assignScope.Create());
         }
         return scope.Create();
     }

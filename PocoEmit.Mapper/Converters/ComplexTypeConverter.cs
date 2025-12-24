@@ -92,7 +92,7 @@ public class ComplexTypeConverter(IMapperOptions options,in PairTypeKey key, IEm
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContex)
+    public Expression BuildFunc(IBuildContext context, IEmitBuilder builder, Expression source, ParameterExpression convertContex)
     {
         var dest = builder.Declare(_destType, "dest");
         builder.Assign(dest, _destActivator.New(context, builder, source));

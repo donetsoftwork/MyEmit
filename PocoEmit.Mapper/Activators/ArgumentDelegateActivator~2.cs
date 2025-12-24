@@ -21,6 +21,6 @@ public class DelegateActivator<TSource, TDest>(IPocoOptions poco, Expression<Fun
     Type IEmitActivator.ReturnType
         => typeof(TDest);
     /// <inheritdoc />
-    public Expression New(IBuildContext context, ComplexBuilder builder, Expression argument)
+    public Expression New(IBuildContext context, IEmitBuilder builder, Expression argument)
          => Call(argument);
 }

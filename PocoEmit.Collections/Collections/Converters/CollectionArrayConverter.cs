@@ -91,7 +91,7 @@ public class CollectionArrayConverter(IMapperOptions options, Type sourceType, T
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
+    public Expression BuildFunc(IBuildContext context, IEmitBuilder builder, Expression source, ParameterExpression convertContext)
     {
         var dest = builder.Declare(_collectionType, "dest");
         var count = builder.Declare<int>("count");
@@ -120,7 +120,7 @@ public class CollectionArrayConverter(IMapperOptions options, Type sourceType, T
     /// <param name="sourceItem"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    public static Expression CopyElement(IBuildContext context, ComplexBuilder builder, Expression dest, Expression index, Expression item, ParameterExpression sourceItem, IEmitConverter converter)
+    public static Expression CopyElement(IBuildContext context, IEmitBuilder builder, Expression dest, Expression index, Expression item, ParameterExpression sourceItem, IEmitConverter converter)
     {
         var scope = builder.CreateScope(sourceItem);
         scope.Assign(item);

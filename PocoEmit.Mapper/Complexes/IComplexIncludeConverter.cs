@@ -16,5 +16,5 @@ public interface IComplexIncludeConverter
     /// <param name="builder"></param>
     /// <param name="source"></param>
     /// <param name="convertContex"></param>
-    Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContex);
+    Expression BuildFunc(IBuildContext context, IEmitBuilder builder, Expression source, ParameterExpression convertContex);
 }

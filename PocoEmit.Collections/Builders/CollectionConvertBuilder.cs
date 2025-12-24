@@ -4,9 +4,7 @@ using PocoEmit.Collections.Converters;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
-using PocoEmit.Dictionaries;
 using System;
-using System.Collections.Generic;
 #if (NETSTANDARD1_1 || NETSTANDARD1_3 || NETSTANDARD1_6)
 using System.Reflection;
 #endif

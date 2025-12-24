@@ -33,7 +33,7 @@ public class CheckEmitCopier(IEmitCopier inner, Expression target, MethodInfo me
         => _inner;
     #endregion
     /// <inheritdoc />
-    public override void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+    public override void BuildAction(IBuildContext context, IEmitBuilder builder, Expression source, Expression dest)
     {
         _inner.BuildAction(context, builder, source, dest);
         builder.Add(CallMethod(source, dest));

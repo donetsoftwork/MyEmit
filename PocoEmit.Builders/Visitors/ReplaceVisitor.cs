@@ -29,12 +29,15 @@ public class ReplaceVisitor(ParameterExpression old, Expression @new)
     /// <inheritdoc />
     internal protected override IEnumerable<ParameterExpression> CheckVariables(IEnumerable<ParameterExpression> variables)
     {
-        foreach (var expression in variables)
+        foreach (var variable in variables)
         {
-            if (TryReplaceParameter(expression, out var replacement) && replacement is ParameterExpression checkParameter)
-                yield return checkParameter;
-            else
-                yield return expression;
+            if (_old == variable)
+                continue;
+            yield return variable;
+            //if (TryReplaceParameter(variable, out var replacement) && replacement is ParameterExpression checkParameter)
+            //    yield return checkParameter;
+            //else
+            //    yield return variable;
         }
     }
     /// <inheritdoc />
@@ -71,6 +74,7 @@ public class ReplaceVisitor(ParameterExpression old, Expression @new)
 
         for (int i = 1; i < count; i++)
             replaceVisitor = new ComplexReplaceVisitor(replaceVisitor, parameters[i], arguments[i]);
+
         return replaceVisitor;
     }
 }

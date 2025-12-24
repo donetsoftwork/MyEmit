@@ -45,9 +45,9 @@ public class ParameterConstructorActivator(IMapperOptions options, Type returnTy
             parent.Visit(reader as ConvertValueReader);
     }
     /// <inheritdoc />
-    public override Expression New(IBuildContext context, ComplexBuilder builder, Expression argument)
+    public override Expression New(IBuildContext context, IEmitBuilder builder, Expression argument)
         => Expression.New(_constructor, CreateParameters(context, builder, argument));
-    private Expression[] CreateParameters(IBuildContext context, ComplexBuilder builder, Expression source)
+    private Expression[] CreateParameters(IBuildContext context, IEmitBuilder builder, Expression source)
     {
         var arguments = new Expression[_readers.Length];
         var i = 0;

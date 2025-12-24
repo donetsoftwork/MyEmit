@@ -1,7 +1,6 @@
 using Hand.Creational;
 using Hand.Reflection;
 using PocoEmit.Builders;
-using PocoEmit.Configuration;
 using PocoEmit.Visitors;
 using System.Linq.Expressions;
 

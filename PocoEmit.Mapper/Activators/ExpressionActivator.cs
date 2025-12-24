@@ -29,6 +29,6 @@ public class ExpressionActivator(Expression expression, Type returnType)
         => _returnType;
     #endregion
     /// <inheritdoc />
-    public virtual Expression New(IBuildContext context, ComplexBuilder builder, Expression argument)
+    public virtual Expression New(IBuildContext context, IEmitBuilder builder, Expression argument)
         => _expression;
 }

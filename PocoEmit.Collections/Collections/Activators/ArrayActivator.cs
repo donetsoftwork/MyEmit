@@ -32,7 +32,7 @@ public class ArrayActivator(Type arrayType, Type elementType, IEmitCounter lengt
         => _collectionType;
     #endregion
     /// <inheritdoc />
-    Expression IEmitActivator.New(IBuildContext context, ComplexBuilder builder, Expression argument)
+    Expression IEmitActivator.New(IBuildContext context, IEmitBuilder builder, Expression argument)
         => New(_length.Count(argument));
     /// <summary>
     /// 构造数组

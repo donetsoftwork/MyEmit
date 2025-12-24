@@ -18,7 +18,7 @@ public class ActionCopier(IPocoOptions poco, LambdaExpression copyAction)
     bool ICompileInfo.Compiled
         => false;
     /// <inheritdoc />
-    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, IEmitBuilder builder, Expression source, Expression dest)
         => builder.Add(Call(source, dest));
     /// <inheritdoc />
     void IComplexPreview.Preview(IComplexBundle parent) { }

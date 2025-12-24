@@ -23,6 +23,6 @@ public class DelegateActivator<TInstance>(Expression<Func<TInstance>> activator)
         => typeof(TInstance);
     #endregion
     /// <inheritdoc />
-    Expression IEmitActivator.New(IBuildContext context, ComplexBuilder builder, Expression argument)
+    Expression IEmitActivator.New(IBuildContext context, IEmitBuilder builder, Expression argument)
         => _activator.Body;
 }

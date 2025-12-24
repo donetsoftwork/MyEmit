@@ -6,7 +6,6 @@ using PocoEmit.Complexes;
 using PocoEmit.Converters;
 using PocoEmit.Copies;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -78,7 +77,7 @@ public class CollectionCopier : EmitCollectionBase
     void IComplexPreview.Preview(IComplexBundle parent)
         => parent.Visit(_elementConverter);
     /// <inheritdoc />
-    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, IEmitBuilder builder, Expression source, Expression dest)
     {
         dest = CheckInstance(dest);
         if (_clearMethod is not null)
@@ -93,7 +92,7 @@ public class CollectionCopier : EmitCollectionBase
     /// <param name="dest"></param>
     /// <param name="sourceItem"></param>
     /// <returns></returns>
-    public Expression CopyElement(IBuildContext context, ComplexBuilder builder, Expression dest, Expression sourceItem)
+    public Expression CopyElement(IBuildContext context, IEmitBuilder builder, Expression dest, Expression sourceItem)
     {
         var scope = builder.CreateScope();
         //var sourceItem = builder.Declare(_sourceElementType, "sourceItem");

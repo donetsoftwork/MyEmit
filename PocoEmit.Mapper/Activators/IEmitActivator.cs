@@ -21,7 +21,7 @@ public interface IEmitActivator
     /// <param name="builder">复杂类型缓存</param>
     /// <param name="argument">参数</param>
     /// <returns></returns>
-    Expression New(IBuildContext context, ComplexBuilder builder, Expression argument);
+    Expression New(IBuildContext context, IEmitBuilder builder, Expression argument);
     ///// <summary>
     ///// 激活
     ///// </summary>

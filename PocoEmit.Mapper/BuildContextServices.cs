@@ -77,12 +77,11 @@ public static partial class MapperServices
                 {
                     var converter = Expression.Constant(contexAchieve, EmitMapperHelper.GetContextConvertType(key));
                     var convert = EmitMapperHelper.CallContextConvert(converter, convertContext, source);
-                    builder.IfThen(noCache, Expression.Assign(dest, convert));
+                    builder.IfThen(noCache, CleanVisitor.Clean(Expression.Assign(dest, convert)));
                 }
                 else
                 {
-                    // return Expression.Condition(test, dest, context.Call(bundle.IsCircle, contextLambda, convertContext, source), destType);
-                    builder.IfThen(noCache, Expression.Assign(dest, context.Call(bundle.IsCircle, contextLambda, convertContext, source)));                    
+                    builder.IfThen(noCache, CleanVisitor.Clean(Expression.Assign(dest, context.Call(bundle.IsCircle, contextLambda, convertContext, source))));                    
                 }
                 return dest;
             }
@@ -142,7 +141,7 @@ public static partial class MapperServices
         var source = Expression.Variable(sourceType, "source");
         var parameter = currentContext.ConvertContextParameter;
         ParameterExpression[] parameters = [parameter, source];
-        var builder = new ComplexBuilder(source);
+        var builder = new ArgumentBuilder(source);
         var result = converter.BuildFunc(currentContext, builder, source, parameter);
         var body = builder.CreateFunc(result, parameters);
         var funcType = Expression.GetFuncType(parameter.Type, sourceType, destType);
@@ -169,7 +168,7 @@ public static partial class MapperServices
         var source = Expression.Variable(sourceType, "source");        
 
         var bundle = context.GetBundle(key);
-        var builder = new ComplexBuilder(source);
+        var builder = new ArgumentBuilder(source);
 
         ParameterExpression[] parameters = [source];
         Expression result;
@@ -187,6 +186,7 @@ public static partial class MapperServices
             builder.AddVariable(parameter);
             builder.Add(context.InitContext(parameter));
             builder.Add(CleanVisitor.Clean(Expression.Assign(dest, context.Call(bundle.IsCircle, contextLambda, parameter, source))));
+            //builder.Assign(dest, context.Call(bundle.IsCircle, contextLambda, parameter, source));
             builder.Add(EmitDispose.Dispose(parameter));
             result = dest;
         }

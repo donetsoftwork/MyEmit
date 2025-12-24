@@ -36,7 +36,7 @@ public class ComplexTypeCopier(IMapperOptions options, IEnumerable<IMemberConver
             member.Preview(parent);
     }
     /// <inheritdoc />
-    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, IEmitBuilder builder, Expression source, Expression dest)
     {
         foreach (var member in _members)
         {

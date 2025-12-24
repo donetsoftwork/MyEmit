@@ -47,12 +47,12 @@ public abstract class CheckVisitor : ExpressionVisitor
             return replacement;
         return VisitCore(node);
     }
-    /// <inheritdoc />
-    protected override Expression VisitParameter(ParameterExpression node)
-    {
-        TryReplaceParameter(node, out var replacement);
-        return replacement;
-    }
+    ///// <inheritdoc />
+    //protected override Expression VisitParameter(ParameterExpression node)
+    //{
+    //    TryReplaceParameter(node, out var replacement);
+    //    return replacement;
+    //}
     /// <inheritdoc />
     protected override Expression VisitBlock(BlockExpression node)
         => CheckBlock(node);

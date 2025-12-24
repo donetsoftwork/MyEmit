@@ -90,7 +90,7 @@ public class IndexArrayConverter(IMapperOptions options, Type sourceType, Type s
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
+    public Expression BuildFunc(IBuildContext context, IEmitBuilder builder, Expression source, ParameterExpression convertContext)
     {
         var dest = builder.Declare(_collectionType, "dest");
         var count = builder.Declare<int>("count");
@@ -118,7 +118,7 @@ public class IndexArrayConverter(IMapperOptions options, Type sourceType, Type s
     /// <param name="sourceReader"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    public static Expression CopyElement(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest, Expression index, ParameterExpression sourceItem, IEmitIndexMemberReader sourceReader, IEmitConverter converter)
+    public static Expression CopyElement(IBuildContext context, IEmitBuilder builder, Expression source, Expression dest, Expression index, ParameterExpression sourceItem, IEmitIndexMemberReader sourceReader, IEmitConverter converter)
     {
         //builder.Assign(sourceItem, sourceReader.Read(source, index));
         //return Expression.Assign(Expression.ArrayAccess(dest, index), context.Convert(builder, converter, sourceReader.Read(source, index)));

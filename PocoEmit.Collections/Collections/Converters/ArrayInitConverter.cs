@@ -57,7 +57,7 @@ public sealed class ArrayInitConverter(IMapperOptions options, Type arrayType, T
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
+    public Expression BuildFunc(IBuildContext context, IEmitBuilder builder, Expression source, ParameterExpression convertContext)
     {
         var dest = builder.Declare(_collectionType, "dest");
         builder.Assign(dest, Expression.NewArrayInit(_elementType, CheckElement(context, builder, source)));
@@ -73,7 +73,7 @@ public sealed class ArrayInitConverter(IMapperOptions options, Type arrayType, T
     /// <param name="builder"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    private Expression CheckElement(IBuildContext context, ComplexBuilder builder, Expression source)
+    private Expression CheckElement(IBuildContext context, IEmitBuilder builder, Expression source)
         => context.Convert(builder, _elementConverter, source);
     /// <inheritdoc />
     void IComplexPreview.Preview(IComplexBundle parent)

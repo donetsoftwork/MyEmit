@@ -6,7 +6,6 @@ using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using PocoEmit.Converters;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Collections.Converters;
@@ -74,7 +73,7 @@ public sealed class CollectionInitConverter(IMapperOptions options, Type collect
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
+    public Expression BuildFunc(IBuildContext context, IEmitBuilder builder, Expression source, ParameterExpression convertContext)
     {
         var dest = builder.Declare(_collectionType, "dest");
         builder.Assign(dest, Expression.ListInit(Expression.New(_collectionType), Expression.ElementInit(_saver.AddMethod, CheckElement(context, builder, source))));
@@ -90,6 +89,6 @@ public sealed class CollectionInitConverter(IMapperOptions options, Type collect
     /// <param name="builder"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    private Expression CheckElement(IBuildContext context, ComplexBuilder builder, Expression source)
+    private Expression CheckElement(IBuildContext context, IEmitBuilder builder, Expression source)
         => context.Convert(builder, _elementConverter, source);
 }

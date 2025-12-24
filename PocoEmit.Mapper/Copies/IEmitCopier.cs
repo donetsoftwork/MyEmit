@@ -34,5 +34,5 @@ public interface IEmitCopier
     /// <param name="builder"></param>
     /// <param name="source"></param>
     /// <param name="dest"></param>
-    void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest);
+    void BuildAction(IBuildContext context, IEmitBuilder builder, Expression source, Expression dest);
 }

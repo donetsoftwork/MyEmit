@@ -41,7 +41,7 @@ public sealed class CompatibleCopier(IEmitCopier original, Type innerSourceType,
         => false;
     #endregion
     /// <inheritdoc />
-    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, IEmitBuilder builder, Expression source, Expression dest)
     {
         if (_innerSourceType != source.Type)
             source = Expression.Convert(source, _innerSourceType);

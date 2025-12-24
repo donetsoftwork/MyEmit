@@ -6,19 +6,19 @@ using System.Linq.Expressions;
 namespace PocoEmit.Builders;
 
 /// <summary>
-/// 复杂对象表达式构造器
+/// 带参表达式构造器
 /// </summary>
-/// <param name="source">源表达式</param>
-public class ComplexBuilder(ParameterExpression source)
-    : VariableBuilder(source, [])
+/// <param name="argument">源表达式</param>
+public class ArgumentBuilder(ParameterExpression argument)
+    : VariableBuilder(argument, [])
 {
     #region 配置
-    private readonly ParameterExpression _source = source;
+    private readonly ParameterExpression _argument = argument;
     /// <summary>
-    /// 源表达式
+    /// 参数表达式
     /// </summary>
-    public ParameterExpression Source
-        => _source;
+    public ParameterExpression Argument
+        => _argument;
     #endregion
     /// <summary>
     /// 构造Action
@@ -28,11 +28,11 @@ public class ComplexBuilder(ParameterExpression source)
     public Expression CreateAction(params ParameterExpression[] parameters)
     {
         var body = Create(parameters);
-        var sourceType = _source.Type;
-        if (PairTypeKey.CheckNullCondition(sourceType))
+        var argumentType = _argument.Type;
+        if (PairTypeKey.CheckNullCondition(argumentType))
         {
             return Expression.IfThen(
-                Expression.NotEqual(_source, Expression.Constant(null, sourceType)),
+                Expression.NotEqual(_argument, Expression.Constant(null, argumentType)),
                 body
             );
         }
@@ -47,19 +47,19 @@ public class ComplexBuilder(ParameterExpression source)
     public Expression CreateFunc(Expression result, params ParameterExpression[] parameters)
     {
         var destType = result.Type;
-        var sourceType = _source.Type;
+        var argumentType = _argument.Type;
         var variables = CheckVariables(_variables, parameters);        
-        if (PairTypeKey.CheckNullCondition(sourceType))
+        if (PairTypeKey.CheckNullCondition(argumentType))
         {
-            var body = CreateCore(result, _expressions);
+            var body = Create([], _expressions);
             return Expression.Block(
                 variables,
-                Expression.Condition(
-                    Expression.Equal(_source, Expression.Constant(null, sourceType)),
-                    Expression.Default(destType),
-                    body,
-                    destType
-                    )
+                Expression.IfThenElse(
+                    Expression.Equal(_argument, Expression.Constant(null, argumentType)),
+                    Expression.Assign(result, Expression.Default(destType)),
+                    body
+                    ),
+                result
                 );
         }
         else

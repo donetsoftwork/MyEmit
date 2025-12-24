@@ -3,7 +3,6 @@ using PocoEmit.Builders;
 using PocoEmit.Complexes;
 using PocoEmit.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace PocoEmit.Copies;
@@ -35,7 +34,7 @@ public sealed class CompiledCopier<TSource, TDest>(IEmitCopier original, Action<
         => true;
     #endregion
     /// <inheritdoc />
-    public void BuildAction(IBuildContext context, ComplexBuilder builder, Expression source, Expression dest)
+    public void BuildAction(IBuildContext context, IEmitBuilder builder, Expression source, Expression dest)
         => _original.BuildAction(context, builder, source, dest);
     /// <inheritdoc />
     void IPocoCopier<TSource, TDest>.Copy(TSource from, TDest to)

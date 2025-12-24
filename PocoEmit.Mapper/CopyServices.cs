@@ -158,7 +158,7 @@ public static partial class MapperServices
             .Enter(new PairTypeKey(typeof(TSource), typeof(TDest)));
 
         ParameterExpression[] parameters = [source, dest];
-        var builder = new ComplexBuilder(source);
+        var builder = new ArgumentBuilder(source);
 
         var convertContextParameter = context.ConvertContextParameter;
         Expression body;

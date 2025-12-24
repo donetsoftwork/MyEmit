@@ -67,7 +67,7 @@ public class WrapConverter(IMapperOptions options, Type sourceType, Type destTyp
         => context.Context.BuildWithContext(this);
     #endregion
     /// <inheritdoc />
-    public Expression BuildFunc(IBuildContext context, ComplexBuilder builder, Expression source, ParameterExpression convertContext)
+    public Expression BuildFunc(IBuildContext context, IEmitBuilder builder, Expression source, ParameterExpression convertContext)
         => _original.BuildFunc(context, builder, source, convertContext);
     /// <inheritdoc />
     void IComplexPreview.Preview(IComplexBundle parent)

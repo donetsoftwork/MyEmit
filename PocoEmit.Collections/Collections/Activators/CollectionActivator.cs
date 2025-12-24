@@ -37,7 +37,7 @@ public class CollectionActivator(Type collectionType, Type elementType, Construc
         => _collectionType;
     #endregion
     /// <inheritdoc />
-    public Expression New(IBuildContext context, ComplexBuilder builder, Expression argument)
+    public Expression New(IBuildContext context, IEmitBuilder builder, Expression argument)
     {
         if (_sourceCount is null)
             return Expression.New(_collectionType);
